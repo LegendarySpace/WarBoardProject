@@ -3,6 +3,16 @@
 
 #include "WarBoardLibrary.h"
 
+UWarBoardLibrary::UWarBoardLibrary()
+{
+	TileSize = 200.f;
+	MaxWidth = 6500;
+	Offset = 0;
+	BoardCentered = true;
+	BoardLocation = FVector(0.f);
+	return;
+}
+
 bool UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter, FVector &Location)
 {
 	// initialize static variables on each use to ensure accuracy

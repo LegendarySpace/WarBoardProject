@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Components/TextRenderComponent.h"
-#include "Engine/StaticMesh.h"
 #include "ETileType.h"
 #include "LayoutManager.generated.h"
 
 class ATileTypeManager;
+class UStaticMesh;
+class UTextRenderComponent;
 
 UCLASS()
 class WARBOARD_API ALayoutManager : public AActor

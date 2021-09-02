@@ -4,6 +4,7 @@
 #include "LayoutManager.h"
 #include "TileTypeManager.h"
 #include "WarBoardLibrary.h"
+#include "Components/TextRenderComponent.h"
 #include <string.h>
 
 // Sets default values
@@ -75,7 +76,7 @@ bool ALayoutManager::ChangeTile(int32 Index, ETileType Type)
 
 	// Use TileMap to look up TileType of Index, TileType is == to position within Managers
 	if (TileMap.Contains(Index)) Managers[TileMap[Index]]->Remove(Index);
-	else { /** TODO Handle addition of path node **/ }
+	else { /** TODO Handle addition of path node if pathfinder exists **/ }
 	Managers[Type]->Add(Index);
 	TileMap.Add(Index, Type);
 	return true;
@@ -88,7 +89,7 @@ bool ALayoutManager::RemoveTile(int32 Index)
 	{
 		Managers[TileMap[Index]]->Remove(Index);
 		TileMap.Remove(Index);
-		/** TODO Handle removal of path node **/
+		/** TODO Handle removal of path node if pathfinder exists **/
 	}
 	return true;
 }

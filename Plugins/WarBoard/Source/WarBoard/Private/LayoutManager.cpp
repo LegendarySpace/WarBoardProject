@@ -19,20 +19,20 @@ ALayoutManager::ALayoutManager()
 		if (HexVert)
 		{
 			// Use Vertical Hex tile
-			auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Plugins/WarBoard/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
+			auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
 			if (finder.Object) BaseMesh = finder.Object;
 		}
 		else
 		{
 			// Use Horizontal Hex tile
-			auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Plugins/WarBoard/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
+			auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
 			if (finder.Object) BaseMesh = finder.Object;
 		}
 	}
 	else
 	{
 		// Use Square tile
-		auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Plugins/WarBoard/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
+		auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
 		if (finder.Object) BaseMesh = finder.Object;
 	}
 

@@ -10,13 +10,13 @@
  * 
  */
 UENUM(BlueprintType, Category = "WarBoard|Enums")
-enum class ETileType : uint8
+enum ETileType
 {
-	Normal		UMETA(DisplayName = "Normal"),
-	Forest		UMETA(DisplayName = "Forest"),
-	Plains		UMETA(DisplayName = "Plains"),
-	Mountain	UMETA(DisplayName = "Mountain"),
-	Sea			UMETA(DisplayName = "Sea"),
-	Type_MAX
+	TT_Normal		UMETA(DisplayName = "Normal"),
+	TT_Forest		UMETA(DisplayName = "Forest"),
+	TT_Plains		UMETA(DisplayName = "Plains"),
+	TT_Mountain		UMETA(DisplayName = "Mountain"),
+	TT_Sea			UMETA(DisplayName = "Sea"),
+	TT_Type_MAX		UMETA(Hidden)
 };
 

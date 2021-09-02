@@ -2,16 +2,13 @@
 
 
 #include "WarBoardLibrary.h"
+#include <math.h>
 
-UWarBoardLibrary::UWarBoardLibrary()
-{
-	TileSize = 200.f;
-	MaxWidth = 6500;
-	Offset = 0;
-	BoardCentered = true;
-	BoardLocation = FVector(0.f);
-	return;
-}
+float UWarBoardLibrary::TileSize = 200.f;
+int32 UWarBoardLibrary::MaxWidth = 6500;
+int32 UWarBoardLibrary::Offset = 0;
+bool UWarBoardLibrary::BoardCentered = true;
+FVector UWarBoardLibrary::BoardLocation = FVector(0.f);
 
 bool UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter, FVector &Location)
 {
@@ -19,20 +16,20 @@ bool UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter, FVector &Locat
 	int32 i = Index, row = 0, col = 0;
 	initialize();
 
-	if (!BoardCentered) i += Offset;
+	if (!UWarBoardLibrary::BoardCentered) i += UWarBoardLibrary::Offset;
 	IndexToTile(i, row, col);
-	Location = (FVector(row, col, 0.f) * TileSize) + BoardLocation;
+	Location = (FVector(row, col, 0.f) * UWarBoardLibrary::TileSize) + UWarBoardLibrary::BoardLocation;
 	// Default is lower left corner, add half tile offset if centered
-	if (TileCenter) Location += (FVector(.5, .5, 0.f) * TileSize);
+	if (TileCenter) Location += (FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize);
 	return IndexValid(Index);
 }
 
 void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
 {
 	// For mod to work correctly, need to offset it in the direction of the sign of the index to retain it's relation to 0
-	int32 adj = (Index / FMath::Abs(Index)) * (MaxWidth / 2);
-	Row = FMath::RoundToInt((float)Index / (float)MaxWidth);
-	Col = FMath::Fmod(Index + adj, MaxWidth) - adj;
+	int32 adj = (Index / FMath::Abs(Index)) * (UWarBoardLibrary::MaxWidth / 2);
+	Row = FMath::RoundToInt((float)Index / (float)UWarBoardLibrary::MaxWidth);
+	Col = FMath::Fmod(Index + adj, UWarBoardLibrary::MaxWidth) - adj;
 }
 
 bool UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter, FVector & Location)
@@ -42,35 +39,35 @@ bool UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter, FVecto
 	initialize();
 
 	TileToIndex(Row, Col, i);
-	if (!BoardCentered) i += Offset;
+	if (!UWarBoardLibrary::BoardCentered) i += UWarBoardLibrary::Offset;
 	IndexToTile(i, row, col);
-	Location = (FVector(row, col, 0.f) * TileSize) + BoardLocation;
+	Location = (FVector(row, col, 0.f) * UWarBoardLibrary::TileSize) + UWarBoardLibrary::BoardLocation;
 	// Default is lower left corner, add half tile offset if centered
-	if (TileCenter) Location += (FVector(.5, .5, 0.f) * TileSize);
+	if (TileCenter) Location += (FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize);
 	return TileValid(Row, Col);
 }
 
 void UWarBoardLibrary::TileToIndex(int32 Row, int32 Col, int32 & Index)
 {
-	Index = Row * MaxWidth + Col;
+	Index = Row * UWarBoardLibrary::MaxWidth + Col;
 }
 
 bool UWarBoardLibrary::WorldToIndex(FVector Location, int32 & Index)
 {
 	// Determine Location relative to board
-	FVector relative = Location - BoardLocation;
+	FVector relative = Location - UWarBoardLibrary::BoardLocation;
 
-	TileToIndex((relative / TileSize).X, (relative / TileSize).Y, Index);
+	TileToIndex((relative / UWarBoardLibrary::TileSize).X, (relative / UWarBoardLibrary::TileSize).Y, Index);
 	return IndexValid(Index);
 }
 
 bool UWarBoardLibrary::WorldToTile(FVector Location, int32 & Row, int32 & Col)
 {
 	// Determine Location relative to board
-	FVector relative = Location - BoardLocation;
+	FVector relative = Location - UWarBoardLibrary::BoardLocation;
 
-	Row = (relative / TileSize).X;
-	Col = (relative / TileSize).Y;
+	Row = (relative / UWarBoardLibrary::TileSize).X;
+	Col = (relative / UWarBoardLibrary::TileSize).Y;
 	return TileValid(Row, Col);
 }
 
@@ -106,15 +103,14 @@ bool UWarBoardLibrary::GetIndexPassable(int32 Index)
 	return !(GetAllObstructedIndexes().Contains(Index));
 }
 
-TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int Shape)
+TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGridShape Shape)
 {
 	// MinRange is region to start making tiles
-	// 1 = square, 2 = diamond, 3 = cross, 4 = diagonal, 5 = cross + diagonal, 6 = rhombus
 	TArray<int32> tiles;
 	int32 a, b, c, d, i, j;
 	switch (Shape)
 	{
-	case 1:
+	case EGridShape::Square:
 		for (int32 row = 0; row <= MaxRange; row++)
 		{
 			for (int32 col = 0; col <= MaxRange; col++)
@@ -146,7 +142,7 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int
 			}
 		}
 		break;
-	case 2:
+	case EGridShape::Diamond:
 		for (int32 row = 0; row <= MaxRange; row++)
 		{
 			// Col + Row is the maximum distance
@@ -180,7 +176,7 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int
 			}
 		}
 		break;
-	case 3:
+	case EGridShape::Cross:
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Cross only increases row or column
@@ -202,7 +198,7 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int
 			}
 		}
 		break;
-	case 4:
+	case EGridShape::Diagonal:
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Diagonal only increases as (row, column)
@@ -224,7 +220,7 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int
 			}
 		}
 		break;
-	case 5:
+	case EGridShape::CrossDiagonal:
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// First make cross then diagonal for each range
@@ -257,7 +253,7 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int
 			}
 		}
 		break;
-	case 6:
+	case EGridShape::Rhombus:
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Rhombus horizontal calculations
@@ -293,7 +289,7 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int
 			}
 		}
 		break;
-	case 7:
+	case EGridShape::RhombusVert:
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Rhombus vertical calculations
@@ -337,7 +333,7 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, int
 	return tiles;
 }
 
-bool UWarBoardLibrary::GetValidatedTileArray(int32 Origin, int32 MinRange, int32 MaxRange, int Shape, TArray<int32>& Validated)
+bool UWarBoardLibrary::GetValidatedTileArray(int32 Origin, int32 MinRange, int32 MaxRange, EGridShape Shape, TArray<int32>& Validated)
 {
 	if (!IndexValid(Origin)) return false;
 

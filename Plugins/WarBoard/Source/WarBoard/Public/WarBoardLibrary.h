@@ -80,7 +80,7 @@ public:
 
 namespace WarBoardLib
 {
-	// Make Static calls through namespace so its footprint can be reduced by using namespace
+	// Make Static calls through namespace so its footprint can be reduced with 'using namespace'
 	inline bool IndexToWorld(const int32 Index, const bool TileCenter, FVector &Location) { return UWarBoardLibrary::IndexToWorld(Index, TileCenter, Location); }
 	inline void IndexToTile(const int32 Index, int32 &Row, int32 &Col) { return UWarBoardLibrary::IndexToTile(Index, Row, Col); }
 	inline bool TileToWorld(const int32 Row, const int32 Col, const bool TileCenter, FVector &Location) { return UWarBoardLibrary::TileToWorld(Row, Col, TileCenter, Location); }

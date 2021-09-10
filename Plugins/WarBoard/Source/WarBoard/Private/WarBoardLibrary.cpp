@@ -87,6 +87,7 @@ TArray<int32> UWarBoardLibrary::GetTileIndexes()
 {
 	// TODO::TODO::TODO
 	// Get Actor of Class Board->GetTiles
+	// If Board doesn't exist return empty array
 	return TArray<int32>();
 }
 

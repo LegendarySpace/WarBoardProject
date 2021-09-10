@@ -14,8 +14,8 @@ UCLASS()
 class WARBOARD_API APathNode : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	APathNode();
 
@@ -23,7 +23,7 @@ public:
 		void Reset();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void SetNodeValues(int32 Goal, int32 Heuristic, int32 Parent);
+		void SetNodeValues(int32 TravelCost, int32 Heuristic, int32 Parent, int32 Steps);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
 		void SetAsPath();
@@ -43,34 +43,79 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
 		void DisplayStat(int32 Stat);
 
+	// Overload Operators
+	FORCEINLINE bool operator== (const APathNode &Node)
+	{
+		return F == Node.F;
+	}
+
+	FORCEINLINE bool operator== (const int32 i)
+	{
+		return Index == i;
+	}
+
+	FORCEINLINE bool operator!= (const APathNode &Node)
+	{
+		return F != Node.F;
+	}
+
+	FORCEINLINE bool operator> (const APathNode &Node)
+	{
+		return F > Node.F;
+	}
+
+	FORCEINLINE bool operator>= (const APathNode &Node)
+	{
+		return F >= Node.F;
+	}
+
+	FORCEINLINE bool operator< (const APathNode &Node)
+	{
+		return F < Node.F;
+	}
+
+	FORCEINLINE bool operator<= (const APathNode &Node)
+	{
+		return F <= Node.F;
+	}
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
 	UPROPERTY(BlueprintReadOnly)
-		USphereComponent* Collision;
+	USphereComponent* Collision;
 
 	UPROPERTY(BlueprintReadOnly)
-		UStaticMeshComponent* Sphere;
+	UStaticMeshComponent* Sphere;
 
 	UPROPERTY(BlueprintReadOnly)
-		UTextRenderComponent* Display;
+	UTextRenderComponent* Display;
 
+	// Estimated cost to destination
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-		int32 F;
+	int32 F;
 
+	// Total cost to reach destination
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-		int32 Cost;
+	int32 Cost;
 
+	// A measure of distance from Origin
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-		int32 Heu;
+	int32 Heu;
 
+	// Index of this node
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-		int32 Index;
+	int32 Index;
 
+	// Index of node to parent
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-		int32 ParentIndex;
+	int32 ParentIndex;
+
+	// Number of steps from Origin
+	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Path")
+	int32 Step;
 
 	UMaterialInstance* M_Checked;
 	UMaterialInstance* M_Unchecked;

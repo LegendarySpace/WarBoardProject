@@ -80,6 +80,7 @@ bool ALayoutManager::ChangeTile(int32 Index, ETileType Type)
 	Managers[Type]->Add(Index);
 	TileMap.Add(Index, Type);
 	return true;
+	// Use MulticastDelegates to broadcast signals TileCreated, TileChanged
 }
 
 bool ALayoutManager::RemoveTile(int32 Index)
@@ -92,6 +93,7 @@ bool ALayoutManager::RemoveTile(int32 Index)
 		/** TODO Handle removal of path node if pathfinder exists **/
 	}
 	return true;
+	// Use MulticastDelegate to broadcast signal TileDestroyed
 }
 
 void ALayoutManager::AssembleTiles()

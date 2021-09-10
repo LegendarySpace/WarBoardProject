@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+  // Fill out your copyright notice in the Description page of Project Settings.
 
 
 #include "PathNode.h"
 #include "WarBoardLibrary.h"
 #include "Components/SphereComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Math/NumericLimits.h"
 
 // Sets default values
 APathNode::APathNode()
@@ -17,12 +18,12 @@ APathNode::APathNode()
 	RootComponent = Collision;
 
 	Sphere = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Sphere"));
-	Sphere->AttachTo(RootComponent);
-	auto s = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/Engine/BasicShapes/Sphere.Sphere'"));
+	Sphere->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	auto s = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/Sphere.Sphere'"));
 	if (s.Object) Sphere->SetStaticMesh(s.Object);
 
 	Display = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Display"));
-	Display->AttachTo(RootComponent);
+	Display->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 	// Import Materials
 	auto m1 = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Unchecked_MI.Node_Unchecked_MI'"));
@@ -45,19 +46,20 @@ void APathNode::Reset()
 	Cost = 0;
 	Heu = 0;
 	WarBoardLib::WorldToIndex(GetActorLocation(), Index);
-	ParentIndex = -2147483647;
+	ParentIndex = TNumericLimits<int32>::Lowest();
 	Sphere->SetMaterial(0, M_Ignored);
 	Sphere->SetVisibility(false);
 	Display->SetVisibility(false);
 }
 
-void APathNode::SetNodeValues(int32 Goal, int32 Heuristic, int32 Parent)
+void APathNode::SetNodeValues(int32 TravelCost, int32 Heuristic, int32 Parent, int32 Steps)
 {
-	Cost = Goal;
+	Cost = TravelCost;
 	Heu = Heuristic;
-	F = Goal + Heuristic;
+	F = Cost + Heuristic;
 	ParentIndex = Parent;
 	Sphere->SetMaterial(0, M_Unchecked);
+	Step = Steps;
 }
 
 void APathNode::SetAsPath()

@@ -29,7 +29,7 @@ public:
 
 	// Make a node for each tile
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void Initialization();
+	void Initialization(TArray<int32> Locations);
 
 	// Add Node
 	bool Add(int32 Index);
@@ -45,16 +45,20 @@ public:
 
 
 	// Resets all nodes and determine paths
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	void Discovery(int32 Range, int32 Origin, TArray<int32> &PathableTiles);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "PathableTiles"))
+	void Discovery(int32 Origin, int32 Range, TArray<int32> &PathableTiles);
 
 	// Looks at node in given direction and attempts to set data and add to open
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
 	void CheckNeighbor(APathNode *Current, int32 Direction, int32 Goal, int32 BreakTie);
 
 	// Returns the shourtest path to destination
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	bool Route(int32 End, TArray<int32> &Array);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta =(AutoCreateRefTerm = "RouteArray"))
+	bool Route(int32 End, TArray<int32> &RouteArray);
+
+	// Returns the shourtest path to destination
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "RouteArray, PathableTiles"))
+	bool DirectRoute(int32 Start, int32 End, TArray<int32> &RouteArray, TArray<int32> &PathableTiles);
 
 
 	/**							**\
@@ -94,47 +98,51 @@ public:
 	
 	
 	// Can paths move diagonally?
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	bool AllowDiagonals;
 
+	// Can paths move vertically
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
+	bool Allow3DMovement;
+
 	// Should route minimize directional change?
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	bool PunishDirectionChanges;
 
 	// Discourage yet still allow diagonal movement
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	bool HeavyDiagonals;
 
 	// Add additional calculations to reduce the likelihood of ties
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	bool TieBreaker;
 
 	// Enter Debug Mode
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	bool DebugMode;
 
 	// Display all potential paths, used for debugging
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	bool DisplayAllPaths;
 
 	// Display stats, used for debugging
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	bool DisplayNodeStats;
 
 	// Current stat being displayed
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Settings")
 	int32 NodeStat;
 
 	// Base Heuristic Value
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	int32 HeuristicEstimate;
 
 	// Maximum nodes to search
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	int32 SearchLimit;
 
 	// Formula to use for calculation
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Pathing|Settings")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Settings")
 	EHeuFormula HeuristicFormula;
 
 
@@ -145,39 +153,39 @@ protected:
 
 
 	// All nodes that still need to be checked
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
 	TArray<APathNode*> OpenNodes;
 
 	// All nodes that have already been checked
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
 	TArray<APathNode*> ClosedNodes;
 
 	// All nodes that are blocked by a structure or have impassable terrain
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
 	TArray<int32> BlockedNodes;
 
 	// Map of all created nodes and their indexes. Cannot edit, editing is handled by tile creation/destruction
-	UPROPERTY(BlueprintReadOnly, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(BlueprintReadOnly, Category = "Pathing|Arrays")
 	TMap<int32, APathNode*> NodeMap;
 
 	// All valid single step movement as relative index. Cardinal directions are assumed valid, may change later
-	UPROPERTY(BlueprintReadOnly, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(BlueprintReadOnly, Category = "Pathing|Arrays")
 	TArray<int32> ValidDirections;
 
 	// Cardinal 2D directional movement as index
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
 	TArray<int32> CardinalDirections2D;
 
 	// Diagonal 2D directional movement as index
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
 	TArray<int32> DiagonalDirections2D;
 
 	// Cardinal 3D directional movement as index
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
 	TArray<int32> CardinalDirections3D;
 
 	// Diagonal 3D directional movement as index
-	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Pathing|Arrays")
+	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
 	TArray<int32> DiagonalDirections3D;
 
 

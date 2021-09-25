@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "ETileType.h"
+#include "TileShape.h"
 #include "LayoutManager.generated.h"
 
 class ATileTypeManager;
 class UStaticMesh;
 class UTextRenderComponent;
+class APathFinder;
 
 UCLASS()
 class WARBOARD_API ALayoutManager : public AActor
@@ -19,6 +21,10 @@ class WARBOARD_API ALayoutManager : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ALayoutManager();
+
+	// Functions used by child, adds support for pathing system
+	virtual void AddPathNode(int32 Index);
+	virtual void RemovePathNode(int32 Index);
 
 	// Index of bottom left corner of board
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|State")
@@ -39,36 +45,32 @@ public:
 
 	// Assemble the Tile grid
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Initialize")
-		void AssembleTiles();
+	void AssembleTiles();
 
 	// Assemble the gridlines
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Initialize")
-		void AssembleGrid();
+	void AssembleGrid();
 
 	// Get Tiles
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Utility")
-		TArray<int32> GetTiles();
+	TArray<int32> GetTiles();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Settings")
+	UPROPERTY(EditAnywhere, Category = "Settings")
 	float TileSize = 200.f;
 
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Settings")
+	UPROPERTY(EditAnywhere, Category = "Settings")
 	bool CenterBoard = true;
 
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Settings")
-	bool HexTiles = false;
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	ETileShape TileShape = ETileShape::Square;
 
-	// When using HexTiles should the orientation be horizontal or vertical
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Settings")
-	bool HexVert = false;
-
-	UPROPERTY(EditAnywhere, Category = "WarBoard|Debug")
-		bool DebugTileIndexes = false;
+	UPROPERTY(EditAnywhere, Category = "Debug")
+	bool DebugTileIndexes = false;
 
 	UStaticMesh* BaseMesh;
 

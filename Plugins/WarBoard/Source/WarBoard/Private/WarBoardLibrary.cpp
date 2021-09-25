@@ -9,8 +9,9 @@ int32 UWarBoardLibrary::MaxWidth = 6500;
 int32 UWarBoardLibrary::Offset = 0;
 bool UWarBoardLibrary::BoardCentered = true;
 FVector UWarBoardLibrary::BoardLocation = FVector(0.f);
+AActor* UWarBoardLibrary::Highlighted = nullptr;
 
-bool UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter, FVector &Location)
+void UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter, FVector &Location)
 {
 	// initialize static variables on each use to ensure accuracy
 	int32 i = Index, row = 0, col = 0;
@@ -21,7 +22,6 @@ bool UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter, FVector &Locat
 	Location = (FVector(row, col, 0.f) * UWarBoardLibrary::TileSize) + UWarBoardLibrary::BoardLocation;
 	// Default is lower left corner, add half tile offset if centered
 	if (TileCenter) Location += (FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize);
-	return IndexValid(Index);
 }
 
 void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
@@ -32,7 +32,7 @@ void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
 	Col = FMath::Fmod(Index + adj, UWarBoardLibrary::MaxWidth) - adj;
 }
 
-bool UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter, FVector & Location)
+void UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter, FVector & Location)
 {
 	// initialize static variables on each use to ensure accuracy
 	int32 i, row, col;
@@ -44,7 +44,6 @@ bool UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter, FVecto
 	Location = (FVector(row, col, 0.f) * UWarBoardLibrary::TileSize) + UWarBoardLibrary::BoardLocation;
 	// Default is lower left corner, add half tile offset if centered
 	if (TileCenter) Location += (FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize);
-	return TileValid(Row, Col);
 }
 
 void UWarBoardLibrary::TileToIndex(int32 Row, int32 Col, int32 & Index)
@@ -52,56 +51,43 @@ void UWarBoardLibrary::TileToIndex(int32 Row, int32 Col, int32 & Index)
 	Index = Row * UWarBoardLibrary::MaxWidth + Col;
 }
 
-bool UWarBoardLibrary::WorldToIndex(FVector Location, int32 & Index)
+void UWarBoardLibrary::WorldToIndex(FVector Location, int32 & Index)
 {
 	// Determine Location relative to board
 	FVector relative = Location - UWarBoardLibrary::BoardLocation;
 
 	TileToIndex((relative / UWarBoardLibrary::TileSize).X, (relative / UWarBoardLibrary::TileSize).Y, Index);
-	return IndexValid(Index);
 }
 
-bool UWarBoardLibrary::WorldToTile(FVector Location, int32 & Row, int32 & Col)
+void UWarBoardLibrary::WorldToTile(FVector Location, int32 & Row, int32 & Col)
 {
 	// Determine Location relative to board
 	FVector relative = Location - UWarBoardLibrary::BoardLocation;
 
 	Row = (relative / UWarBoardLibrary::TileSize).X;
 	Col = (relative / UWarBoardLibrary::TileSize).Y;
-	return TileValid(Row, Col);
 }
 
-bool UWarBoardLibrary::TileValid(int32 Row, int32 Col)
+AActor * UWarBoardLibrary::GetActorAtIndex(UObject* WorldContextObject, const int32 Index)
+{
+	// Perform line trace and retrieve actor if one exists
+	// End 150 units above index location
+	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject);
+	FHitResult result;
+	FVector start, end;
+	IndexToWorld(Index, true, start);
+	end = start + FVector(0.f, 0.f, 150.f);
+
+	if (World->LineTraceSingleByChannel(result, start, end, ECollisionChannel::ECC_PhysicsBody)) return result.GetActor();
+	else return nullptr;
+}
+
+AActor * UWarBoardLibrary::GetActorAtTile(UObject* WorldContextObject, const int32 Row, const int32 Col)
 {
 	int32 i;
 	TileToIndex(Row, Col, i);
-	return GetTileIndexes().Contains(i);
-}
-
-bool UWarBoardLibrary::IndexValid(int32 Index)
-{
-	return GetTileIndexes().Contains(Index);
-}
-
-TArray<int32> UWarBoardLibrary::GetTileIndexes()
-{
-	// TODO::TODO::TODO
-	// Get Actor of Class Board->GetTiles
-	// If Board doesn't exist return empty array
-	return TArray<int32>();
-}
-
-TArray<int32> UWarBoardLibrary::GetAllObstructedIndexes()
-{
-	// TODO::TODO::TODO
-	// Get All actors with obstruction tag
-	// for each add WorldToIndex(Actor.Location) to array
-	return TArray<int32>();
-}
-
-bool UWarBoardLibrary::GetIndexPassable(int32 Index)
-{
-	return !(GetAllObstructedIndexes().Contains(Index));
+	GetActorAtIndex(WorldContextObject, i);
+	return nullptr;
 }
 
 TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGridShape Shape)
@@ -334,14 +320,15 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGr
 	return tiles;
 }
 
-bool UWarBoardLibrary::GetValidatedTileArray(int32 Origin, int32 MinRange, int32 MaxRange, EGridShape Shape, TArray<int32>& Validated)
+// This will be changed to use a template
+bool UWarBoardLibrary::GetValidatedTileArray(int32 Origin, int32 MinRange, int32 MaxRange, EGridShape Shape, TArray<int32>& ValidatedShape, const TArray<int32> Accessible)
 {
-	if (!IndexValid(Origin)) return false;
+	if (!Accessible.Contains(Origin)) return false;
 
 	auto baseArray = GetTileArray(MinRange, MaxRange, Shape);
 	for (auto i : baseArray)
 	{
-		if (GetTileIndexes().Contains(i + Origin)) Validated.Add(i + Origin);
+		if (Accessible.Contains(i + Origin)) ValidatedShape.Add(i + Origin);
 	}
 
 	return true;
@@ -367,6 +354,60 @@ void UWarBoardLibrary::CreateLine(FVector Start, FVector End, float Thickness, T
 	Vertices.Add(End + pointOffset);
 	Vertices.Add(Start - pointOffset);
 	Vertices.Add(End - pointOffset);
+}
+
+bool UWarBoardLibrary::IsSameTeam(const AActor * A, const AActor * B)
+{
+	if (A == nullptr || B == nullptr) return false;
+	FName teamA = FName(TEXT(""));
+
+	// Search A for "Team" tag, return false if not found
+	for (auto atag : A->Tags)
+	{
+		if (atag.ToString().Contains("Team"))
+		{
+			teamA = atag;
+			break;
+		}
+	}
+	if (teamA.GetStringLength() == 0) return false;
+
+	// Return true if B has same "Team" tag
+	// Returns false if B has no tag
+	return B->ActorHasTag(teamA);
+}
+
+bool UWarBoardLibrary::IsEnemyTeam(const AActor * A, const AActor * B)
+{
+	if (A == nullptr || B == nullptr) return false;
+	FName teamA = FName(TEXT(""));
+	FName teamB = FName(TEXT(""));
+
+	// Search A for "Team" tag, return false if not found
+	for (auto tag : A->Tags)
+	{
+		if (tag.ToString().Contains("Team"))
+		{
+			teamA = tag;
+			break;
+		}
+	}
+	if (teamA.GetStringLength() == 0) return false;
+
+	// Search B for "Team" tag, return false if not found
+	for (auto tag : B->Tags)
+	{
+		if (tag.ToString().Contains("Team"))
+		{
+			teamB = tag;
+			break;
+		}
+	}
+	if (teamA.GetStringLength() == 0) return false;
+
+	// A and B both have "Team" tags, return true if different
+	return !teamB.IsEqual(teamA);
+
 }
 
 void UWarBoardLibrary::initialize()

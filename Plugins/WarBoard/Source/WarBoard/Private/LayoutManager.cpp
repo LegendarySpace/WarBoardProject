@@ -5,6 +5,7 @@
 #include "TileTypeManager.h"
 #include "WarBoardLibrary.h"
 #include "Components/TextRenderComponent.h"
+#include "UObject/ConstructorHelpers.h"
 #include <string.h>
 
 // Sets default values
@@ -14,27 +15,25 @@ ALayoutManager::ALayoutManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Determine Base Tile (Used when no mesh is provided)
-	if (HexTiles)
+	UStaticMesh* mesh;
+	switch (TileShape)
 	{
-		if (HexVert)
-		{
-			// Use Vertical Hex tile
-			auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
-			if (finder.Object) BaseMesh = finder.Object;
-		}
-		else
-		{
-			// Use Horizontal Hex tile
-			auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
-			if (finder.Object) BaseMesh = finder.Object;
-		}
-	}
-	else
-	{
+	case ETileShape::Square:
 		// Use Square tile
-		auto finder = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'"));
-		if (finder.Object) BaseMesh = finder.Object;
+		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/SquareTile.SquareTile'")).Object;
+		break;
+	case ETileShape::Hex_Hor:
+		// Use Horizontal Hex tile
+		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'")).Object;
+		break;
+	case ETileShape::Hex_Vert:
+		// Use Vertical Hex tile
+		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Vert.HexTile_Vert'")).Object;
+		break;
+	default:
+		break;
 	}
+	if (mesh) BaseMesh = mesh;
 
 	// Iterate over each TileType and initialize a Manager for it
 	TArray<ETileType> k;
@@ -58,6 +57,16 @@ ALayoutManager::ALayoutManager()
 	AssembleGrid();
 }
 
+void ALayoutManager::AddPathNode(int32 Index)
+{
+    // Should be overriden by children
+}
+
+void ALayoutManager::RemovePathNode(int32 Index)
+{
+    // Should be overriden by children
+}
+
 int32 ALayoutManager::GetOffset()
 {
 	return int32();
@@ -76,7 +85,7 @@ bool ALayoutManager::ChangeTile(int32 Index, ETileType Type)
 
 	// Use TileMap to look up TileType of Index, TileType is == to position within Managers
 	if (TileMap.Contains(Index)) Managers[TileMap[Index]]->Remove(Index);
-	else { /** TODO Handle addition of path node if pathfinder exists **/ }
+	else AddPathNode(Index);
 	Managers[Type]->Add(Index);
 	TileMap.Add(Index, Type);
 	return true;
@@ -90,7 +99,7 @@ bool ALayoutManager::RemoveTile(int32 Index)
 	{
 		Managers[TileMap[Index]]->Remove(Index);
 		TileMap.Remove(Index);
-		/** TODO Handle removal of path node if pathfinder exists **/
+		RemovePathNode(Index);
 	}
 	return true;
 	// Use MulticastDelegate to broadcast signal TileDestroyed

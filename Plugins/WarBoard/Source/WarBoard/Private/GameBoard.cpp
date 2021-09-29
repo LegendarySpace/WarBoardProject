@@ -12,16 +12,6 @@ AGameBoard::AGameBoard()
 	PrimaryActorTick.bCanEverTick = false;
 }
 
-void AGameBoard::AddPathNode(int32 Index)
-{
-	RouteManager->Add(Index);
-}
-
-void AGameBoard::RemovePathNode(int32 Index)
-{
-	RouteManager->Remove(Index);
-}
-
 void AGameBoard::SetPathFinder(TSubclassOf<APathFinder> Router)
 {
 	// Clear any current route manager first
@@ -32,13 +22,13 @@ void AGameBoard::SetPathFinder(TSubclassOf<APathFinder> Router)
 
 void AGameBoard::SetMoveManager(TSubclassOf<AMovementManager> MoveSys)
 {
-	delete RouteManager;
+	delete MoveManager;
 	MoveManager = NewObject<AMovementManager>(this, MoveSys);
 }
 
 void AGameBoard::SetAttackManager(TSubclassOf<AAttackManager> AttackSys)
 {
-	delete RouteManager;
+	delete AttackManager;
 	AttackManager = NewObject<AAttackManager>(this, AttackSys);
 }
 

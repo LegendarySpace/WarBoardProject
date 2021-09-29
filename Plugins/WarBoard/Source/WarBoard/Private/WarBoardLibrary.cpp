@@ -5,23 +5,99 @@
 #include <math.h>
 
 float UWarBoardLibrary::TileSize = 200.f;
+ETileShape UWarBoardLibrary::TileShape = ETileShape::Square;
 int32 UWarBoardLibrary::MaxWidth = 6500;
-int32 UWarBoardLibrary::Offset = 0;
-bool UWarBoardLibrary::BoardCentered = true;
-FVector UWarBoardLibrary::BoardLocation = FVector(0.f);
+FVector UWarBoardLibrary::GridOffset = FVector(0.0);
 AActor* UWarBoardLibrary::Highlighted = nullptr;
 
-void UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter, FVector &Location)
+void UWarBoardLibrary::InitializeTiles(float Size, ETileShape Shape, const FVector Offset)
 {
-	// initialize static variables on each use to ensure accuracy
-	int32 i = Index, row = 0, col = 0;
-	initialize();
+	UWarBoardLibrary::TileSize = Size;
+	UWarBoardLibrary::TileShape = Shape;
+	UWarBoardLibrary::GridOffset = Offset;
+}
 
-	if (!UWarBoardLibrary::BoardCentered) i += UWarBoardLibrary::Offset;
-	IndexToTile(i, row, col);
-	Location = (FVector(row, col, 0.f) * UWarBoardLibrary::TileSize) + UWarBoardLibrary::BoardLocation;
-	// Default is lower left corner, add half tile offset if centered
-	if (TileCenter) Location += (FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize);
+void UWarBoardLibrary::CalculatePosition(int32 & Row, int32 & Col, FVector & WorldLocation, bool ToWorld)
+{
+	if (ToWorld)
+	{
+		// Convert to world position
+		WorldLocation = FVector(0.0);
+		switch (TileShape)
+		{
+		case ETileShape::Square:
+			WorldLocation.X = Row * TileSize;
+			WorldLocation.Y = Col * TileSize;
+			break;
+		case ETileShape::Hex_Hor:
+			// Col are tilesize apart, row is SQRT(3) * size/2
+			WorldLocation.X = Row * sqrt(3) * (TileSize / 2);
+			WorldLocation.Y = Col * TileSize;
+			break;
+		case ETileShape::Hex_Vert:
+			// Rows are tilesize apart, cols are sqrt(3) * size/2
+			WorldLocation.X = Row * TileSize;
+			WorldLocation.Y = Col * sqrt(3) * (TileSize / 2);
+			break;
+		case ETileShape::Shape_MAX:
+			break;
+		default:
+			return;
+		}
+		WorldLocation = WorldLocation + UWarBoardLibrary::GridOffset;
+	}
+	else
+	{
+		// Convert from world position
+		auto loc = WorldLocation - UWarBoardLibrary::GridOffset;
+		switch (TileShape)
+		{
+		case ETileShape::Square:
+			Row = loc.X / TileSize;
+			Col = loc.Y / TileSize;
+			break;
+		case ETileShape::Hex_Hor:
+			// Col are tilesize apart, row is SQRT(3) * size/2
+			Row = loc.X / (sqrt(3) * TileSize / 2);
+			Col = loc.Y / TileSize;
+			break;
+		case ETileShape::Hex_Vert:
+			// Rows are tilesize apart, cols are sqrt(3) * size/2
+			Row = loc.X / TileSize;
+			Col = loc.Y / (sqrt(3) * TileSize / 2);
+			break;
+		case ETileShape::Shape_MAX:
+		default:
+			return;
+		}
+	}
+}
+
+FVector UWarBoardLibrary::IndexToCube(const int32 Row, const int32 Col)
+{
+	// Note the vector positions does not use world axis
+	int32 x = Col;
+	int32 z = Row - (x - (x & 1)) / 2;
+	int32 y = -x - z;
+	return FVector(x, y, z);
+}
+
+void UWarBoardLibrary::CubeToIndex(int32 & Row, int32 & Col, const FVector Cube)
+{
+	// Note the vector positions does not use world axis
+	Row = Cube.X;
+	Col = Cube.Z + (Cube.X - ((int32)Cube.X & 1)) / 2;
+}
+
+FVector UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter)
+{
+	int32 row = 0, col = 0;
+	FVector Location;
+
+	IndexToTile(Index, row, col);
+	UWarBoardLibrary::CalculatePosition(row, col, Location);
+	if (!TileCenter) Location -= FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize;
+	return Location;
 }
 
 void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
@@ -32,18 +108,12 @@ void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
 	Col = FMath::Fmod(Index + adj, UWarBoardLibrary::MaxWidth) - adj;
 }
 
-void UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter, FVector & Location)
+FVector UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter)
 {
-	// initialize static variables on each use to ensure accuracy
-	int32 i, row, col;
-	initialize();
-
-	TileToIndex(Row, Col, i);
-	if (!UWarBoardLibrary::BoardCentered) i += UWarBoardLibrary::Offset;
-	IndexToTile(i, row, col);
-	Location = (FVector(row, col, 0.f) * UWarBoardLibrary::TileSize) + UWarBoardLibrary::BoardLocation;
-	// Default is lower left corner, add half tile offset if centered
-	if (TileCenter) Location += (FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize);
+	FVector Location;
+	UWarBoardLibrary::CalculatePosition(Row, Col, Location);
+	if (!TileCenter) Location -= FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize;
+	return Location;
 }
 
 void UWarBoardLibrary::TileToIndex(int32 Row, int32 Col, int32 & Index)
@@ -53,29 +123,26 @@ void UWarBoardLibrary::TileToIndex(int32 Row, int32 Col, int32 & Index)
 
 void UWarBoardLibrary::WorldToIndex(FVector Location, int32 & Index)
 {
-	// Determine Location relative to board
-	FVector relative = Location - UWarBoardLibrary::BoardLocation;
+	int32 row, col;
 
-	TileToIndex((relative / UWarBoardLibrary::TileSize).X, (relative / UWarBoardLibrary::TileSize).Y, Index);
+	UWarBoardLibrary::CalculatePosition(row, col, Location, false);
+	TileToIndex(row, col, Index);
 }
 
 void UWarBoardLibrary::WorldToTile(FVector Location, int32 & Row, int32 & Col)
 {
-	// Determine Location relative to board
-	FVector relative = Location - UWarBoardLibrary::BoardLocation;
-
-	Row = (relative / UWarBoardLibrary::TileSize).X;
-	Col = (relative / UWarBoardLibrary::TileSize).Y;
+	UWarBoardLibrary::CalculatePosition(Row, Col, Location, false);
 }
 
 AActor * UWarBoardLibrary::GetActorAtIndex(UObject* WorldContextObject, const int32 Index)
 {
+	// TODO May switch to sphere trace and return all 
 	// Perform line trace and retrieve actor if one exists
 	// End 150 units above index location
 	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject);
 	FHitResult result;
 	FVector start, end;
-	IndexToWorld(Index, true, start);
+	IndexToWorld(Index, true);
 	end = start + FVector(0.f, 0.f, 150.f);
 
 	if (World->LineTraceSingleByChannel(result, start, end, ECollisionChannel::ECC_PhysicsBody)) return result.GetActor();
@@ -92,6 +159,7 @@ AActor * UWarBoardLibrary::GetActorAtTile(UObject* WorldContextObject, const int
 
 TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGridShape Shape)
 {
+	// This is deprecated, instead use template
 	// MinRange is region to start making tiles
 	TArray<int32> tiles;
 	int32 a, b, c, d, i, j;
@@ -356,6 +424,56 @@ void UWarBoardLibrary::CreateLine(FVector Start, FVector End, float Thickness, T
 	Vertices.Add(End - pointOffset);
 }
 
+TArray<FVector> UWarBoardLibrary::GetPolygonVertices(const float Radius, const int32 Sides, const FVector Origin, const float Rotation)
+{
+	auto vectors = TArray<FVector>();
+	if (Sides < 3) return vectors;
+	float angle = 360.f / Sides;
+	for (int32 i = 0; i < Sides; i++)
+	{
+		vectors.Add(FRotator(0.0, angle * i + Rotation, 0.0).Vector() * Radius + Origin);
+	}
+
+	return vectors;
+}
+
+void UWarBoardLibrary::CreatePolygon(const ETileShape Shape, const FVector Origin, const float Size, const float Thickness, TArray<FVector>& Vertices, TArray<int32>& Triangles)
+{
+	// Thickness should be size of line inside tile
+	float radius;
+	TArray<FVector> poly;
+	int32 end;
+	switch (Shape)
+	{
+	case ETileShape::Square:
+		radius = (Size / 2) - (Thickness / 2);
+		poly = UWarBoardLibrary::GetPolygonVertices(radius, 4, Origin);
+		break;
+	case ETileShape::Hex_Hor:
+		radius = (Size / 2) - (Thickness / 2);
+		poly = UWarBoardLibrary::GetPolygonVertices(radius, 6, Origin);
+		break;
+	case ETileShape::Hex_Vert:
+		radius = (Size / 2) - (Thickness / 2);
+		poly = UWarBoardLibrary::GetPolygonVertices(radius, 6, Origin, 90.0);
+		break;
+	default:
+		return;
+	}
+
+	for (int32 i = 0; i < poly.Num(); i++)
+	{
+		end = fmod(i + 1, poly.Num());
+
+		// Slight modification to extend lines to merge nicely
+		auto dir = poly[end] - poly[i];
+		dir.Normalize(.001);
+		dir = dir * (Thickness / 2);
+
+		CreateLine(poly[i] - dir, poly[end] + dir, Thickness, Vertices, Triangles);
+	}
+}
+
 bool UWarBoardLibrary::IsSameTeam(const AActor * A, const AActor * B)
 {
 	if (A == nullptr || B == nullptr) return false;
@@ -408,10 +526,4 @@ bool UWarBoardLibrary::IsEnemyTeam(const AActor * A, const AActor * B)
 	// A and B both have "Team" tags, return true if different
 	return !teamB.IsEqual(teamA);
 
-}
-
-void UWarBoardLibrary::initialize()
-{
-	// TODO::TODO::TODO
-	// Get board from Get all actors of class and use to initialize variables
 }

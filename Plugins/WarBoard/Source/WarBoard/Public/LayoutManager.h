@@ -8,10 +8,15 @@
 #include "TileShape.h"
 #include "LayoutManager.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileAddDelegate, int32, Index);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileRemoveDelegate, int32, Index);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTileChangeDelegate, int32, Index, ETileType, Type);
+
 class ATileTypeManager;
 class UStaticMesh;
 class UTextRenderComponent;
 class APathFinder;
+class UProceduralMeshComponent;
 
 UCLASS()
 class WARBOARD_API ALayoutManager : public AActor
@@ -21,10 +26,6 @@ class WARBOARD_API ALayoutManager : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ALayoutManager();
-
-	// Functions used by child, adds support for pathing system
-	virtual void AddPathNode(int32 Index);
-	virtual void RemovePathNode(int32 Index);
 
 	// Index of bottom left corner of board
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|State")
@@ -69,20 +70,38 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	ETileShape TileShape = ETileShape::Square;
 
+	// Thickness of line inside tile
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float GridThickness = 4.f;
+
+	// Grid distance from tile edge
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float GridPadding = 0.0;
+
 	UPROPERTY(EditAnywhere, Category = "Debug")
 	bool DebugTileIndexes = false;
 
-	UStaticMesh* BaseMesh;
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+	FTileAddDelegate OnTileAdd;
+
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+	FTileRemoveDelegate OnTileRemove;
+
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+	FTileChangeDelegate OnTileChange;
 
 
 	/**
 	*		Maps used for tracking board info
 	*/
 	TMap<int32, ETileType> TileMap;
-	TMap<int32, ETileType> BoardDefault;
+
+	UPROPERTY(EditAnywhere, Category = "Layout")
+	TMap<int32, TEnumAsByte<ETileType>> BoardDefault;
 	TMap<int32, UTextRenderComponent*> TextMap;
 	TMap<ETileType, UStaticMesh*> TileMeshes;
-
+	
 	TArray<ATileTypeManager*> Managers;
+	UProceduralMeshComponent* ProcMesh;
 
 };

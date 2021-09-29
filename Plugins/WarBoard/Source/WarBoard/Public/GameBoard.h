@@ -21,10 +21,6 @@ class WARBOARD_API AGameBoard : public ALayoutManager
 public:
 	AGameBoard();
 
-	// Add support for PathFinder
-	virtual void AddPathNode(int32 Index) override;
-	virtual void RemovePathNode(int32 Index) override;
-
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
 	void SetPathFinder(TSubclassOf<APathFinder> Router);
 

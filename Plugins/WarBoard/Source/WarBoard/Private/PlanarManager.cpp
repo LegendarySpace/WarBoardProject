@@ -32,6 +32,7 @@ void APlanarManager::SetPlaneType(ETileShape Shape)
 		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexPlane_Vert.HexPlane_Vert'")).Object;
 		break;
 	default:
+		mesh = nullptr;
 		break;
 	}
 	HISM->SetStaticMesh(mesh);
@@ -52,7 +53,7 @@ void APlanarManager::Populate_Implementation(TArray<int32> Choices)
 	// Override in children
 	for (auto i : Choices)
 	{
-		WarBoardLib::IndexToWorld(i, true, loc);
+		loc = WarBoardLib::IndexToWorld(i);
 		HISM->AddInstance(FTransform(rot, loc, sca));
 	}
 }

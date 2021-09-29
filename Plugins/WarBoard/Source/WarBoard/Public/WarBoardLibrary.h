@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "EGridShape.h"
+#include "TileShape.h"
 #include "WarBoardLibrary.generated.h"
 
 /**
@@ -17,18 +18,24 @@ class WARBOARD_API UWarBoardLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 	
 public:
+	UFUNCTION(BlueprintCallable, meta = (CompactNodeTitle = "Init", Category = "WarBoard|Setup"))
+	static void InitializeTiles(float Size, ETileShape Shape, const FVector Offset = FVector(0.0));
+
+	static void CalculatePosition(int32 &Row, int32 &Col, FVector &WorldLoc, bool ToWorld = true);
+	static FVector IndexToCube(const int32 Row, const int32 Col);
+	static void CubeToIndex(int32 &Row, int32 &Col, const FVector Cube);
 
 	/**
 	*		Conversion functions
 	*/
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "ITW", Category = "WarBoard|Conversion"))
-	static void IndexToWorld(const int32 Index, const bool TileCenter, FVector &Location);
+	static FVector IndexToWorld(const int32 Index, const bool TileCenter = true);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "ITT", Category = "WarBoard|Conversion"))
 	static void IndexToTile(const int32 Index, int32 &Row, int32 &Col);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "TTW", Category = "WarBoard|Conversion"))
-	static void TileToWorld(const int32 Row, const int32 Col, const bool TileCenter, FVector &Location);
+	static FVector TileToWorld(const int32 Row, const int32 Col, const bool TileCenter = true);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "TTI", Category = "WarBoard|Conversion"))
 	static void TileToIndex(const int32 Row, const int32 Col, int32 &Index);
@@ -66,6 +73,11 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Category = "WarBoard|Utility"))
 	static void CreateLine(const FVector Start, const FVector End, float Thickness, TArray<FVector> &Vertices, TArray<int32> &Triangles);
 
+	static TArray<FVector> GetPolygonVertices(const float Radius, const int32 Sides, const FVector Origin = FVector(0.0), const float Rotation = 0.0);
+
+	// Create polygon of shape with max largest dimension of size
+	static void CreatePolygon(const ETileShape Shape, const FVector Origin, const float Size, const float Thickness, TArray<FVector> &Vertices, TArray<int32> &Triangles);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "Ally", Category = "WarBoard|Utility"))
 	static bool IsSameTeam(const AActor* A, const AActor* B);
 
@@ -75,20 +87,18 @@ public:
 public:
 	static float TileSize;
 	static int32 MaxWidth;
-	static int32 Offset;
-	static bool BoardCentered;
-	static FVector BoardLocation;
+	static ETileShape TileShape;
+	static FVector GridOffset;
 	static AActor* Highlighted;
-
-	static void initialize();
 };
 
 namespace WarBoardLib
 {
 	// Make Static calls through namespace so its footprint can be reduced with 'using namespace'
-	inline void IndexToWorld(const int32 Index, const bool TileCenter, FVector &Location) { return UWarBoardLibrary::IndexToWorld(Index, TileCenter, Location); }
+	inline void InitializeTiles(const float Size, const ETileShape Shape, const FVector Offset = FVector(0.0)) { return UWarBoardLibrary::InitializeTiles(Size, Shape, Offset); }
+	inline FVector IndexToWorld(const int32 Index, const bool TileCenter = true) { return UWarBoardLibrary::IndexToWorld(Index, TileCenter); }
 	inline void IndexToTile(const int32 Index, int32 &Row, int32 &Col) { return UWarBoardLibrary::IndexToTile(Index, Row, Col); }
-	inline void TileToWorld(const int32 Row, const int32 Col, const bool TileCenter, FVector &Location) { return UWarBoardLibrary::TileToWorld(Row, Col, TileCenter, Location); }
+	inline FVector TileToWorld(const int32 Row, const int32 Col, const bool TileCenter = true) { return UWarBoardLibrary::TileToWorld(Row, Col, TileCenter); }
 	inline void TileToIndex(const int32 Row, const int32 Col, int32 &Index) { return UWarBoardLibrary::TileToIndex(Row, Col, Index); }
 	inline void WorldToIndex(const FVector Location, int32 &Index) { return UWarBoardLibrary::WorldToIndex(Location, Index); }
 	inline void WorldToTile(const FVector Location, int32 &Row, int32 &Col) { return UWarBoardLibrary::WorldToTile(Location, Row, Col); }
@@ -101,9 +111,8 @@ namespace WarBoardLib
 	inline void CreateLine(FVector Start, FVector End, float Thickness, TArray<FVector> &Vertices, TArray<int32> &Triangles) { return CreateLine(Start, End, Thickness, Vertices, Triangles); }
 	inline float GetTileSize() { return UWarBoardLibrary::TileSize; }
 	inline int32 GetMaxWidth() { return UWarBoardLibrary::MaxWidth; }
-	inline int32 GetOffset() { return UWarBoardLibrary::Offset; }
-	inline bool GetBoardCentered() { return UWarBoardLibrary::BoardCentered; }
-	inline FVector GetBoardLocation() { return UWarBoardLibrary::BoardLocation; }
+	inline ETileShape GetTileShape() { return UWarBoardLibrary::TileShape; }
+	inline FVector GetOffset() { return UWarBoardLibrary::GridOffset; }
 	inline bool IsSameTeam(const AActor* A, const AActor* B) { return UWarBoardLibrary::IsSameTeam(A, B); }
 	inline bool IsEnemyTeam(const AActor* A, const AActor* B) { return UWarBoardLibrary::IsEnemyTeam(A, B); }
 }

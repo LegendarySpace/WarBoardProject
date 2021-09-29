@@ -74,9 +74,7 @@ void APathFinder::Initialization(TArray<int32> Locations)
 
 bool APathFinder::Add(int32 Index)
 {
-	FVector v;
-	IndexToWorld(Index, true, v);
-	auto node = GetWorld()->SpawnActor<APathNode>(v, FRotator());
+	auto node = GetWorld()->SpawnActor<APathNode>(IndexToWorld(Index), FRotator());
 	if (!node) return false;
 	NodeMap.Add(Index, node);
 	return true;
@@ -150,7 +148,7 @@ void APathFinder::Discovery_Implementation(int32 Origin, int32 Range, TArray<int
 				else
 				{
 					FVector v;
-					IndexToWorld(direct, false, v);
+					v = IndexToWorld(direct, false);
 					v.Normalize(.0001);
 					WorldToIndex(v * (Range + 1) * GetTileSize(), end);
 				}

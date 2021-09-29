@@ -42,7 +42,7 @@ void ATileTypeManager::Add(int32 Index)
 		IDs.AddUnique(Index);
 
 		FVector loc;
-		IndexToWorld(Index, true, loc);
+		loc = IndexToWorld(Index);
 		// Tiles are assumed to have a thickness 1/10th its TileSize
 		loc += FVector(0.f, 0.f, -0.05 * GetTileSize());
 		// Tile Mesh's longest dimension is assumed to be 100

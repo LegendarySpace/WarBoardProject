@@ -27,7 +27,7 @@ void AMovementManager::Populate_Implementation(TArray<int32> Choices)
 		if (IsEnemyTeam(GetHighlightedActor(), a) && !bCanMoveToEnemy) continue;
 		if (IsSameTeam(GetHighlightedActor(), a) && !bCanMoveToAlly) continue;
 
-		IndexToWorld(i, true, loc);
+		loc = IndexToWorld(i);
 		HISM->AddInstance(FTransform(rot, loc, sca));
 	}
 }

@@ -27,7 +27,7 @@ void AAttackManager::Populate_Implementation(TArray<int32> Choices)
 		if (a == nullptr && !bCanTargetEmptyTile) continue;
 		if (IsSameTeam(GetHighlightedActor(), a) && !bCanTargetAllies) continue;
 
-		IndexToWorld(i, true, loc);
+		loc = IndexToWorld(i);
 		HISM->AddInstance(FTransform(rot, loc, sca));
 	}
 }

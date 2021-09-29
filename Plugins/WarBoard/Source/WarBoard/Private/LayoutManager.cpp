@@ -6,6 +6,7 @@
 #include "WarBoardLibrary.h"
 #include "Components/TextRenderComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "ProceduralMeshComponent.h"
 #include <string.h>
 
 // Sets default values
@@ -13,6 +14,8 @@ ALayoutManager::ALayoutManager()
 {
  	// Should never tick
 	PrimaryActorTick.bCanEverTick = false;
+	
+	ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Grid Mesh"));
 
 	// Determine Base Tile (Used when no mesh is provided)
 	UStaticMesh* mesh;
@@ -31,9 +34,9 @@ ALayoutManager::ALayoutManager()
 		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Vert.HexTile_Vert'")).Object;
 		break;
 	default:
+		mesh = nullptr;
 		break;
 	}
-	if (mesh) BaseMesh = mesh;
 
 	// Iterate over each TileType and initialize a Manager for it
 	TArray<ETileType> k;
@@ -46,10 +49,9 @@ ALayoutManager::ALayoutManager()
 		Managers.Add(m);
 
 		// Should BaseMesh be used?
-		auto mesh = BaseMesh;
 		if (k.Contains(type)) mesh = *(TileMeshes.Find(type));
 		
-		m->SetupInstance(type, BaseMesh, TileSize);
+		m->SetupInstance(type, mesh, TileSize);
 	}
 
 	// Initialize Board
@@ -57,23 +59,15 @@ ALayoutManager::ALayoutManager()
 	AssembleGrid();
 }
 
-void ALayoutManager::AddPathNode(int32 Index)
-{
-    // Should be overriden by children
-}
-
-void ALayoutManager::RemovePathNode(int32 Index)
-{
-    // Should be overriden by children
-}
-
 int32 ALayoutManager::GetOffset()
 {
+	// TODO
 	return int32();
 }
 
 FVector ALayoutManager::GetBoardSize()
 {
+	// TODO
 	return FVector();
 }
 
@@ -85,11 +79,11 @@ bool ALayoutManager::ChangeTile(int32 Index, ETileType Type)
 
 	// Use TileMap to look up TileType of Index, TileType is == to position within Managers
 	if (TileMap.Contains(Index)) Managers[TileMap[Index]]->Remove(Index);
-	else AddPathNode(Index);
+	else OnTileAdd.Broadcast(Index);
 	Managers[Type]->Add(Index);
 	TileMap.Add(Index, Type);
+	OnTileChange.Broadcast(Index, Type);
 	return true;
-	// Use MulticastDelegates to broadcast signals TileCreated, TileChanged
 }
 
 bool ALayoutManager::RemoveTile(int32 Index)
@@ -99,10 +93,9 @@ bool ALayoutManager::RemoveTile(int32 Index)
 	{
 		Managers[TileMap[Index]]->Remove(Index);
 		TileMap.Remove(Index);
-		RemovePathNode(Index);
+		OnTileRemove.Broadcast(Index);
 	}
 	return true;
-	// Use MulticastDelegate to broadcast signal TileDestroyed
 }
 
 void ALayoutManager::AssembleTiles()
@@ -122,9 +115,7 @@ void ALayoutManager::AssembleTiles()
 			t->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 
 			// Set text location and add to text map
-			FVector loc;
-			WarBoardLib::IndexToWorld(i, true, loc);
-			t->SetWorldLocation(loc);
+			t->SetWorldLocation(WarBoardLib::IndexToWorld(i, true));
 			TextMap.Add(i, t);
 		}
 	}
@@ -132,9 +123,17 @@ void ALayoutManager::AssembleTiles()
 
 void ALayoutManager::AssembleGrid()
 {
-	// TODO::TODO::TODO
-	// Iterate over the TileMap adding lines around the edge of each tile
-	// Math for lines will be different for hex
+	// For each tile, create polygon at tile position
+	TArray<FVector> Vertices = TArray<FVector>();
+	TArray<int32> k, Triangles = TArray<int32>();
+	TileMap.GetKeys(k);
+	for (auto i : k)
+	{
+		Vertices.Empty();
+		Triangles.Empty();
+		UWarBoardLibrary::CreatePolygon(TileShape, UWarBoardLibrary::IndexToWorld(i), TileSize - (GridPadding * 2), GridThickness, Vertices, Triangles);
+		ProcMesh->CreateMeshSection(i, Vertices, Triangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
+	}
 }
 
 TArray<int32> ALayoutManager::GetTiles()
@@ -149,5 +148,7 @@ void ALayoutManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// Ensure any changes are passed along to library
+	WarBoardLib::InitializeTiles(TileSize, TileShape);
 }
 

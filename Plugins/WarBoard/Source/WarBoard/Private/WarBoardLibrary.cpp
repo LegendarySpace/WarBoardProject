@@ -17,8 +17,9 @@ void UWarBoardLibrary::InitializeTiles(float Size, ETileShape Shape, const FVect
 	UWarBoardLibrary::GridOffset = Offset;
 }
 
-void UWarBoardLibrary::CalculatePosition(int32 & Row, int32 & Col, FVector & WorldLocation, bool ToWorld)
+void UWarBoardLibrary::CalculatePosition(int32 & Row, int32 & Col, FVector & WorldLocation, bool ToWorld) // add bool for offset addition
 {
+	if (TileSize < 1) return;
 	if (ToWorld)
 	{
 		// Convert to world position
@@ -103,7 +104,9 @@ FVector UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter)
 void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
 {
 	// For mod to work correctly, need to offset it in the direction of the sign of the index to retain it's relation to 0
-	int32 adj = (Index / FMath::Abs(Index)) * (UWarBoardLibrary::MaxWidth / 2);
+	int32 adj;
+	if (Index != 0) adj = (Index / FMath::Abs(Index)) * (UWarBoardLibrary::MaxWidth / 2);
+	else adj = UWarBoardLibrary::MaxWidth / 2;
 	Row = FMath::RoundToInt((float)Index / (float)UWarBoardLibrary::MaxWidth);
 	Col = FMath::Fmod(Index + adj, UWarBoardLibrary::MaxWidth) - adj;
 }

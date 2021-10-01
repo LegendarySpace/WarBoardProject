@@ -17,6 +17,18 @@ ALayoutManager::ALayoutManager()
 	
 	ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Grid Mesh"));
 
+	BoardDefault = TMap<int32, TEnumAsByte<ETileType>>();
+	BoardDefault.Add(0);
+	BoardDefault.Add(1);
+	BoardDefault.Add(-1);
+	BoardDefault.Add(UWarBoardLibrary::MaxWidth);
+	BoardDefault.Add(UWarBoardLibrary::MaxWidth + 1);
+	BoardDefault.Add(UWarBoardLibrary::MaxWidth - 1);
+	BoardDefault.Add(-UWarBoardLibrary::MaxWidth);
+	BoardDefault.Add(-UWarBoardLibrary::MaxWidth + 1);
+	BoardDefault.Add(-UWarBoardLibrary::MaxWidth - 1);
+
+
 	// Determine Base Tile (Used when no mesh is provided)
 	UStaticMesh* mesh;
 	switch (TileShape)
@@ -41,6 +53,7 @@ ALayoutManager::ALayoutManager()
 	// Iterate over each TileType and initialize a Manager for it
 	TArray<ETileType> k;
 	TileMeshes.GetKeys(k);
+
 	for (auto type = ETileType::TT_Normal; type != ETileType::TT_Type_MAX; type = ETileType(type + 1))
 	{
 		// For each Tile Type create a default subobject to handle those tiles
@@ -132,7 +145,8 @@ void ALayoutManager::AssembleGrid()
 		Vertices.Empty();
 		Triangles.Empty();
 		UWarBoardLibrary::CreatePolygon(TileShape, UWarBoardLibrary::IndexToWorld(i), TileSize - (GridPadding * 2), GridThickness, Vertices, Triangles);
-		ProcMesh->CreateMeshSection(i, Vertices, Triangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
+		// TODO::TODO Need to rework, cannot have negative sections
+		//ProcMesh->CreateMeshSection(i, Vertices, Triangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 	}
 }
 

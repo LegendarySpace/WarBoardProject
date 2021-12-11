@@ -6,7 +6,6 @@
 #include "WarBoardLibrary.h"
 #include "Components/TextRenderComponent.h"
 #include "UObject/ConstructorHelpers.h"
-#include "ProceduralMeshComponent.h"
 #include <string.h>
 
 // Sets default values
@@ -14,8 +13,6 @@ ALayoutManager::ALayoutManager()
 {
  	// Should never tick
 	PrimaryActorTick.bCanEverTick = false;
-	
-	ProcMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Grid Mesh"));
 
 	BoardDefault = TMap<int32, TEnumAsByte<ETileType>>();
 	BoardDefault.Add(0);
@@ -69,7 +66,7 @@ ALayoutManager::ALayoutManager()
 
 	// Initialize Board
 	AssembleTiles();
-	AssembleGrid();
+	//AssembleGrid();
 }
 
 int32 ALayoutManager::GetOffset()
@@ -91,9 +88,9 @@ bool ALayoutManager::ChangeTile(int32 Index, ETileType Type)
 	// Add Index to TileMap
 
 	// Use TileMap to look up TileType of Index, TileType is == to position within Managers
-	if (TileMap.Contains(Index)) Managers[TileMap[Index]]->Remove(Index);
+	if (TileMap.Contains(Index)) Managers[TileMap[Index]]->RemoveTile(Index);
 	else OnTileAdd.Broadcast(Index);
-	Managers[Type]->Add(Index);
+	Managers[Type]->AddTile(Index);
 	TileMap.Add(Index, Type);
 	OnTileChange.Broadcast(Index, Type);
 	return true;
@@ -104,7 +101,7 @@ bool ALayoutManager::RemoveTile(int32 Index)
 	// Remove Index from existing Manager then remove Index from TileMap
 	if (TileMap.Contains(Index))
 	{
-		Managers[TileMap[Index]]->Remove(Index);
+		Managers[TileMap[Index]]->RemoveTile(Index);
 		TileMap.Remove(Index);
 		OnTileRemove.Broadcast(Index);
 	}
@@ -122,8 +119,8 @@ void ALayoutManager::AssembleTiles()
 		if (DebugTileIndexes)
 		{
 			auto t = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Tiletext" + i));
-			t->AttachTo(RootComponent);
-			t->SetText("" + i);
+			t->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+			t->SetText(FText::FromString("" + i));
 			t->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 			t->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 
@@ -131,22 +128,6 @@ void ALayoutManager::AssembleTiles()
 			t->SetWorldLocation(WarBoardLib::IndexToWorld(i, true));
 			TextMap.Add(i, t);
 		}
-	}
-}
-
-void ALayoutManager::AssembleGrid()
-{
-	// For each tile, create polygon at tile position
-	TArray<FVector> Vertices = TArray<FVector>();
-	TArray<int32> k, Triangles = TArray<int32>();
-	TileMap.GetKeys(k);
-	for (auto i : k)
-	{
-		Vertices.Empty();
-		Triangles.Empty();
-		UWarBoardLibrary::CreatePolygon(TileShape, UWarBoardLibrary::IndexToWorld(i), TileSize - (GridPadding * 2), GridThickness, Vertices, Triangles);
-		// TODO::TODO Need to rework, cannot have negative sections
-		//ProcMesh->CreateMeshSection(i, Vertices, Triangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FColor>(), TArray<FProcMeshTangent>(), false);
 	}
 }
 

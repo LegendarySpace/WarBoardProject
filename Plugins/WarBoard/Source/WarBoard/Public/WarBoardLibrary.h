@@ -70,20 +70,13 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (CompactNodeTitle = "ValidatedTiles", Category = "WarBoard|Utility"))
 	static bool GetValidatedTileArray(const int32 Origin, const int32 MinRange, const int32 MaxRange, const EGridShape Shape, TArray<int32> &ValidatedShape, const TArray<int32> Accessible);
 
-	UFUNCTION(BlueprintCallable, meta = (Category = "WarBoard|Utility"))
-	static void CreateLine(const FVector Start, const FVector End, float Thickness, TArray<FVector> &Vertices, TArray<int32> &Triangles);
-
-	static TArray<FVector> GetPolygonVertices(const float Radius, const int32 Sides, const FVector Origin = FVector(0.0), const float Rotation = 0.0);
-
-	// Create polygon of shape with max largest dimension of size
-	static void CreatePolygon(const ETileShape Shape, const FVector Origin, const float Size, const float Thickness, TArray<FVector> &Vertices, TArray<int32> &Triangles);
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "Ally", Category = "WarBoard|Utility"))
 	static bool IsSameTeam(const AActor* A, const AActor* B);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (CompactNodeTitle = "Enemy", Category = "WarBoard|Utility"))
 	static bool IsEnemyTeam(const AActor* A, const AActor* B);
 
+	// Inaccessible in BP
 public:
 	static float TileSize;
 	static int32 MaxWidth;
@@ -108,7 +101,6 @@ namespace WarBoardLib
 	inline AActor* GetHighlightedActor() { return UWarBoardLibrary::GetHighlightedActor(); }
 	inline TArray<int32> GetTileArray(const int32 MinRange, const int32 MaxRange, const EGridShape Shape) { return GetTileArray(MinRange, MaxRange, Shape); }
 	inline bool GetValidatedTileArray(const int32 Origin, const int32 MinRange, const int32 MaxRange, const EGridShape Shape, TArray<int32> &ValidatedShape, const TArray<int32> Accessible) { return GetValidatedTileArray(Origin, MinRange, MaxRange, Shape, ValidatedShape, Accessible); }
-	inline void CreateLine(FVector Start, FVector End, float Thickness, TArray<FVector> &Vertices, TArray<int32> &Triangles) { return CreateLine(Start, End, Thickness, Vertices, Triangles); }
 	inline float GetTileSize() { return UWarBoardLibrary::TileSize; }
 	inline int32 GetMaxWidth() { return UWarBoardLibrary::MaxWidth; }
 	inline ETileShape GetTileShape() { return UWarBoardLibrary::TileShape; }

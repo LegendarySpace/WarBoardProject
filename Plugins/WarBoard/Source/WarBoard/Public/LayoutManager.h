@@ -16,7 +16,6 @@ class ATileTypeManager;
 class UStaticMesh;
 class UTextRenderComponent;
 class APathFinder;
-class UProceduralMeshComponent;
 
 UCLASS()
 class WARBOARD_API ALayoutManager : public AActor
@@ -47,10 +46,6 @@ public:
 	// Assemble the Tile grid
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Initialize")
 	void AssembleTiles();
-
-	// Assemble the gridlines
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Initialize")
-	void AssembleGrid();
 
 	// Get Tiles
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Utility")
@@ -102,6 +97,5 @@ public:
 	TMap<ETileType, UStaticMesh*> TileMeshes;
 	
 	TArray<ATileTypeManager*> Managers;
-	UProceduralMeshComponent* ProcMesh;
 
 };

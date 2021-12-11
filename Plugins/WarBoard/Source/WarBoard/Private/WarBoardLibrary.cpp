@@ -74,6 +74,7 @@ void UWarBoardLibrary::CalculatePosition(int32 & Row, int32 & Col, FVector & Wor
 	}
 }
 
+// Used for Hex Spacing
 FVector UWarBoardLibrary::IndexToCube(const int32 Row, const int32 Col)
 {
 	// Note the vector positions does not use world axis
@@ -83,6 +84,7 @@ FVector UWarBoardLibrary::IndexToCube(const int32 Row, const int32 Col)
 	return FVector(x, y, z);
 }
 
+// Used with Hex Spacing
 void UWarBoardLibrary::CubeToIndex(int32 & Row, int32 & Col, const FVector Cube)
 {
 	// Note the vector positions does not use world axis
@@ -104,9 +106,8 @@ FVector UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter)
 void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
 {
 	// For mod to work correctly, need to offset it in the direction of the sign of the index to retain it's relation to 0
-	int32 adj;
-	if (Index != 0) adj = (Index / FMath::Abs(Index)) * (UWarBoardLibrary::MaxWidth / 2);
-	else adj = UWarBoardLibrary::MaxWidth / 2;
+	int32 adj = UWarBoardLibrary::MaxWidth / 2;
+	if (Index != 0) adj *= FMath::Sign(Index);
 	Row = FMath::RoundToInt((float)Index / (float)UWarBoardLibrary::MaxWidth);
 	Col = FMath::Fmod(Index + adj, UWarBoardLibrary::MaxWidth) - adj;
 }
@@ -142,7 +143,7 @@ AActor * UWarBoardLibrary::GetActorAtIndex(UObject* WorldContextObject, const in
 	// TODO May switch to sphere trace and return all 
 	// Perform line trace and retrieve actor if one exists
 	// End 150 units above index location
-	UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject);
+	UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
 	FHitResult result;
 	FVector start, end;
 	IndexToWorld(Index, true);
@@ -238,9 +239,9 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGr
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Cross only increases row or column
-			if (i <= 0)
+			if (range <= 0)
 			{
-				TileToIndex(range, range, i);
+				TileToIndex(0, 0, i);
 				tiles.Add(i);
 			}
 			else
@@ -260,9 +261,9 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGr
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Diagonal only increases as (row, column)
-			if (i <= 0)
+			if (range <= 0)
 			{
-				TileToIndex(range, range, i);
+				TileToIndex(0, 0, i);
 				tiles.Add(i);
 			}
 			else
@@ -282,9 +283,9 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGr
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// First make cross then diagonal for each range
-			if (i <= 0)
+			if (range <= 0)
 			{
-				TileToIndex(range, range, i);
+				TileToIndex(0, 0, i);
 				tiles.Add(i);
 			}
 			else
@@ -315,9 +316,9 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGr
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Rhombus horizontal calculations
-			if (i <= 0)
+			if (range <= 0)
 			{
-				TileToIndex(range, range, a);
+				TileToIndex(0, 0, a);
 				tiles.Add(a);
 			}
 			else
@@ -351,9 +352,9 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGr
 		for (int32 range = MinRange; range <= MaxRange; range++)
 		{
 			// Rhombus vertical calculations
-			if (i <= 0)
+			if (range <= 0)
 			{
-				TileToIndex(range, range, a);
+				TileToIndex(0, 0, a);
 				tiles.Add(a);
 			}
 			else
@@ -403,78 +404,6 @@ bool UWarBoardLibrary::GetValidatedTileArray(int32 Origin, int32 MinRange, int32
 	}
 
 	return true;
-}
-
-void UWarBoardLibrary::CreateLine(FVector Start, FVector End, float Thickness, TArray<FVector>& Vertices, TArray<int32>& Triangles)
-{
-	// Calculate Triangle Positions
-	Triangles.Add(Vertices.Num() + 2);
-	Triangles.Add(Vertices.Num() + 1);
-	Triangles.Add(Vertices.Num() + 0);
-	Triangles.Add(Vertices.Num() + 2);
-	Triangles.Add(Vertices.Num() + 1);
-	Triangles.Add(Vertices.Num() + 0);
-	
-	// Setup pointOffset
-	auto v = (End - Start);
-	v.Normalize(.0001);
-	auto pointOffset = FVector::CrossProduct(v, FVector(0.f, 0.f, 1.f)) * (Thickness / 2);
-
-	// Calculate Vertex Positions
-	Vertices.Add(Start + pointOffset);
-	Vertices.Add(End + pointOffset);
-	Vertices.Add(Start - pointOffset);
-	Vertices.Add(End - pointOffset);
-}
-
-TArray<FVector> UWarBoardLibrary::GetPolygonVertices(const float Radius, const int32 Sides, const FVector Origin, const float Rotation)
-{
-	auto vectors = TArray<FVector>();
-	if (Sides < 3) return vectors;
-	float angle = 360.f / Sides;
-	for (int32 i = 0; i < Sides; i++)
-	{
-		vectors.Add(FRotator(0.0, angle * i + Rotation, 0.0).Vector() * Radius + Origin);
-	}
-
-	return vectors;
-}
-
-void UWarBoardLibrary::CreatePolygon(const ETileShape Shape, const FVector Origin, const float Size, const float Thickness, TArray<FVector>& Vertices, TArray<int32>& Triangles)
-{
-	// Thickness should be size of line inside tile
-	float radius;
-	TArray<FVector> poly;
-	int32 end;
-	switch (Shape)
-	{
-	case ETileShape::Square:
-		radius = (Size / 2) - (Thickness / 2);
-		poly = UWarBoardLibrary::GetPolygonVertices(radius, 4, Origin);
-		break;
-	case ETileShape::Hex_Hor:
-		radius = (Size / 2) - (Thickness / 2);
-		poly = UWarBoardLibrary::GetPolygonVertices(radius, 6, Origin);
-		break;
-	case ETileShape::Hex_Vert:
-		radius = (Size / 2) - (Thickness / 2);
-		poly = UWarBoardLibrary::GetPolygonVertices(radius, 6, Origin, 90.0);
-		break;
-	default:
-		return;
-	}
-
-	for (int32 i = 0; i < poly.Num(); i++)
-	{
-		end = fmod(i + 1, poly.Num());
-
-		// Slight modification to extend lines to merge nicely
-		auto dir = poly[end] - poly[i];
-		dir.Normalize(.001);
-		dir = dir * (Thickness / 2);
-
-		CreateLine(poly[i] - dir, poly[end] + dir, Thickness, Vertices, Triangles);
-	}
 }
 
 bool UWarBoardLibrary::IsSameTeam(const AActor * A, const AActor * B)

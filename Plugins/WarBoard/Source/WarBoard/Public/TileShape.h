@@ -11,6 +11,7 @@
 UENUM(BlueprintType, Category = "WarBoard|Enums")
 enum class ETileShape : uint8
 {
+	Triangle		UMETA(DisplayName = "Triangle"),
 	Square			UMETA(DisplayName = "Square"),
 	Hex_Hor			UMETA(DisplayName = "Hexagon_Horizontal"),
 	Hex_Vert		UMETA(DisplayName = "Hexagon_Vertical"),

@@ -108,7 +108,7 @@ void APathNode::DisplayStat(int32 Stat)
 		text = "";
 		break;
 	}
-	Display->SetText(text);
+	Display->SetText(FText::FromString(text));
 }
 
 // Called when the game starts or when spawned

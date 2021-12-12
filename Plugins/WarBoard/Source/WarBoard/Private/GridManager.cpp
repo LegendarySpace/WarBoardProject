@@ -14,13 +14,13 @@ using namespace WarBoardLib;
 void FGridCell::BuildCell(ETileShape Shape, int Index, float Size, float Thickness, float Padding)
 {
 	LineThickness = Thickness;
-	CellSize = Size - Padding;
+	CellSize = Size - Padding*2;
 	CellIndex = Index;
 
 	switch (Shape)
 	{
 	case ETileShape::Triangle:
-		Polygon = GetCellVertices(3);
+		Polygon = GetCellVertices(3, 0, 90);
 		break;
 	default:
 	case ETileShape::Square:
@@ -32,7 +32,11 @@ void FGridCell::BuildCell(ETileShape Shape, int Index, float Size, float Thickne
 	case ETileShape::Hex_Vert:
 		Polygon = GetCellVertices(6, 0, 90);
 		break;
-		// Add Octogon Cell Vertices (8, 22.5)
+	case ETileShape::Octogon:
+		Polygon = GetCellVertices(8, 22.5);
+		break;
+	case ETileShape::Dodecagon:
+		Polygon = GetCellVertices(12, 15);
 	}
 
 	ProjectVerticesOntoSurface(100/*ProjectionHeight*/);
@@ -49,7 +53,7 @@ TArray<FVector>& FGridCell::GetCellVertices(const int32 Sides, const float Relat
 	float angle = 360.f / Sides;
 	for (int32 i = 0; i < Sides; i++)
 	{
-		float Rotation = (angle * i) + RelativeRotationToFirstVertex + PolygonRotation + 90;
+		float Rotation = (angle * i) - RelativeRotationToFirstVertex - PolygonRotation + 90;
 		FVector Vertex = FRotator(0.0, Rotation, 0.0).Vector() * VertexDistance;
 		Vertex += IndexToWorld(CellIndex);
 		Vertices->Add(Vertex);
@@ -83,27 +87,27 @@ void FGridCell::BuildPolygonLines()
 void FGridCell::AddLineDetails(FVector Start, FVector End)
 {
 	// Calculate Triangle Positions
-	LineTriangles.Add(LineVertices.Num() + 2);
-	LineTriangles.Add(LineVertices.Num() + 1);
 	LineTriangles.Add(LineVertices.Num() + 0);
-	LineTriangles.Add(LineVertices.Num() + 2);
-	LineTriangles.Add(LineVertices.Num() + 3);
 	LineTriangles.Add(LineVertices.Num() + 1);
+	LineTriangles.Add(LineVertices.Num() + 3);
+	LineTriangles.Add(LineVertices.Num() + 0);
+	LineTriangles.Add(LineVertices.Num() + 3);
+	LineTriangles.Add(LineVertices.Num() + 2);
 
-	// Line Corners distance from point
-	auto PointOffset = (LineThickness / 2) / FMath::Sin(FMath::DegreesToRadians(360 / Polygon.Num()));
-	auto StartOffset = PointOffset * Start.GetSafeNormal();
-	auto EndOffset = PointOffset * End.GetSafeNormal();
+
+	// Points are the outer edge of line corners
+	auto PointOffset = LineThickness / FMath::Sin(FMath::DegreesToRadians(360 / Polygon.Num()));
+
+	auto StartOffset = PointOffset * (Start - IndexToWorld(CellIndex)).GetSafeNormal();
+	auto EndOffset = PointOffset * (End - IndexToWorld(CellIndex)).GetSafeNormal();
 
 	Start += FVector(0, 0, 2);
 	End += FVector(0, 0, 2);
-	Start -= StartOffset;
-	End -= EndOffset;
 
 	// Calculate Vertex Positions
-	LineVertices.Add(Start + StartOffset);
-	LineVertices.Add(End + EndOffset);
+	LineVertices.Add(Start);
 	LineVertices.Add(Start - StartOffset);
+	LineVertices.Add(End);
 	LineVertices.Add(End - EndOffset);
 }
 
@@ -129,9 +133,6 @@ void AGridManager::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AddCell(0);
-	AddCell(2);
-	AddCell(-2);
 }
 
 // Called every frame
@@ -143,21 +144,24 @@ void AGridManager::Tick(float DeltaTime)
 
 void AGridManager::AddCell(int32 Index)
 {
-	//if (CellArray.Contains(Index)) return;
+	auto prev = CellArray.FindByPredicate([=](auto Option) { return Option.IsSet() && Option.GetValue() == Index; });
+	if (prev != nullptr) return;
 
-	UE_LOG(LogTemp, Warning, TEXT("Adding Cell at %d"), Index);
 	FGridCell Cell = FGridCell();
 	Cell.BuildCell(TileShape, Index, TileSize, LineThickness, CellPadding);
 	CellArray[GetFirstUnsetID()] = Cell;
 	DisplayCell(Cell);
 }
 
-void AGridManager::RemoveCell(FGridCell Cell)
+void AGridManager::RemoveCell(int32 Index)
 {
-	int32 Index = CellArray.Find(Cell);
-	UE_LOG(LogTemp, Warning, TEXT("Removing Cell at %d"), Index);
-	ProceduralMesh->ClearMeshSection(Index);
-	CellArray[Index].Reset();
+	FGridCell Cell;
+	Cell.CellIndex = Index;
+	int ID = CellArray.Find(Cell);
+	if (ID == INDEX_NONE) return;
+
+	ProceduralMesh->ClearMeshSection(ID);
+	CellArray[ID].Reset();
 
 	CleanUpArray();
 }
@@ -165,8 +169,6 @@ void AGridManager::RemoveCell(FGridCell Cell)
 void AGridManager::RebuildCells()
 {
 	ProceduralMesh->ClearAllMeshSections();
-
-	UE_LOG(LogTemp, Warning, TEXT("Rebuilding %d Cells"), CellArray.Num());
 
 	for (auto &Option : CellArray)
 	{
@@ -181,11 +183,9 @@ void AGridManager::RebuildCells()
 
 void AGridManager::DisplayInitialCells()
 {
-	//			Cells are empty until BP construction
-	UE_LOG(LogTemp, Warning, TEXT("Building %d Initial Cells"), InitialCells.Num());
+	//	REMEMBER:	Cells are empty until BP construction
 	for (auto Index : InitialCells)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Calling Add Cell"));
 		AddCell(Index);
 	}
 
@@ -211,9 +211,8 @@ int32 AGridManager::GetFirstUnsetID()
 
 	// No unset Optionals
 	auto Opt = new TOptional<FGridCell>;
-	int32 id = CellArray.Add(*Opt);
-	UE_LOG(LogTemp, Warning, TEXT("First Unset index in Cell Array is %d"), id);
-	return id;
+	return CellArray.Add(*Opt);
+
 }
 
 void AGridManager::DisplayCell(FGridCell Cell)
@@ -225,7 +224,8 @@ void AGridManager::DisplayCell(FGridCell Cell)
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("Displaying Cell at %d"), Cell.CellIndex);
+	// TODO: if(SelectedCell == Cell) Alter cell vertices in some way
+
 	ProceduralMesh->ClearMeshSection(ID);
 	ProceduralMesh->CreateMeshSection_LinearColor(ID, Cell.LineVertices, Cell.LineTriangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
 	
@@ -234,8 +234,6 @@ void AGridManager::DisplayCell(FGridCell Cell)
 void AGridManager::CleanUpArray()
 {
 	if (GetNumUnset() < 10) return;
-
-	UE_LOG(LogTemp, Warning, TEXT("Cleaning Base Array"));
 
 	while (GetNumUnset() > 0)
 	{

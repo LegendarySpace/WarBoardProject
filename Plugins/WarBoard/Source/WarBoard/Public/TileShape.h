@@ -15,5 +15,7 @@ enum class ETileShape : uint8
 	Square			UMETA(DisplayName = "Square"),
 	Hex_Hor			UMETA(DisplayName = "Hexagon_Horizontal"),
 	Hex_Vert		UMETA(DisplayName = "Hexagon_Vertical"),
+	Octogon			UMETA(DisplayName = "Octogon"),
+	Dodecagon		UMETA(DisplayName = "Dodecagon"),
 	Shape_MAX		UMETA(Hidden)
 };

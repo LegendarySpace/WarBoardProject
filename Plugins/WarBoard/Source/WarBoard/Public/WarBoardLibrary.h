@@ -22,7 +22,7 @@ public:
 	static void InitializeTiles(float Size, ETileShape Shape, const FVector Offset = FVector(0.0));
 
 	static void CalculatePosition(int32 &Row, int32 &Col, FVector &WorldLoc, bool ToWorld = true);
-	static FVector IndexToCube(const int32 Row, const int32 Col);
+	static FVector IndexToCube(const int32 Row, const int32 Col); // TODO: Change name to Tile to cube
 	static void CubeToIndex(int32 &Row, int32 &Col, const FVector Cube);
 
 	/**

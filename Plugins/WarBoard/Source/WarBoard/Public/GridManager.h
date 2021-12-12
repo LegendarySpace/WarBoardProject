@@ -119,7 +119,7 @@ public:
 	void AddCell(int32 Index);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void RemoveCell(FGridCell Cell);
+	void RemoveCell(int32 Index);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void RebuildCells();
@@ -147,9 +147,10 @@ public:
 	float LineThickness = 20.0;
 
 	UPROPERTY(EditAnywhere)
-	float CellPadding = 10.0;
+	float CellPadding = 0.0;
 
 private:
 	TArray<TOptional<FGridCell>> CellArray;
 
+	// TODO: Add Cell SelectedCell, has Setter that builds cell to update details at location
 };

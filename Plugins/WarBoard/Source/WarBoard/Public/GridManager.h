@@ -14,7 +14,7 @@
 class UProceduralMeshComponent;
 
 /**
-*	Cells Contain all information necessary for 
+*	Cells Contain all information necessary for display
 **/
 USTRUCT(BlueprintType)
 struct FGridCell
@@ -22,6 +22,8 @@ struct FGridCell
 	GENERATED_BODY()
 
 public:
+	FGridCell(int32 Index = 0) { CellIndex = Index; }
+
 	UPROPERTY(BlueprintReadWrite)
 	int32 CellIndex;
 
@@ -36,7 +38,7 @@ public:
 	TArray<int32> LineTriangles;
 	TArray<FVector> Polygon;
 
-	void BuildCell(ETileShape Shape, int Index = 0, float Size = 200, float Thickness = 10, float Padding = 0);
+	void BuildCell(ETileShape Shape, float Size = 200, float Thickness = 10, float Padding = 0);
 
 private:
 	TArray<FVector>& GetCellVertices(const int32 Sides, const float RelativeRotationToFirstVertex = 0.0, const float PolygonRotation = 0.0);
@@ -50,6 +52,18 @@ public:
 
 public:
 
+	void operator=(const int32 Index)
+	{
+		this->CellIndex = Index;
+		this->BuildPolygonLines();
+	}
+
+	void operator=(const FGridCell Cell)
+	{
+		this->CellIndex = Cell.CellIndex;
+		this->BuildPolygonLines();
+	}
+
 	FGridCell operator+(const int32 Index)
 	{
 		FGridCell Cell = FGridCell();
@@ -62,6 +76,7 @@ public:
 	FGridCell& operator+=(const int32 Index)
 	{
 		CellIndex += Index;
+		BuildPolygonLines();
 		return *this;
 	}
 
@@ -70,12 +85,14 @@ public:
 		FGridCell Cell = FGridCell();
 		Cell = *this;
 		Cell.CellIndex = this->CellIndex - Index;
+		Cell.BuildPolygonLines();
 		return Cell;
 	}
 
 	FGridCell& operator-=(const int32 Index)
 	{
 		CellIndex -= Index;
+		BuildPolygonLines();
 		return *this;
 	}
 

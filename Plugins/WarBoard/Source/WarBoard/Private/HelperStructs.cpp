@@ -7,6 +7,7 @@
 #include "WarBoardLibrary.h"
 
 
+float FTile::TileSize = 200.f;
 float FTile::Radius = 100.f;
 float FTile::Height = 200.f;
 float FTile::Width = 200.f;
@@ -15,9 +16,8 @@ ETileShape FTile::Shape = ETileShape::Square;
 
 void FTile::IndexToInternal(int32 InIndex)
 {
-	int32 MaxWidth = UWarBoardLibrary::MaxWidth;
-	Row = FMath::RoundToInt(InIndex / MaxWidth);
-	Col = ((InIndex + (MaxWidth / 2)) % MaxWidth) - (MaxWidth / 2);
+	Row = FMath::RoundToInt(InIndex / MAX_WIDTH);
+	Col = ((InIndex + (MAX_WIDTH / 2)) % MAX_WIDTH) - (MAX_WIDTH / 2);
 }
 
 void FTile::RCToInternal(int32 InRow, int32 InColumn)
@@ -111,17 +111,17 @@ void FTile::PIPtoInternal(FVector2D PIP)
 	}
 }
 
-int32 FTile::ToIndex()
+int32 FTile::ToIndex() const
 {
 	return Row * UWarBoardLibrary::MaxWidth + Col;
 }
 
-FVector2D FTile::ToRC()
+FVector2D FTile::ToRC() const
 {
 	return FVector2D(Row, Col);
 }
 
-FVector FTile::ToCubic()
+FVector FTile::ToCubic() const
 {
 	FVector Cubic;
 	Cubic.X = Row;
@@ -130,7 +130,7 @@ FVector FTile::ToCubic()
 	return Cubic;
 }
 
-FVector FTile::ToWorld(bool TileCenter)
+FVector FTile::ToWorld(bool TileCenter) const
 {
 	FVector WorldLocation = FVector();
 	float RadialPointOffset;
@@ -179,6 +179,7 @@ FVector FTile::ToWorld(bool TileCenter)
 
 void FTile::SetTileSize(float Size)
 {
+	TileSize = Size;
 	switch (Shape)
 	{
 	case ETileShape::Triangle:

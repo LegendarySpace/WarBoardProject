@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "ETileType.h"
 #include "TileShape.h"
+#include "HelperStructs.h"
+
 #include "LayoutManager.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileAddDelegate, int32, Index);
@@ -25,14 +28,6 @@ class WARBOARD_API ALayoutManager : public AActor
 public:	
 	// Sets default values for this actor's properties
 	ALayoutManager();
-
-	// Index of bottom left corner of board
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|State")
-	int32 GetOffset();
-
-	// Full board size as vector
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "WarBoard|State")
-	FVector GetBoardSize();
 
 	// Change Tile Type
 	// If no Tile is present at index, it will make a new Tile of given Type
@@ -92,10 +87,9 @@ public:
 	TMap<int32, ETileType> TileMap;
 
 	UPROPERTY(EditAnywhere, Category = "Layout")
-	TMap<int32, TEnumAsByte<ETileType>> BoardDefault;
-	TMap<int32, UTextRenderComponent*> TextMap;
-	TMap<ETileType, UStaticMesh*> TileMeshes;
-	
+	TArray<FTileInstance> BoardDefault;
+	TArray<FTileSetup> TileMeshes;
 	TArray<ATileTypeManager*> Managers;
 
+	TMap<int32, UTextRenderComponent*> TextMap;
 };

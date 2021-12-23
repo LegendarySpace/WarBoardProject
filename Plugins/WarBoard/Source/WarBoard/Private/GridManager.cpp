@@ -11,11 +11,10 @@ using namespace WarBoardLib;
 
 
 
-void FGridCell::BuildCell(ETileShape Shape, int Index, float Size, float Thickness, float Padding)
+void FGridCell::BuildCell(ETileShape Shape, float Size, float Thickness, float Padding)
 {
 	LineThickness = Thickness;
 	CellSize = Size - Padding*2;
-	CellIndex = Index;
 
 	switch (Shape)
 	{
@@ -39,7 +38,6 @@ void FGridCell::BuildCell(ETileShape Shape, int Index, float Size, float Thickne
 		Polygon = GetCellVertices(12, 15);
 	}
 
-	ProjectVerticesOntoSurface(100/*ProjectionHeight*/);
 	BuildPolygonLines();
 }
 
@@ -75,6 +73,8 @@ void FGridCell::ProjectVerticesOntoSurface(float Height)
 
 void FGridCell::BuildPolygonLines()
 {
+	if (LineThickness <= 0 || CellSize <= 0) return;
+	ProjectVerticesOntoSurface(100/*ProjectionHeight*/);
 	int32 EndIndex;
 	for (int32 StartIndex = 0; StartIndex < Polygon.Num(); StartIndex++)
 	{
@@ -147,16 +147,15 @@ void AGridManager::AddCell(int32 Index)
 	auto prev = CellArray.FindByPredicate([=](auto Option) { return Option.IsSet() && Option.GetValue() == Index; });
 	if (prev != nullptr) return;
 
-	FGridCell Cell = FGridCell();
-	Cell.BuildCell(TileShape, Index, TileSize, LineThickness, CellPadding);
+	FGridCell Cell = FGridCell(Index);
+	Cell.BuildCell(TileShape, TileSize, LineThickness, CellPadding);
 	CellArray[GetFirstUnsetID()] = Cell;
 	DisplayCell(Cell);
 }
 
 void AGridManager::RemoveCell(int32 Index)
 {
-	FGridCell Cell;
-	Cell.CellIndex = Index;
+	FGridCell Cell = FGridCell(Index);
 	int ID = CellArray.Find(Cell);
 	if (ID == INDEX_NONE) return;
 
@@ -175,7 +174,7 @@ void AGridManager::RebuildCells()
 		if (Option.IsSet())
 		{
 			auto Cell = Option.GetValue();
-			Cell.BuildCell(TileShape, Cell.CellIndex, TileSize, LineThickness, CellPadding);
+			Cell.BuildCell(TileShape, TileSize, LineThickness, CellPadding);
 			DisplayCell(Cell);
 		}
 	}

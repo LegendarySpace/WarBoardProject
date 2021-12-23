@@ -14,16 +14,15 @@ ALayoutManager::ALayoutManager()
  	// Should never tick
 	PrimaryActorTick.bCanEverTick = false;
 
-	BoardDefault = TMap<int32, TEnumAsByte<ETileType>>();
-	BoardDefault.Add(0);
-	BoardDefault.Add(1);
-	BoardDefault.Add(-1);
-	BoardDefault.Add(UWarBoardLibrary::MaxWidth);
-	BoardDefault.Add(UWarBoardLibrary::MaxWidth + 1);
-	BoardDefault.Add(UWarBoardLibrary::MaxWidth - 1);
-	BoardDefault.Add(-UWarBoardLibrary::MaxWidth);
-	BoardDefault.Add(-UWarBoardLibrary::MaxWidth + 1);
-	BoardDefault.Add(-UWarBoardLibrary::MaxWidth - 1);
+	BoardDefault.Add(FTileInstance(0));
+	BoardDefault.Add(FTileInstance(1));
+	BoardDefault.Add(FTileInstance(-1));
+	BoardDefault.Add(FTileInstance(FTile::MAX_WIDTH));
+	BoardDefault.Add(FTileInstance(FTile::MAX_WIDTH + 1));
+	BoardDefault.Add(FTileInstance(FTile::MAX_WIDTH - 1));
+	BoardDefault.Add(FTileInstance(-FTile::MAX_WIDTH));
+	BoardDefault.Add(FTileInstance(-FTile::MAX_WIDTH + 1));
+	BoardDefault.Add(FTileInstance(-FTile::MAX_WIDTH - 1));
 
 
 	// Determine Base Tile (Used when no mesh is provided)
@@ -48,8 +47,6 @@ ALayoutManager::ALayoutManager()
 	}
 
 	// Iterate over each TileType and initialize a Manager for it
-	TArray<ETileType> k;
-	TileMeshes.GetKeys(k);
 
 	for (auto type = ETileType::TT_Normal; type != ETileType::TT_Type_MAX; type = ETileType(type + 1))
 	{
@@ -59,7 +56,7 @@ ALayoutManager::ALayoutManager()
 		Managers.Add(m);
 
 		// Should BaseMesh be used?
-		if (k.Contains(type)) mesh = *(TileMeshes.Find(type));
+		if (TileMeshes.Contains(type)) mesh = TileMeshes.FindByPredicate([=](auto& TileSetup) { return TileSetup == type; })->Mesh;
 		
 		m->SetupInstance(type, mesh, TileSize);
 	}
@@ -67,18 +64,6 @@ ALayoutManager::ALayoutManager()
 	// Initialize Board
 	AssembleTiles();
 	//AssembleGrid();
-}
-
-int32 ALayoutManager::GetOffset()
-{
-	// TODO
-	return int32();
-}
-
-FVector ALayoutManager::GetBoardSize()
-{
-	// TODO
-	return FVector();
 }
 
 bool ALayoutManager::ChangeTile(int32 Index, ETileType Type)
@@ -111,22 +96,21 @@ bool ALayoutManager::RemoveTile(int32 Index)
 void ALayoutManager::AssembleTiles()
 {
 	// Iterate over BoardDefault, ChangeTile on each index
-	TArray<int32> idxs;
-	BoardDefault.GetKeys(idxs);
-	for (auto& i : idxs)
+	for (auto& Instance : BoardDefault)
 	{
-		ChangeTile(i, BoardDefault[i]);
+		// TODO: Rework i
+		ChangeTile(Instance.Tile.ToIndex(), Instance.Type);
 		if (DebugTileIndexes)
 		{
-			auto t = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Tiletext" + i));
+			auto t = CreateDefaultSubobject<UTextRenderComponent>(TEXT("Tiletext" + Instance.Tile.ToIndex()));
 			t->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-			t->SetText(FText::FromString("" + i));
+			t->SetText(FText::FromString("" + Instance.Tile.ToIndex()));
 			t->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
 			t->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
 
 			// Set text location and add to text map
-			t->SetWorldLocation(WarBoardLib::IndexToWorld(i, true));
-			TextMap.Add(i, t);
+			t->SetWorldLocation(Instance.Tile.ToWorld());
+			TextMap.Add(Instance.Tile.ToIndex(), t);
 		}
 	}
 }

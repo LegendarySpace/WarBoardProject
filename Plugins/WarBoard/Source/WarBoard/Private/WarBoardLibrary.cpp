@@ -6,7 +6,7 @@
 
 float UWarBoardLibrary::TileSize = 200.f;
 ETileShape UWarBoardLibrary::TileShape = ETileShape::Square;
-int32 UWarBoardLibrary::MaxWidth = 6500;
+int32 UWarBoardLibrary::MaxWidth = 6500; // TODO: Remove all above
 FVector UWarBoardLibrary::GridOffset = FVector(0.0);
 AActor* UWarBoardLibrary::Highlighted = nullptr;
 
@@ -72,24 +72,6 @@ void UWarBoardLibrary::CalculatePosition(int32 & Row, int32 & Col, FVector & Wor
 			return;
 		}
 	}
-}
-
-// Used for Hex Spacing
-FVector UWarBoardLibrary::IndexToCube(const int32 Row, const int32 Col)
-{
-	// Note the vector positions does not use world axis
-	int32 x = Col;
-	int32 z = Row - (x - (x & 1)) / 2;
-	int32 y = -x - z;
-	return FVector(x, y, z);
-}
-
-// Used with Hex Spacing
-void UWarBoardLibrary::CubeToIndex(int32 & Row, int32 & Col, const FVector Cube)
-{
-	// Note the vector positions does not use world axis
-	Row = Cube.X;
-	Col = Cube.Z + (Cube.X - ((int32)Cube.X & 1)) / 2;
 }
 
 FVector UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter)

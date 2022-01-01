@@ -58,7 +58,7 @@ ALayoutManager::ALayoutManager()
 		// Should BaseMesh be used?
 		if (TileMeshes.Contains(type)) mesh = TileMeshes.FindByPredicate([=](auto& TileSetup) { return TileSetup == type; })->Mesh;
 		
-		m->SetupInstance(type, mesh, TileSize);
+		m->SetupInstance(type, mesh);
 	}
 
 	// Initialize Board
@@ -127,7 +127,5 @@ void ALayoutManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	// Ensure any changes are passed along to library
-	WarBoardLib::InitializeTiles(TileSize, TileShape);
 }
 

@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
+#include "HelperStructs.h"
+
 #include "PathNode.generated.h"
 
 class USphereComponent;
@@ -16,14 +19,14 @@ class WARBOARD_API APathNode : public AActor
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties
+	// Sets default values for this actor's properties		TODO: Get Tile from world location on creation
 	APathNode();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
 		void Reset();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void SetNodeValues(int32 TravelCost, int32 Heuristic, int32 Parent, int32 Steps);
+		void SetNodeValues(int32 TravelCost, int32 Heuristic, FTile Parent, int32 Steps);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
 		void SetAsPath();
@@ -46,12 +49,28 @@ public:
 	// Overload Operators
 	FORCEINLINE bool operator== (const APathNode &Node)
 	{
-		return F == Node.F;
+		return F == Node.F || Tile == Node.Tile;
 	}
 
-	FORCEINLINE bool operator== (const int32 i)
+	FORCEINLINE bool operator== (const int32 Index)
 	{
-		return Index == i;
+		return Tile == Index;
+	}
+
+	FORCEINLINE bool operator== (const int32 Index) const
+	{
+		return Tile == Index;
+	}
+
+	// Need to make it for pointer
+	FORCEINLINE bool operator== (const FTile InTile)
+	{
+		return Tile == InTile;
+	}
+
+	FORCEINLINE bool operator== (const FTile InTile) const
+	{
+		return Tile == InTile;
 	}
 
 	FORCEINLINE bool operator!= (const APathNode &Node)
@@ -107,11 +126,11 @@ public:
 
 	// Index of this node
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-	int32 Index;
+	FTile Tile;
 
 	// Index of node to parent
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-	int32 ParentIndex;
+	FTile ParentTile;
 
 	// Number of steps from Origin
 	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Path")

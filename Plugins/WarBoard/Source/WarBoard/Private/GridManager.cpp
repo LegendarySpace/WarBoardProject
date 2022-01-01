@@ -15,49 +15,9 @@ void FGridCell::BuildCell(ETileShape Shape, float Size, float Thickness, float P
 {
 	LineThickness = Thickness;
 	CellSize = Size - Padding*2;
-
-	switch (Shape)
-	{
-	case ETileShape::Triangle:
-		Polygon = GetCellVertices(3, 0, 90);
-		break;
-	default:
-	case ETileShape::Square:
-		Polygon = GetCellVertices(4, 45);
-		break;
-	case ETileShape::Hex_Hor:
-		Polygon = GetCellVertices(6);
-		break;
-	case ETileShape::Hex_Vert:
-		Polygon = GetCellVertices(6, 0, 90);
-		break;
-	case ETileShape::Octogon:
-		Polygon = GetCellVertices(8, 22.5);
-		break;
-	case ETileShape::Dodecagon:
-		Polygon = GetCellVertices(12, 15);
-	}
-
+	// TODO: May get rid of size and just use tilesize
+	Polygon = Tile.GetPolygon(Padding);
 	BuildPolygonLines();
-}
-
-TArray<FVector>& FGridCell::GetCellVertices(const int32 Sides, const float RelativeRotationToFirstVertex, const float PolygonRotation)
-{
-	auto Vertices = new TArray<FVector>;
-	if (Sides < 3) return *Vertices;
-
-	auto VertexDistance = (CellSize / 2) / FMath::Cos(FMath::DegreesToRadians(RelativeRotationToFirstVertex));
-
-	float angle = 360.f / Sides;
-	for (int32 i = 0; i < Sides; i++)
-	{
-		float Rotation = (angle * i) - RelativeRotationToFirstVertex - PolygonRotation + 90;
-		FVector Vertex = FRotator(0.0, Rotation, 0.0).Vector() * VertexDistance;
-		Vertex += IndexToWorld(CellIndex);
-		Vertices->Add(Vertex);
-	}
-
-	return *Vertices;
 }
 
 void FGridCell::ProjectVerticesOntoSurface(float Height)
@@ -95,12 +55,13 @@ void FGridCell::AddLineDetails(FVector Start, FVector End)
 	LineTriangles.Add(LineVertices.Num() + 2);
 
 
-	// Points are the outer edge of line corners
+	// Points are the inner edge of line corners
 	auto PointOffset = LineThickness / FMath::Sin(FMath::DegreesToRadians(360 / Polygon.Num()));
+	// TODO: For some reason this is now pointng up
+	auto StartOffset = PointOffset * ((Start - Tile.ToWorld()) * FVector(1,1,0)).GetSafeNormal();
+	auto EndOffset = PointOffset * ((End - Tile.ToWorld()) * FVector(1,1,0)).GetSafeNormal();
 
-	auto StartOffset = PointOffset * (Start - IndexToWorld(CellIndex)).GetSafeNormal();
-	auto EndOffset = PointOffset * (End - IndexToWorld(CellIndex)).GetSafeNormal();
-
+	// Raise slightly above tile to prevent clipping
 	Start += FVector(0, 0, 2);
 	End += FVector(0, 0, 2);
 
@@ -142,20 +103,20 @@ void AGridManager::Tick(float DeltaTime)
 
 }
 
-void AGridManager::AddCell(int32 Index)
+void AGridManager::AddCell(FTile Tile)
 {
-	auto prev = CellArray.FindByPredicate([=](auto Option) { return Option.IsSet() && Option.GetValue() == Index; });
+	auto prev = CellArray.FindByPredicate([=](auto Option) { return Option.IsSet() && Option.GetValue() == Tile.ToIndex(); });
 	if (prev != nullptr) return;
 
-	FGridCell Cell = FGridCell(Index);
-	Cell.BuildCell(TileShape, TileSize, LineThickness, CellPadding);
+	FGridCell Cell = FGridCell(Tile);
+	Cell.BuildCell(TileShape, WarBoardLib::GetTileSize(), LineThickness, CellPadding);
 	CellArray[GetFirstUnsetID()] = Cell;
 	DisplayCell(Cell);
 }
 
-void AGridManager::RemoveCell(int32 Index)
+void AGridManager::RemoveCell(FTile Tile)
 {
-	FGridCell Cell = FGridCell(Index);
+	FGridCell Cell = FGridCell(Tile);
 	int ID = CellArray.Find(Cell);
 	if (ID == INDEX_NONE) return;
 
@@ -174,7 +135,7 @@ void AGridManager::RebuildCells()
 		if (Option.IsSet())
 		{
 			auto Cell = Option.GetValue();
-			Cell.BuildCell(TileShape, TileSize, LineThickness, CellPadding);
+			Cell.BuildCell(TileShape, WarBoardLib::GetTileSize(), LineThickness, CellPadding);
 			DisplayCell(Cell);
 		}
 	}

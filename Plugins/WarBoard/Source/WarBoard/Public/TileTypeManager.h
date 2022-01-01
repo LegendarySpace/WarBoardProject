@@ -5,7 +5,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "ETileType.h"
+#include "HelperStructs.h"
+
 #include "TileTypeManager.generated.h"
 
 class UInstancedStaticMeshComponent;
@@ -29,8 +32,8 @@ public:
 	TArray<int32> InstanceIndexes;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Type Manager")
-	void SetupInstance(ETileType TileType, UStaticMesh* Mesh,  float TileSize);
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Type Manager")		// TODO: Should use TileSetup instead
+	void SetupInstance(ETileType TileType, UStaticMesh* Mesh);
 
 	void SetMesh(UStaticMesh* Mesh);
 
@@ -38,14 +41,14 @@ public:
 
 	// Index of tile to add
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Type Manager")
-	void AddTile(int32 Index);
+	void AddTile(FTile Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Type Manager")
-	void BuildTile(int32 Index);
+	void BuildTile(FTile Tile);
 
 	// Index of tile to remove
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Type Manager")
-	void RemoveTile(int32 Index);
+	void RemoveTile(FTile TileToRemove);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Type Manager")
 	void DisplayInstanceIndexes();
@@ -55,9 +58,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	UPROPERTY(EditAnywhere)
-	float Size = 200.f;
-
 	UPROPERTY(EditAnywhere)
 	float MeshSize = 100.f;
 

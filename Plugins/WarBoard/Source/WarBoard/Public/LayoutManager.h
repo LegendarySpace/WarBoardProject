@@ -52,11 +52,9 @@ protected:
 
 public:	
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	float TileSize = 200.f;
-
-	UPROPERTY(EditAnywhere, Category = "Settings")
 	bool CenterBoard = true;
 
+	// TODO: Get Shape from FTile
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	ETileShape TileShape = ETileShape::Square;
 

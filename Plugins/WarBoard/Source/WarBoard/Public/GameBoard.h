@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "LayoutManager.h"
+
 #include "GameBoard.generated.h"
 
 class APathFinder;

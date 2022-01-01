@@ -2,8 +2,10 @@
 
 
 #include "PathFinder.h"
-#include "WarBoardLibrary.h"
+
 #include "Math/NumericLimits.h"
+
+#include "WarBoardLibrary.h"
 #include "PathNode.h"
 
 using namespace WarBoardLib;
@@ -28,27 +30,19 @@ APathFinder::APathFinder()
 	HeuristicEstimate = 2;
 	SearchLimit = 300;
 	HeuristicFormula = EHeuFormula::Manhatan;
-	Destination = TNumericLimits<int32>::Lowest();
+	Destination.Reset();
 
 	// Establish Base Array values
-	int32 i;
-	TileToIndex(1, 0, i); // Front
-	CardinalDirections2D.Add(i);
-	TileToIndex(0, 1, i); // Right
-	CardinalDirections2D.Add(i);
-	TileToIndex(-1, 0, i); // Back
-	CardinalDirections2D.Add(i);
-	TileToIndex(0, -1, i); // Left
-	CardinalDirections2D.Add(i);
+	
+	CardinalDirections2D.Add(FTile(1,0)); // Front
+	CardinalDirections2D.Add(FTile(0,1)); // Right
+	CardinalDirections2D.Add(FTile(-1,0)); // Back
+	CardinalDirections2D.Add(FTile(0,-1)); // Left
 
-	TileToIndex(1, 1, i); // Front-Right
-	DiagonalDirections2D.Add(i);
-	TileToIndex(-1, 1, i); // Back-Right
-	DiagonalDirections2D.Add(i);
-	TileToIndex(1, 1, i); // Back-Left
-	DiagonalDirections2D.Add(i);
-	TileToIndex(1, 1, i); // Front-Left
-	DiagonalDirections2D.Add(i);
+	DiagonalDirections2D.Add(FTile(1,1)); // Front-Right
+	DiagonalDirections2D.Add(FTile(-1,1)); // Back-Right
+	DiagonalDirections2D.Add(FTile(-1,-1)); // Back-Left
+	DiagonalDirections2D.Add(FTile(1,-1)); // Front-Left
 
 	// Haven't yet implemented 3D movement
 	// Declare here once implemented
@@ -63,32 +57,32 @@ APathFinder::APathFinder()
 
 }
 
-void APathFinder::Initialization(TArray<int32> Locations)
+void APathFinder::Initialization(TArray<FTile> Locations)
 {
 	// Add a node for each tile
-	for (auto i : Locations)
+	for (auto Tile : Locations)
 	{
-		Add(i);
+		Add(Tile);
 	}
 }
 
-bool APathFinder::Add(int32 Index)
+bool APathFinder::Add(FTile InTile)
 {
-	auto node = GetWorld()->SpawnActor<APathNode>(IndexToWorld(Index), FRotator());
-	if (!node) return false;
-	NodeMap.Add(Index, node);
+	auto Node = GetWorld()->SpawnActor<APathNode>(InTile.ToWorld(), FRotator());
+	if (!Node) return false;
+	NodeMap.Add(Node);
 	return true;
 }
 
-bool APathFinder::Remove(int32 Index)
+bool APathFinder::Remove(FTile InTile)
 {
-	if (!NodeMap.Contains(Index)) return false;
-	NodeMap[Index]->Destroy();
-	NodeMap.Remove(Index);
+	auto Node = GetNode(InTile);
+	Node->Destroy();
+	NodeMap.Remove(Node);
 	return true;
 }
 
-void APathFinder::Discovery_Implementation(int32 Origin, int32 Range, TArray<int32> &PathableTiles)
+void APathFinder::Discovery_Implementation(FTile Origin, int32 Range, TArray<FTile> &PathableTiles)
 {
 	if (Range < 1) Range = NodeMap.Num();
 
@@ -99,26 +93,22 @@ void APathFinder::Discovery_Implementation(int32 Origin, int32 Range, TArray<int
 	ClearQueue();
 
 	// Set start node values and push to queue
-	auto pp = NodeMap.Find(Origin);
-	if (!pp) return;	// if index not in node map exit
-	auto node = *(pp);
-	if (!node) return;	// if node not valid exit
-	node->SetNodeValues(0, HeuristicEstimate, Origin, 0);
-	OpenNodes.Push(node);
+	auto Node = GetNode(Origin);
+	Node->SetNodeValues(0, HeuristicEstimate, Origin.ToIndex(), 0);
+	OpenNodes.Push(Node);
 
 	// Start primary loop and open.pop to get index of node, sort open and ensure node valid
 	while (OpenNodes.Num() > 0 && !stopped)
 	{
 		OpenNodes.Sort([](APathNode& A, const APathNode& B) { return A > B; });
-		node = OpenNodes.Pop();
-		if (!node) continue;
-		auto current = node->Index;
+		Node = OpenNodes.Pop();
+		if (!Node) continue;
 
 		// If node is Destination, Add to closed, set node checked and stopped is true
-		if (*node == Destination)
+		if (Destination.IsSet() && *Node == Destination.GetValue())
 		{
-			ClosedNodes.Add(node);
-			node->SetAsChecked();
+			ClosedNodes.Add(Node);
+			Node->SetAsChecked();
 			stopped = true;
 		}
 
@@ -126,60 +116,53 @@ void APathFinder::Discovery_Implementation(int32 Origin, int32 Range, TArray<int
 		if (SearchLimit < ClosedNodes.Num()) break;
 
 		// If node is Origin or within range and not obstructed check neighbors
-		if (*node == Origin || (GetStatusByIndex(node->Index) > ETileStatus::TS_Obstructed && node->Step < Range))
+		if (*Node == Origin || (GetStatusByTile(Node->Tile) > ETileStatus::TS_Obstructed && Node->Step < Range))
 		{
 			// Loop through neighbors
-			for (auto direct : ValidDirections)
+			for (auto Direction : ValidDirections)
 			{
-				auto neighbor = node->Index + direct;
+				FTile Neighbor = Direction + Node->Tile;
 				// Skip if pathable tiles and neighbor not amoung them
-				if (PathableTiles.Num() > 0 && !PathableTiles.Contains(neighbor)) continue;
+				if (PathableTiles.Num() > 0 && !PathableTiles.Contains(Neighbor)) continue;
 
 				// Skip if status < obstructed
-				if (GetStatusByIndex(neighbor) < ETileStatus::TS_Obstructed) continue;
+				if (GetStatusByTile(Neighbor) < ETileStatus::TS_Obstructed) continue;
 
 				// Skip if neighbor in open or closed
-				auto pred = [=](APathNode* Result) { return *Result == neighbor; };
-				if (OpenNodes.ContainsByPredicate(pred) || ClosedNodes.ContainsByPredicate(pred)) continue;
+				auto pred = [=](APathNode* Node) { return *Node == Neighbor; };
+				if (OpenNodes.FindByPredicate(pred) || ClosedNodes.FindByPredicate(pred)) continue;
 
 				// If Destination not valid calculate end point
-				int32 end;
-				if (NodeMap.Contains(Destination)) end = Destination;
-				else
-				{
-					FVector v;
-					v = IndexToWorld(direct, false);
-					v.Normalize(.0001);
-					WorldToIndex(v * (Range + 1) * GetTileSize(), end);
-				}
+				FTile end;
+				if (Destination.IsSet() && GetNode(Destination.GetValue())) end = Destination.GetValue();
+				else end = Direction.ToWorld().GetSafeNormal() * (Range + 1) * WarBoardLib::GetTileSize();
 
 				// Calculate Tie Breaker
-				int32 r1, r2, c1, c2;
-				IndexToTile(node->Index - end, r1, c1);
-				IndexToTile(Origin - end, r2, c2);
-				int32 tb = TieBreaker ? FMath::Abs((r1 * c2) - (r2 * c1)) * .001 : 0;
+				FTile TileA = Node->Tile - end;
+				FTile TileB = Origin - end;
+				int32 tb = TieBreaker ? FMath::Abs((TileA.ToRC().X * TileB.ToRC().Y) - (TileB.ToRC().X * TileA.ToRC().Y)) * .001 : 0;
 
 				// Call CheckNeighbor
-				CheckNeighbor(node, direct, end, tb);
+				CheckNeighbor(Node, Direction, end, tb);
 			}
 
 		}
 
 		// Add to closed and set node checked
-		ClosedNodes.Add(node);
-		node->SetAsChecked();
+		ClosedNodes.Add(Node);
+		Node->SetAsChecked();
 	}
 }
 
-void APathFinder::CheckNeighbor_Implementation(APathNode *Current, int32 Direction, int32 Goal, int32 BreakTie = 0)
+void APathFinder::CheckNeighbor_Implementation(APathNode *Current, FTile Direction, FTile Goal, int32 BreakTie = 0)
 {
-	int32 Neighbor = Current->Index + Direction;
+	FTile Neighbor = Direction + Current->Tile;
 
 	// Return if neighbor is invalid
-	if (!NodeMap.Contains(Neighbor)) return;
+	if (!GetNode(Neighbor)) return;
 
 	// Calculate cost
-	int32 cost = Current->Cost + ETileStatus::TS_Status_MAX + 1 - GetStatusByIndex(Neighbor);
+	int32 cost = Current->Cost + ETileStatus::TS_Status_MAX + 1 - GetStatusByTile(Neighbor);
 
 	// Neighbor's cost should never be less than parent's
 	if (Current->Cost >= cost) return;
@@ -196,36 +179,34 @@ void APathFinder::CheckNeighbor_Implementation(APathNode *Current, int32 Directi
 	// Weigh cost if punishing direction changes
 	if (PunishDirectionChanges)
 	{
-		int32 r1, r2, c1, c2;
-		IndexToTile(Current->Index - Current->ParentIndex, r1, c1);
-		IndexToTile(Direction, r2, c2);
-		if (r1 == r2) cost += 20;
-		if (c1 == c2) cost += 20;
+		FTile TileA = Current->Tile - Current->ParentTile;
+		if (TileA.ToRC().X == Direction.ToRC().X) cost += 20;
+		if (TileA.ToRC().Y == Direction.ToRC().Y) cost += 20;
 	}
 
 	// Calculate Heuristic
-	int32 row, col, Heu;
-	IndexToTile(Neighbor - Goal, row, col);
-	row = FMath::Abs(row);
-	col = FMath::Abs(col);
+	int32 Heu;
+	FVector2D RC = (Neighbor - Goal).ToRC();
+	RC.X = abs(RC.X);
+	RC.Y = abs(RC.Y);
 	Heu = 0;
 	switch (HeuristicFormula)
 	{
 	case EHeuFormula::Manhatan:
-		Heu = HeuristicEstimate * (row + col);
+		Heu = HeuristicEstimate * (RC.X + RC.Y);
 		break;
 	case EHeuFormula::MaxDXDY:
-		Heu = row > col ? row : col;
+		Heu = RC.X > RC.Y ? RC.X : RC.Y;
 		break;
 	case EHeuFormula::Diagonal:
-		Heu = row < col ? row : col;
-		Heu = (Heu * 2 * HeuristicEstimate) + (HeuristicEstimate * (row + col - (Heu * 2)));
+		Heu = RC.X < RC.Y ? RC.X : RC.Y;
+		Heu = (Heu * 2 * HeuristicEstimate) + (HeuristicEstimate * (RC.X + RC.Y - (Heu * 2)));
 		break;
 	case EHeuFormula::Euclidean:
-		Heu = FMath::Sqrt((row ^ 2) + (col ^ 2)) * HeuristicEstimate;
+		Heu = FMath::Sqrt(((int32)RC.X ^ 2) + ((int32)RC.Y ^ 2)) * HeuristicEstimate;
 		break;
 	case EHeuFormula::EucNoSQRT:
-		Heu = ((row ^ 2) + (col ^ 2)) * HeuristicEstimate;
+		Heu = (((int32)RC.X ^ 2) + ((int32)RC.Y ^ 2)) * HeuristicEstimate;
 		break;
 	case EHeuFormula::Heu_MAX:
 	default:
@@ -236,40 +217,36 @@ void APathFinder::CheckNeighbor_Implementation(APathNode *Current, int32 Directi
 	Heu += BreakTie;
 
 	// Add to open, sort open
-	auto pp = NodeMap.Find(Neighbor);
-	if (!pp) return;	// if index not in node map exit
-	auto node = *(pp);
-	if (!node) return;	// if node not valid exit
-	node->SetNodeValues(cost, Heu, Current->Index, Current->Step + 1);
-	OpenNodes.Add(node);
+	auto Node = GetNode(Neighbor);
+	Node->SetNodeValues(cost, Heu, Current->Tile, Current->Step + 1);
+	OpenNodes.Add(Node);
 }
 
-bool APathFinder::Route_Implementation(int32 End, TArray<int32> &RouteArray)
+bool APathFinder::Route_Implementation(FTile End, TArray<FTile> &RouteArray)
 {
-	if (!NodeMap.Contains(End)) return false;
-	auto node = NodeMap[End];
+	auto Node = GetNode(End);
 	bool stop = false, found = false;
 
-	node->SetAsEnd();
+	Node->SetAsEnd();
 
 	while (!found)
 	{
 		// Stop if parent isn't valid
-		if (!NodeMap.Contains(node->ParentIndex)) break;
+		if (!GetNode(Node->ParentTile)) break;
 
 		// Debug Display
 		// TODO::TODO Draw line to parent, possibly set as vertices for spline
 
 		// Parent calling loop
-		if (node->ParentIndex != node->Index)
+		if (Node->ParentTile != Node->Tile)
 		{
-			RouteArray.Add(node->Index);
-			node = NodeMap[node->ParentIndex];
-			node->SetAsPath();
+			RouteArray.Add(Node->Tile);
+			auto ParentNode = GetNode(Node->ParentTile);
+			ParentNode->SetAsPath();
 		}
 		else
 		{
-			node->SetAsStart();
+			Node->SetAsStart();
 			found = true;
 		}
 	}
@@ -277,23 +254,27 @@ bool APathFinder::Route_Implementation(int32 End, TArray<int32> &RouteArray)
 	return found;
 }
 
-bool APathFinder::DirectRoute_Implementation(int32 Start, int32 End, TArray<int32> &RouteArray, TArray<int32> &PathableTiles)
+bool APathFinder::DirectRoute_Implementation(FTile Start, FTile End, TArray<FTile> &RouteArray, TArray<FTile> &PathableTiles)
 {
 	Destination = End;
 	Discovery(Start, 0, PathableTiles);
 	return Route(End, RouteArray);
 }
 
+APathNode* APathFinder::GetNode(FTile Tile)
+{
+	auto pp = NodeMap.FindByPredicate([=](APathNode* Node) { return *Node == Tile; });
+	if (!pp || !(*pp)) return nullptr;
+	return *pp;
+}
+
 void APathFinder::ResetNodes()
 {
-	TArray<int32> t;
-	NodeMap.GetKeys(t);
-	for (auto i : t)
+	for (auto Node : NodeMap)
 	{
-		auto n = NodeMap[i];
-		n->Reset();
+		Node->Reset();
 
-		if (DebugMode) n->EnableDebugMode();
+		if (DebugMode) Node->EnableDebugMode();
 	}
 }
 
@@ -305,30 +286,30 @@ void APathFinder::ClearQueue()
 	NodeStat = 0;
 }
 
-ETileStatus APathFinder::GetStatusByIndex(int32 Index)
+ETileStatus APathFinder::GetStatusByTile(FTile InTile)
 {
-	if (!NodeMap.Contains(Index)) return ETileStatus::TS_Invalid;
-	if (BlockedNodes.Contains(Index)) return ETileStatus::TS_Blocked;
-	if (GetActorAtIndex(GetWorld(), Index) != nullptr) return ETileStatus::TS_Obstructed;
+	if (!GetNode(InTile)) return ETileStatus::TS_Invalid;
+	if (BlockedNodes.Contains(InTile)) return ETileStatus::TS_Blocked;
+	if (GetActorAtTile(GetWorld(), InTile) != nullptr) return ETileStatus::TS_Obstructed;
 	return ETileStatus::TS_Open;
 }
 
-void APathFinder::UpdateStatus(int32 Index, ETileStatus Status)
+void APathFinder::UpdateStatus(FTile InTile, ETileStatus Status)
 {
-	if (Status > ETileStatus::TS_Blocked) BlockedNodes.Remove(Index);
-	if (NodeMap.Contains(Index)) BlockedNodes.AddUnique(Index);
+	if (Status > ETileStatus::TS_Blocked) BlockedNodes.Remove(InTile);		// TODO: I Think there's an error here
+	if (GetNode(InTile)) BlockedNodes.AddUnique(InTile);
 }
 
-TArray<int32> APathFinder::GetReachableTiles(bool IncludeObstructed)
+TArray<FTile> APathFinder::GetReachableTiles(bool IncludeObstructed)
 {
-	TArray<int32> t;
-	for (auto n : ClosedNodes)
+	TArray<FTile> Tiles;
+	for (auto Node : ClosedNodes)
 	{
-		if (IncludeObstructed) t.Add(n->Index);
-		else if (GetStatusByIndex(n->Index) > ETileStatus::TS_Obstructed) t.Add(n->Index);
+		if (IncludeObstructed) Tiles.Add(Node->Tile);
+		else if (GetStatusByTile(Node->Tile) > ETileStatus::TS_Obstructed) Tiles.Add(Node->Tile);
 	}
 
-	return t;
+	return Tiles;
 }
 
 // Called when the game starts or when spawned

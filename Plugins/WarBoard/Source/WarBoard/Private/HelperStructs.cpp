@@ -1,11 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include <math.h>
-
 #include "HelperStructs.h"
-#include "WarBoardLibrary.h"
 
+#include <math.h>
 
 float FTile::TileSize = 200.f;
 float FTile::Radius = 100.f;
@@ -35,7 +33,7 @@ void FTile::CubicToInternal(int32 InA, int32 InB, int32 InC)
 FVector2D FTile::GetPattern()
 {
 	FVector2D Size = FVector2D();
-	switch (UWarBoardLibrary::TileShape)
+	switch (Shape)
 	{
 	default:
 		return FVector2D(Height, Width);
@@ -45,6 +43,26 @@ FVector2D FTile::GetPattern()
 		return FVector2D(1.5 * Height, Width);
 	}
 }
+
+TArray<FVector>& FTile::GetVertices(const int32 Sides, const float Size, const float RelativeRotationToFirstVertex, const float PolygonRotation)
+{
+	auto Vertices = new TArray<FVector>;
+	if (Sides < 3) return *Vertices;
+
+	auto VertexDistance = (Size / 2) / FMath::Cos(FMath::DegreesToRadians(RelativeRotationToFirstVertex));
+
+	float angle = 360.f / Sides;
+	for (int32 i = 0; i < Sides; i++)
+	{
+		float Rotation = (angle * i) + RelativeRotationToFirstVertex + PolygonRotation;
+		FVector Vertex = FRotator(0.0, Rotation, 0.0).Vector() * VertexDistance;
+		Vertices->Add(Vertex);
+	}
+
+	return *Vertices;
+}
+
+
 
 void FTile::WorldToInternal(FVector InLocation)
 {
@@ -63,17 +81,16 @@ void FTile::WorldToInternal(FVector InLocation)
 	PIPtoInternal(PIP);
 }
 
-//
 void FTile::PIPtoInternal(FVector2D PIP)
 {
 	auto Pat = GetPattern();
 	float MaxYInShape;
 	// Center PIP
 	PIP = PIP - (Pat * .5);
-	switch (UWarBoardLibrary::TileShape)
+	switch (Shape)
 	{
 	case ETileShape::Triangle:
-		// Twice as many Cols as PIPs
+		// Twice as many Cols as Pattern
 		Col = 2 * Col;
 		PIP.X += Pat.X * .5;
 		// When odd row flip bottom to top
@@ -83,7 +100,7 @@ void FTile::PIPtoInternal(FVector2D PIP)
 		if (abs(PIP.Y) > MaxYInShape) Col += FMath::Sign(PIP.Y);
 		return;
 	case ETileShape::Hex_Hor:
-		// Twice as many Rows and Cols as PIPs
+		// Twice as many Rows and Cols as Pattern
 		Row = 2 * Row;
 		Col = 2 * Col;
 		if (abs(PIP.Y) < (Pat.Y / 6)) return;
@@ -95,7 +112,7 @@ void FTile::PIPtoInternal(FVector2D PIP)
 		}
 		return;
 	case ETileShape::Hex_Vert:
-		// Twice as many Rows and Cols as PIPs
+		// Twice as many Rows and Cols as Pattern
 		Row = 2 * Row;
 		Col = 2 * Col;
 		if (abs(PIP.X) < (Pat.X / 6)) return;
@@ -113,7 +130,7 @@ void FTile::PIPtoInternal(FVector2D PIP)
 
 int32 FTile::ToIndex() const
 {
-	return Row * UWarBoardLibrary::MaxWidth + Col;
+	return Row * MAX_WIDTH + Col;
 }
 
 FVector2D FTile::ToRC() const
@@ -135,7 +152,7 @@ FVector FTile::ToWorld(bool TileCenter) const
 	FVector WorldLocation = FVector();
 	float RadialPointOffset;
 	bool IsUpsideDown;
-	switch (UWarBoardLibrary::TileShape)
+	switch (Shape)
 	{
 	case ETileShape::Triangle:
 		// Center is rotational point but needs to be radial point
@@ -173,8 +190,9 @@ FVector FTile::ToWorld(bool TileCenter) const
 	{
 		WorldLocation.X -= Height / 2;
 		WorldLocation.Y -= Width / 2;
+		return SnapToGridVector(WorldLocation);
 	}
-	return WorldLocation + UWarBoardLibrary::GridOffset;
+	return WorldLocation;
 }
 
 void FTile::SetTileSize(float Size)
@@ -211,6 +229,53 @@ void FTile::SetTileSize(float Size)
 		Height = Width = Size;
 		Radius = .5 * Size;
 	}
+}
+
+TArray<FVector>& FTile::GetPolygon(float Padding)
+{
+	// TODO: FIX!! This does not account for triangle rotation
+	TArray<FVector>& Polygon = GetPolygonByShape(Shape, Padding, TileSize);
+	for (auto& Vertex : Polygon)
+	{
+		// if row + col is odd and shape is triangle rotate 180 degrees
+		Vertex += this->ToWorld();
+	}
+
+	return Polygon;
+}
+
+TArray<FVector>& FTile::GetPolygonByShape(ETileShape PolygonShape, float Padding, float Size)
+{
+	auto S = (Size - Padding * 2);
+	switch (PolygonShape)
+	{
+	case ETileShape::Triangle:
+		return GetVertices(3, S);
+	default:
+	case ETileShape::Square:
+		return GetVertices(4, S, 45);
+	case ETileShape::Hex_Hor:
+		return GetVertices(6, S, 0, 90);
+	case ETileShape::Hex_Vert:
+		return GetVertices(6, S);
+	case ETileShape::Octogon:
+		return GetVertices(8, S, 22.5);
+	case ETileShape::Dodecagon:
+		return GetVertices(12, S, 15);
+	}
+}
+
+FVector FTile::SnapToGridVector(const FVector Location, const bool Center)
+{
+	FTile Tile = FTile(Location);
+	if (Center) return Tile.ToWorld();
+	TArray<FVector> Poly = Tile.GetPolygon();
+	FVector V = Location - Tile.ToWorld();
+	float Angle = FMath::RadiansToDegrees(acosf(FVector::DotProduct(V.GetSafeNormal(), Poly[0].GetSafeNormal())));
+	if (V.Y < 0) Angle = 360 - Angle;
+	int32 i = FMath::Fmod(roundf(Angle * Poly.Num() / 360), Poly.Num());
+
+	return Poly[i];
 }
 
 

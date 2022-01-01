@@ -45,19 +45,20 @@ void APathNode::Reset()
 	F = 0;
 	Cost = 0;
 	Heu = 0;
-	WarBoardLib::WorldToIndex(GetActorLocation(), Index);
-	ParentIndex = TNumericLimits<int32>::Lowest();
+	Tile = GetActorLocation();
+	ParentTile = TNumericLimits<int32>::Lowest();
 	Sphere->SetMaterial(0, M_Ignored);
 	Sphere->SetVisibility(false);
 	Display->SetVisibility(false);
 }
 
-void APathNode::SetNodeValues(int32 TravelCost, int32 Heuristic, int32 Parent, int32 Steps)
+void APathNode::SetNodeValues(int32 TravelCost, int32 Heuristic, FTile Parent, int32 Steps)
 {
+	Tile = GetActorLocation();
 	Cost = TravelCost;
 	Heu = Heuristic;
 	F = Cost + Heuristic;
-	ParentIndex = Parent;
+	ParentTile = Parent;
 	Sphere->SetMaterial(0, M_Unchecked);
 	Step = Steps;
 }
@@ -94,7 +95,7 @@ void APathNode::DisplayStat(int32 Stat)
 	switch (Stat)
 	{
 	case 1:
-		text = "P: " + ParentIndex;
+		text = "P: " + ParentTile.ToIndex();
 		break;
 	case 2:
 		text = "C: " + Cost;

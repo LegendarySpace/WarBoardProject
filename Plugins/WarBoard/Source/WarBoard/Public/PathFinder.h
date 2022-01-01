@@ -4,8 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+
 #include "HeuristicFormula.h"
 #include "TileStatus.h"
+#include "HelperStructs.h"
+
 #include "PathFinder.generated.h"
 
 class APathNode;
@@ -29,13 +32,13 @@ public:
 
 	// Make a node for each tile
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void Initialization(TArray<int32> Locations);
+	void Initialization(TArray<FTile> Locations);
 
 	// Add Node
-	bool Add(int32 Index);
+	bool Add(FTile InTile);
 
 	// Remove Node
-	bool Remove(int32 Index);
+	bool Remove(FTile InTile);
 
 
 	/**										**\
@@ -46,26 +49,29 @@ public:
 
 	// Resets all nodes and determine paths
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "PathableTiles"))
-	void Discovery(int32 Origin, int32 Range, TArray<int32> &PathableTiles);
+	void Discovery(FTile Origin, int32 Range, TArray<FTile> &PathableTiles);
 
 	// Looks at node in given direction and attempts to set data and add to open
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	void CheckNeighbor(APathNode *Current, int32 Direction, int32 Goal, int32 BreakTie);
+	void CheckNeighbor(APathNode *Current, FTile Direction, FTile Goal, int32 BreakTie);
 
 	// Returns the shourtest path to destination
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta =(AutoCreateRefTerm = "RouteArray"))
-	bool Route(int32 End, TArray<int32> &RouteArray);
+	bool Route(FTile End, TArray<FTile> &RouteArray);
 
 	// Returns the shourtest path to destination
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "RouteArray, PathableTiles"))
-	bool DirectRoute(int32 Start, int32 End, TArray<int32> &RouteArray, TArray<int32> &PathableTiles);
+	bool DirectRoute(FTile Start, FTile End, TArray<FTile> &RouteArray, TArray<FTile> &PathableTiles);
 
 
 	/**							**\
 	*		Control calls		  *
 	\**							**/
 
-	
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
+	APathNode* GetNode(FTile Tile);
+
 	// Reset all nodes
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
 	void ResetNodes();
@@ -76,15 +82,15 @@ public:
 
 	// Tile Status of a given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	ETileStatus GetStatusByIndex(int32 Index);
+	ETileStatus GetStatusByTile(FTile InTile);
 
 	// Update Status of given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void UpdateStatus(int32 Index, ETileStatus Status);
+	void UpdateStatus(FTile InTile, ETileStatus Status);
 
 	// List of indexes reached by Discovery
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	TArray<int32> GetReachableTiles(bool IncludeObstructed);
+	TArray<FTile> GetReachableTiles(bool IncludeObstructed);
 
 protected:
 	// Called when the game starts or when spawned
@@ -162,31 +168,31 @@ protected:
 
 	// All nodes that are blocked by a structure or have impassable terrain
 	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<int32> BlockedNodes;
+	TArray<FTile> BlockedNodes;
 
 	// Map of all created nodes and their indexes. Cannot edit, editing is handled by tile creation/destruction
 	UPROPERTY(BlueprintReadOnly, Category = "Pathing|Arrays")
-	TMap<int32, APathNode*> NodeMap;
+	TArray<APathNode*> NodeMap;
 
 	// All valid single step movement as relative index. Cardinal directions are assumed valid, may change later
 	UPROPERTY(BlueprintReadOnly, Category = "Pathing|Arrays")
-	TArray<int32> ValidDirections;
+	TArray<FTile> ValidDirections;
 
 	// Cardinal 2D directional movement as index
 	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
-	TArray<int32> CardinalDirections2D;
+	TArray<FTile> CardinalDirections2D;
 
 	// Diagonal 2D directional movement as index
 	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
-	TArray<int32> DiagonalDirections2D;
+	TArray<FTile> DiagonalDirections2D;
 
 	// Cardinal 3D directional movement as index
 	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
-	TArray<int32> CardinalDirections3D;
+	TArray<FTile> CardinalDirections3D;
 
 	// Diagonal 3D directional movement as index
 	UPROPERTY(EditAnywhere, Category = "Pathing|Arrays")
-	TArray<int32> DiagonalDirections3D;
+	TArray<FTile> DiagonalDirections3D;
 
 
 	/**							**\
@@ -195,6 +201,6 @@ protected:
 
 
 	// Used if destination is known as discovery starts, ignored if unknown
-	int32 Destination;
+	TOptional<FTile> Destination;
 
 };

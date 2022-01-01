@@ -22,12 +22,11 @@ ATileTypeManager::ATileTypeManager()
 	InstancedMeshComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 }
 
-void ATileTypeManager::SetupInstance(ETileType TileType, UStaticMesh * Mesh, float TileSize)
+void ATileTypeManager::SetupInstance(ETileType TileType, UStaticMesh * Mesh)
 {
 	if (InstancedMeshComp == nullptr) return;
 
 	Type = TileType;
-	Size = TileSize;
 	InstancedMeshComp->SetStaticMesh(Mesh);
 }
 
@@ -43,51 +42,49 @@ void ATileTypeManager::SetMat(UMaterial * Mat)
 	InstancedMeshComp->SetMaterial(0, Mat);
 }
 
-void ATileTypeManager::AddTile(int32 Index)
+void ATileTypeManager::AddTile(FTile Tile)
 {
-	if (!InstanceIndexes.Contains(Index))
+	if (!InstanceIndexes.Contains(Tile.ToIndex()))
 	{
-		InstanceIndexes.AddUnique(Index);
+		InstanceIndexes.AddUnique(Tile.ToIndex());
 
-		BuildTile(Index);
+		BuildTile(Tile.ToIndex());
 	}
 
 }
 
-void ATileTypeManager::BuildTile(int32 Index)
+void ATileTypeManager::BuildTile(FTile Tile)
 {
 	if (InstancedMeshComp == nullptr) return;
-	FVector loc;
-	loc = IndexToWorld(Index);
+	FVector loc = Tile.ToWorld();
 	// Tiles are assumed to have a thickness 1/10th its TileSize
-	loc += FVector(0.f, 0.f, -0.05 * Size);
-	// Tile Mesh's longest dimension is assumed to be 100
-	InstancedMeshComp->AddInstance(FTransform(FRotator(0.f), FVector(loc), FVector(Size / MeshSize)));
+	loc += FVector(0.f, 0.f, -0.05 * WarBoardLib::GetTileSize());
+	InstancedMeshComp->AddInstance(FTransform(FRotator(0.f), loc, FVector(WarBoardLib::GetTileSize() / MeshSize)));
 }
 
-void ATileTypeManager::RemoveTile(int32 Index)
+void ATileTypeManager::RemoveTile(FTile TileToRemove)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Remove tile called at %d"), Index);
-	if (InstanceIndexes.Contains(Index) && InstancedMeshComp != nullptr)
+	UE_LOG(LogTemp, Warning, TEXT("Remove tile called at %d"), TileToRemove.ToIndex());
+	if (InstanceIndexes.Contains(TileToRemove.ToIndex()) && InstancedMeshComp != nullptr)
 	{
-		int32 i = InstanceIndexes.Find(Index);
-		if (i == INDEX_NONE) return;
+		int32 InstanceIndex = InstanceIndexes.Find(TileToRemove.ToIndex());
+		if (InstanceIndex == INDEX_NONE) return;
 
+		// TODO: Removable once debugging is finished
 		FTransform InstanceTransform;
-		int32 InstanceTile;
+		FTile InstanceTile;
 
-
-		if (InstancedMeshComp->GetInstanceTransform(i, InstanceTransform, true))
+		if (InstancedMeshComp->GetInstanceTransform(InstanceIndex, InstanceTransform, true))
 		{
-			WorldToIndex(InstanceTransform.GetLocation(), InstanceTile);
-			UE_LOG(LogTemp, Warning, TEXT("Attempting to remove tile at Index %d"), InstanceTile);
+			InstanceTile = InstanceTransform.GetLocation();
+			UE_LOG(LogTemp, Warning, TEXT("Attempting to remove tile at Index %d"), InstanceTile.ToIndex());
 		}
 
-		if (InstancedMeshComp->RemoveInstance(i))
+		if (InstancedMeshComp->RemoveInstance(InstanceIndex))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Tile at Index %d Successfully Removed"), InstanceTile);
+			UE_LOG(LogTemp, Warning, TEXT("Tile at Index %d Successfully Removed"), InstanceTile.ToIndex());
 			
-			InstanceIndexes.RemoveAt(i, 1, true);
+			InstanceIndexes.RemoveAt(InstanceIndex, 1, true);
 			InstanceIndexes.Shrink();
 		}
 		else UE_LOG(LogTemp, Warning, TEXT("Remove instance failed"));
@@ -101,13 +98,13 @@ void ATileTypeManager::DisplayInstanceIndexes()
 	auto &insta = InstancedMeshComp->InstanceBodies;
 
 	FTransform InstanceTransform;
-	int32 InstanceTile;
+	FTile InstanceTile;
 	for (int InstanceBodiesIndex = 0; InstanceBodiesIndex < insta.Num(); InstanceBodiesIndex++)
 	{
 		if (InstancedMeshComp->GetInstanceTransform(InstanceBodiesIndex, InstanceTransform, true))
 		{
-			WorldToIndex(InstanceTransform.GetLocation(), InstanceTile);
-			UE_LOG(LogTemp, Warning, TEXT("Instance %d is at index %d"), InstanceBodiesIndex, InstanceTile);
+			InstanceTile = InstanceTransform.GetLocation();
+			UE_LOG(LogTemp, Warning, TEXT("Instance %d is at index %d"), InstanceBodiesIndex, InstanceTile.ToIndex());
 		}
 	}
 }

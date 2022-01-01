@@ -2,6 +2,10 @@
 
 
 #include "GameBoard.h"
+
+
+
+#include "HelperStructs.h"
 #include "PathFinder.h"
 #include "MovementManager.h"
 #include "AttackManager.h"
@@ -17,7 +21,7 @@ void AGameBoard::SetPathFinder(TSubclassOf<APathFinder> Router)
 	// Clear any current route manager first
 	delete RouteManager;
 	RouteManager = NewObject<APathFinder>(this, Router);
-	RouteManager->Initialization(TArray<int32>());
+	RouteManager->Initialization(TArray<FTile>());
 }
 
 void AGameBoard::SetMoveManager(TSubclassOf<AMovementManager> MoveSys)

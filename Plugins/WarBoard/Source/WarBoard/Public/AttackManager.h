@@ -19,7 +19,7 @@ public:
 	AAttackManager();
 
 	// Populate the Meshes
-	virtual void Populate_Implementation(TArray<int32> Choices) override;
+	virtual void Populate_Implementation(TArray<FTile> Choices) override;
 
 protected:
 	// Called when the game starts or when spawned

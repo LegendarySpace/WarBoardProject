@@ -8,6 +8,7 @@
 
 #include "EGridShape.h"
 #include "TileShape.h"
+#include "HelperStructs.h"
 
 #include "GridManager.generated.h"
 
@@ -22,16 +23,18 @@ struct FGridCell
 	GENERATED_BODY()
 
 public:
-	FGridCell(int32 Index = 0) { CellIndex = Index; }
+	FGridCell(int32 Index = 0) { this->Tile = Index; }
+
+	FGridCell(FTile InTile) { this->Tile = InTile; }
 
 	UPROPERTY(BlueprintReadWrite)
-	int32 CellIndex;
+		FTile Tile;
 
 	UPROPERTY(BlueprintReadWrite)
-	float CellSize;
+		float CellSize;
 
 	UPROPERTY(BlueprintReadWrite)
-	float LineThickness;
+		float LineThickness;
 
 
 	TArray<FVector> LineVertices;
@@ -54,56 +57,67 @@ public:
 
 	void operator=(const int32 Index)
 	{
-		this->CellIndex = Index;
+		this->Tile = Index;
+		this->BuildPolygonLines();
+	}
+
+	void operator=(const FTile InTile)
+	{
+		this->Tile = InTile;
 		this->BuildPolygonLines();
 	}
 
 	void operator=(const FGridCell Cell)
 	{
-		this->CellIndex = Cell.CellIndex;
+		this->Tile = Cell.Tile;
 		this->BuildPolygonLines();
 	}
 
-	FGridCell operator+(const int32 Index)
+	FGridCell operator+(const FTile InTile)
 	{
-		FGridCell Cell = FGridCell();
+		FGridCell Cell = FGridCell(InTile);
 		Cell = *this;
-		Cell.CellIndex = this->CellIndex + Index;
+		Cell.Tile = this->Tile + InTile;
 		Cell.BuildPolygonLines();
 		return Cell;
 	}
 
-	FGridCell& operator+=(const int32 Index)
+	FGridCell& operator+=(const FTile InTile)
 	{
-		CellIndex += Index;
+		this->Tile += InTile;
 		BuildPolygonLines();
 		return *this;
 	}
 
-	FGridCell operator-(const int32 Index)
+	FGridCell operator-(const FTile InTile)
 	{
-		FGridCell Cell = FGridCell();
+		FGridCell Cell = FGridCell(InTile);
 		Cell = *this;
-		Cell.CellIndex = this->CellIndex - Index;
+		Cell.Tile = this->Tile - InTile;
 		Cell.BuildPolygonLines();
 		return Cell;
 	}
 
-	FGridCell& operator-=(const int32 Index)
+	FGridCell& operator-=(const FTile InTile)
 	{
-		CellIndex -= Index;
+		this->Tile -= InTile;
 		BuildPolygonLines();
 		return *this;
 	}
 
 	bool operator==(const FGridCell& Cell) const
 	{
-		return this->CellIndex == Cell.CellIndex;
+		return this->Tile == Cell.Tile;
 	}
 
 	bool operator==(const int32& Index) const
 	{
-		return this->CellIndex == Index;
+		return this->Tile == Index;
+	}
+
+	bool operator==(const FTile& InTile) const
+	{
+		return this->Tile == InTile;
 	}
 
 };
@@ -133,10 +147,10 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void AddCell(int32 Index);
+	void AddCell(FTile Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void RemoveCell(int32 Index);
+	void RemoveCell(FTile Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void RebuildCells();
@@ -153,10 +167,8 @@ protected:
 
 	void CleanUpArray();
 
+	// TODO: Add Initializer for these so they match from FTile
 public:
-	UPROPERTY(EditAnywhere)
-	float TileSize = 200.0;
-
 	UPROPERTY(EditAnywhere)
 	ETileShape TileShape = ETileShape::Square;
 

@@ -3,8 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+
 #include "GameFramework/Actor.h"
+
 #include "TileShape.h"
+#include "HelperStructs.h"
+
 #include "PlanarManager.generated.h"
 
 class UHierarchicalInstancedStaticMeshComponent;
@@ -27,8 +31,8 @@ public:
 
 	// Populate the Meshes
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
-	void Populate(TArray<int32> Choices);
-	virtual void Populate_Implementation(TArray<int32> Choices); // Virtual override
+	void Populate(TArray<FTile> Choices);
+	virtual void Populate_Implementation(TArray<FTile> Choices); // Virtual override
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
 		void Clear();

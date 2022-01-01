@@ -2,366 +2,209 @@
 
 
 #include "WarBoardLibrary.h"
+
 #include <math.h>
 
-float UWarBoardLibrary::TileSize = 200.f;
-ETileShape UWarBoardLibrary::TileShape = ETileShape::Square;
-int32 UWarBoardLibrary::MaxWidth = 6500; // TODO: Remove all above
-FVector UWarBoardLibrary::GridOffset = FVector(0.0);
+#include "HelperStructs.h"
+
 AActor* UWarBoardLibrary::Highlighted = nullptr;
 
-void UWarBoardLibrary::InitializeTiles(float Size, ETileShape Shape, const FVector Offset)
+AActor * UWarBoardLibrary::GetActorAtTile(UObject* WorldContextObject, const FTile Tile)
 {
-	UWarBoardLibrary::TileSize = Size;
-	UWarBoardLibrary::TileShape = Shape;
-	UWarBoardLibrary::GridOffset = Offset;
-}
-
-void UWarBoardLibrary::CalculatePosition(int32 & Row, int32 & Col, FVector & WorldLocation, bool ToWorld) // add bool for offset addition
-{
-	if (TileSize < 1) return;
-	if (ToWorld)
-	{
-		// Convert to world position
-		WorldLocation = FVector(0.0);
-		switch (TileShape)
-		{
-		case ETileShape::Square:
-			WorldLocation.X = Row * TileSize;
-			WorldLocation.Y = Col * TileSize;
-			break;
-		case ETileShape::Hex_Hor:
-			// Col are tilesize apart, row is SQRT(3) * size/2
-			WorldLocation.X = Row * sqrt(3) * (TileSize / 2);
-			WorldLocation.Y = Col * TileSize;
-			break;
-		case ETileShape::Hex_Vert:
-			// Rows are tilesize apart, cols are sqrt(3) * size/2
-			WorldLocation.X = Row * TileSize;
-			WorldLocation.Y = Col * sqrt(3) * (TileSize / 2);
-			break;
-		case ETileShape::Shape_MAX:
-			break;
-		default:
-			return;
-		}
-		WorldLocation = WorldLocation + UWarBoardLibrary::GridOffset;
-	}
-	else
-	{
-		// Convert from world position
-		auto loc = WorldLocation - UWarBoardLibrary::GridOffset;
-		switch (TileShape)
-		{
-		case ETileShape::Square:
-			Row = loc.X / TileSize;
-			Col = loc.Y / TileSize;
-			break;
-		case ETileShape::Hex_Hor:
-			// Col are tilesize apart, row is SQRT(3) * size/2
-			Row = loc.X / (sqrt(3) * TileSize / 2);
-			Col = loc.Y / TileSize;
-			break;
-		case ETileShape::Hex_Vert:
-			// Rows are tilesize apart, cols are sqrt(3) * size/2
-			Row = loc.X / TileSize;
-			Col = loc.Y / (sqrt(3) * TileSize / 2);
-			break;
-		case ETileShape::Shape_MAX:
-		default:
-			return;
-		}
-	}
-}
-
-FVector UWarBoardLibrary::IndexToWorld(int32 Index, bool TileCenter)
-{
-	int32 row = 0, col = 0;
-	FVector Location;
-
-	IndexToTile(Index, row, col);
-	UWarBoardLibrary::CalculatePosition(row, col, Location);
-	if (!TileCenter) Location -= FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize;
-	return Location;
-}
-
-void UWarBoardLibrary::IndexToTile(int32 Index, int32 & Row, int32 & Col)
-{
-	// For mod to work correctly, need to offset it in the direction of the sign of the index to retain it's relation to 0
-	int32 adj = UWarBoardLibrary::MaxWidth / 2;
-	if (Index != 0) adj *= FMath::Sign(Index);
-	Row = FMath::RoundToInt((float)Index / (float)UWarBoardLibrary::MaxWidth);
-	Col = FMath::Fmod(Index + adj, UWarBoardLibrary::MaxWidth) - adj;
-}
-
-FVector UWarBoardLibrary::TileToWorld(int32 Row, int32 Col, bool TileCenter)
-{
-	FVector Location;
-	UWarBoardLibrary::CalculatePosition(Row, Col, Location);
-	if (!TileCenter) Location -= FVector(.5, .5, 0.f) * UWarBoardLibrary::TileSize;
-	return Location;
-}
-
-void UWarBoardLibrary::TileToIndex(int32 Row, int32 Col, int32 & Index)
-{
-	Index = Row * UWarBoardLibrary::MaxWidth + Col;
-}
-
-void UWarBoardLibrary::WorldToIndex(FVector Location, int32 & Index)
-{
-	int32 row, col;
-
-	UWarBoardLibrary::CalculatePosition(row, col, Location, false);
-	TileToIndex(row, col, Index);
-}
-
-void UWarBoardLibrary::WorldToTile(FVector Location, int32 & Row, int32 & Col)
-{
-	UWarBoardLibrary::CalculatePosition(Row, Col, Location, false);
-}
-
-AActor * UWarBoardLibrary::GetActorAtIndex(UObject* WorldContextObject, const int32 Index)
-{
-	// TODO May switch to sphere trace and return all 
-	// Perform line trace and retrieve actor if one exists
-	// End 150 units above index location
+	// Check 100 units above and 50 below. This may change in future
 	UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
 	FHitResult result;
 	FVector start, end;
-	IndexToWorld(Index, true);
-	end = start + FVector(0.f, 0.f, 150.f);
+	start = Tile.ToWorld() + FVector(0, 0, 100);
+	end = Tile.ToWorld() - FVector(0, 0, 50);
 
 	if (World->LineTraceSingleByChannel(result, start, end, ECollisionChannel::ECC_PhysicsBody)) return result.GetActor();
 	else return nullptr;
 }
 
-AActor * UWarBoardLibrary::GetActorAtTile(UObject* WorldContextObject, const int32 Row, const int32 Col)
-{
-	int32 i;
-	TileToIndex(Row, Col, i);
-	GetActorAtIndex(WorldContextObject, i);
-	return nullptr;
-}
-
-TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGridShape Shape)
+// This will be changed to use a template
+TArray<FTile> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGridShape Shape)
 {
 	// This is deprecated, instead use template
 	// MinRange is region to start making tiles
-	TArray<int32> tiles;
-	int32 a, b, c, d, i, j;
+	TArray<FTile> Tiles;
+	FTile a, b, c, d;
 	switch (Shape)
 	{
 	case EGridShape::Square:
-		for (int32 row = 0; row <= MaxRange; row++)
+		for (int32 Row = 0; Row <= MaxRange; Row++)
 		{
-			for (int32 col = 0; col <= MaxRange; col++)
+			for (int32 Col = 0; Col <= MaxRange; Col++)
 			{
 				// Skip if row and col under min
-				if (row >= MinRange || col >= MinRange)
+				if (Row >= MinRange || Col >= MinRange)
 				{
-					TileToIndex(row, col, i);
-					tiles.Add(i);
-					if (col > 0)
+					Tiles.Add(FTile(Row, Col));
+					if (Col > 0)
 					{
 						// Duplicate across X
-						TileToIndex(row, -col, i);
-						tiles.Add(i);
+						Tiles.Add(FTile(Row, -Col));
 					}
-					if (row > 0)
+					if (Row > 0)
 					{
 						// Duplicate across Y
-						TileToIndex(-row, col, i);
-						tiles.Add(i);
+						Tiles.Add(FTile(-Row, Col));
 					}
-					if (row > 0 && col > 0)
+					if (Row > 0 && Col > 0)
 					{
 						// Duplicate across both Axis
-						TileToIndex(-row, -col, i);
-						tiles.Add(i);
+						Tiles.Add(FTile(-Row, -Col));
 					}
 				}
 			}
 		}
 		break;
 	case EGridShape::Diamond:
-		for (int32 row = 0; row <= MaxRange; row++)
+		for (int32 Row = 0; Row <= MaxRange; Row++)
 		{
 			// Col + Row is the maximum distance
 			// therefore loop limit is Max - row
-			for (int32 col = 0; col <= (MaxRange - row); col++)
+			for (int32 Col = 0; Col <= (MaxRange - Row); Col++)
 			{
 				// Skip if row + col under min
-				if ((row + col) >= MinRange)
+				if ((Row + Col) >= MinRange)
 				{
-					TileToIndex(row, col, i);
-					tiles.Add(i);
-					if (col > 0)
+					Tiles.Add(FTile(Row ,Col));
+					if (Col > 0)
 					{
 						// Duplicate across X
-						TileToIndex(row, -col, i);
-						tiles.Add(i);
+						Tiles.Add(FTile(Row, -Col));
 					}
-					if (row > 0)
+					if (Row > 0)
 					{
 						// Duplicate across Y
-						TileToIndex(-row, col, i);
-						tiles.Add(i);
+						Tiles.Add(FTile(-Row, Col));
 					}
-					if (row > 0 && col > 0)
+					if (Row > 0 && Col > 0)
 					{
 						// Duplicate across both Axis
-						TileToIndex(-row, -col, i);
-						tiles.Add(i);
+						Tiles.Add(FTile(-Row, -Col));
 					}
 				}
 			}
 		}
 		break;
 	case EGridShape::Cross:
-		for (int32 range = MinRange; range <= MaxRange; range++)
+		for (int32 Range = MinRange; Range <= MaxRange; Range++)
 		{
 			// Cross only increases row or column
-			if (range <= 0)
+			if (Range <= 0)
 			{
-				TileToIndex(0, 0, i);
-				tiles.Add(i);
+				Tiles.Add(FTile());
 			}
 			else
 			{
-				TileToIndex(range, 0, i);
-				tiles.Add(i);
-				TileToIndex(-range, 0, i);
-				tiles.Add(i);
-				TileToIndex(0, range, i);
-				tiles.Add(i);
-				TileToIndex(0, -range, i);
-				tiles.Add(i);
+				Tiles.Add(FTile(Range, 0));
+				Tiles.Add(FTile(-Range, 0));
+				Tiles.Add(FTile(0, Range));
+				Tiles.Add(FTile(0, -Range));
 			}
 		}
 		break;
 	case EGridShape::Diagonal:
-		for (int32 range = MinRange; range <= MaxRange; range++)
+		for (int32 Range = MinRange; Range <= MaxRange; Range++)
 		{
 			// Diagonal only increases as (row, column)
-			if (range <= 0)
+			if (Range <= 0)
 			{
-				TileToIndex(0, 0, i);
-				tiles.Add(i);
+				Tiles.Add(FTile());
 			}
 			else
 			{
-				TileToIndex(range, range, i);
-				tiles.Add(i);
-				TileToIndex(-range, range, i);
-				tiles.Add(i);
-				TileToIndex(-range, -range, i);
-				tiles.Add(i);
-				TileToIndex(range, -range, i);
-				tiles.Add(i);
+				Tiles.Add(FTile(Range, Range));
+				Tiles.Add(FTile(-Range, Range));
+				Tiles.Add(FTile(-Range, -Range));
+				Tiles.Add(FTile(Range, -Range));
 			}
 		}
 		break;
 	case EGridShape::CrossDiagonal:
-		for (int32 range = MinRange; range <= MaxRange; range++)
+		for (int32 Range = MinRange; Range <= MaxRange; Range++)
 		{
 			// First make cross then diagonal for each range
-			if (range <= 0)
+			if (Range <= 0)
 			{
-				TileToIndex(0, 0, i);
-				tiles.Add(i);
+				Tiles.Add(FTile());
 			}
 			else
 			{
 				// add cross
-				TileToIndex(range, 0, i);
-				tiles.Add(i);
-				TileToIndex(-range, 0, i);
-				tiles.Add(i);
-				TileToIndex(0, range, i);
-				tiles.Add(i);
-				TileToIndex(0, -range, i);
-				tiles.Add(i);
+				Tiles.Add(FTile(Range, 0));
+				Tiles.Add(FTile(-Range, 0));
+				Tiles.Add(FTile(0, Range));
+				Tiles.Add(FTile(0, -Range));
 				
 				// then add diagonal
-				TileToIndex(range, range, i);
-				tiles.Add(i);
-				TileToIndex(-range, range, i);
-				tiles.Add(i);
-				TileToIndex(-range, -range, i);
-				tiles.Add(i);
-				TileToIndex(range, -range, i);
-				tiles.Add(i);
+				Tiles.Add(FTile(Range, Range));
+				Tiles.Add(FTile(-Range, Range));
+				Tiles.Add(FTile(-Range, -Range));
+				Tiles.Add(FTile(Range, -Range));
 			}
 		}
 		break;
 	case EGridShape::Rhombus:
-		for (int32 range = MinRange; range <= MaxRange; range++)
+		for (int32 Range = MinRange; Range <= MaxRange; Range++)
 		{
 			// Rhombus horizontal calculations
-			if (range <= 0)
+			if (Range <= 0)
 			{
-				TileToIndex(0, 0, a);
-				tiles.Add(a);
+				Tiles.Add(FTile());
 			}
 			else
 			{
 				// Calculate points to build from
-				TileToIndex(range, 0, a);
-				tiles.Add(a);
-				TileToIndex(range, 2 * range, b);
-				tiles.Add(b);
-				TileToIndex(-range, 0, c);
-				tiles.Add(c);
-				TileToIndex(-range, -2 * range, d);
-				tiles.Add(d);
+				a = FTile(Range, 0);
+				Tiles.Add(a);
+				b = FTile(Range, 2 * Range);
+				Tiles.Add(b);
+				c = FTile(-Range, 0);
+				Tiles.Add(c);
+				d = FTile(-Range, -2 * Range);
+				Tiles.Add(d);
 
-				for (int32 circ = 1; circ <= (2*range-1); circ++)
+				for (int32 Circ = 1; Circ <= (2 * Range - 1); Circ++)
 				{
 					// Build outward from starting point
-					TileToIndex(0, circ, j);
-					tiles.Add(a + j);
-					TileToIndex(-circ, -circ, j);
-					tiles.Add(b + j);
-					TileToIndex(0, -circ, j);
-					tiles.Add(c + j);
-					TileToIndex(circ, circ, j);
-					tiles.Add(d + j);
+					Tiles.Add(a + FTile(0, Circ));
+					Tiles.Add(b + FTile(-Circ, -Circ));
+					Tiles.Add(c + FTile(0, -Circ));
+					Tiles.Add(d + FTile(Circ, Circ));
 				}
 			}
 		}
 		break;
 	case EGridShape::RhombusVert:
-		for (int32 range = MinRange; range <= MaxRange; range++)
+		for (int32 Range = MinRange; Range <= MaxRange; Range++)
 		{
 			// Rhombus vertical calculations
-			if (range <= 0)
+			if (Range <= 0)
 			{
-				TileToIndex(0, 0, a);
-				tiles.Add(a);
+				Tiles.Add(FTile());
 			}
 			else
 			{
 				// Calculate points to build from
-				TileToIndex(0, range, a);
-				tiles.Add(a);
-				TileToIndex(-2 * range, range, b);
-				tiles.Add(b);
-				TileToIndex(0, -range, c);
-				tiles.Add(c);
-				TileToIndex(2 * range, -range, d);
-				tiles.Add(d);
+				a = FTile(0, Range);
+				Tiles.Add(a);
+				b = FTile(-2 * Range, Range);
+				Tiles.Add(b);
+				c = FTile(0, -Range);
+				Tiles.Add(c);
+				d = FTile(2 * Range, -Range);
+				Tiles.Add(d);
 
-				for (int32 circ = 1; circ <= (2 * range - 1); circ++)
+				for (int32 Circ = 1; Circ <= (2 * Range - 1); Circ++)
 				{
 					// Build outward from starting point
-					TileToIndex(-circ, 0, j);
-					tiles.Add(a + j);
-					TileToIndex(circ, -circ, j);
-					tiles.Add(b + j);
-					TileToIndex(circ, 0, j);
-					tiles.Add(c + j);
-					TileToIndex(-circ, circ, j);
-					tiles.Add(d + j);
+					Tiles.Add(a + FTile(-Circ, 0));
+					Tiles.Add(b + FTile(Circ, -Circ));
+					Tiles.Add(c + FTile(Circ, 0));
+					Tiles.Add(d + FTile(-Circ, Circ));
 				}
 			}
 		}
@@ -371,10 +214,9 @@ TArray<int32> UWarBoardLibrary::GetTileArray(int32 MinRange, int32 MaxRange, EGr
 	}
 
 
-	return tiles;
+	return Tiles;
 }
 
-// This will be changed to use a template
 bool UWarBoardLibrary::GetValidatedTileArray(int32 Origin, int32 MinRange, int32 MaxRange, EGridShape Shape, TArray<int32>& ValidatedShape, const TArray<int32> Accessible)
 {
 	if (!Accessible.Contains(Origin)) return false;
@@ -382,7 +224,7 @@ bool UWarBoardLibrary::GetValidatedTileArray(int32 Origin, int32 MinRange, int32
 	auto baseArray = GetTileArray(MinRange, MaxRange, Shape);
 	for (auto i : baseArray)
 	{
-		if (Accessible.Contains(i + Origin)) ValidatedShape.Add(i + Origin);
+		if (Accessible.Contains(i.ToIndex() + Origin)) ValidatedShape.Add(i.ToIndex() + Origin);
 	}
 
 	return true;

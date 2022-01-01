@@ -39,22 +39,19 @@ void APlanarManager::SetPlaneType(ETileShape Shape)
 
 }
 
-void APlanarManager::Populate(TArray<int32> Choices)
+void APlanarManager::Populate(TArray<FTile> Choices)
 {
 	Populate_Implementation(Choices);
 }
 
-void APlanarManager::Populate_Implementation(TArray<int32> Choices)
+void APlanarManager::Populate_Implementation(TArray<FTile> Choices)
 {
 	Clear();
-	FRotator rot = FRotator(0.0);
 	FVector sca = FVector(WarBoardLib::GetTileSize() / 100.f);
-	FVector loc = FVector();
 	// Override in children
-	for (auto i : Choices)
+	for (auto Tile : Choices)
 	{
-		loc = WarBoardLib::IndexToWorld(i);
-		HISM->AddInstance(FTransform(rot, loc, sca));
+		HISM->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), sca));
 	}
 }
 

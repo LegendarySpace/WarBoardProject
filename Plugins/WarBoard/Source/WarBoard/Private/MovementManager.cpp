@@ -2,7 +2,9 @@
 
 
 #include "MovementManager.h"
+
 #include "Components/HierarchicalInstancedStaticMeshComponent.h"
+
 #include "WarBoardLibrary.h"
 
 using namespace WarBoardLib;
@@ -15,20 +17,17 @@ AMovementManager::AMovementManager()
 
 }
 
-void AMovementManager::Populate_Implementation(TArray<int32> Choices)
+void AMovementManager::Populate_Implementation(TArray<FTile> Choices)
 {
 	Clear();
-	FRotator rot = FRotator(0.0);
 	FVector sca = FVector(WarBoardLib::GetTileSize() / 100.f);
-	FVector loc = FVector();
-	for (auto i : Choices)
+	for (auto Tile : Choices)
 	{
-		auto a = GetActorAtIndex(GetWorld(), i);
+		auto a = GetActorAtTile(GetWorld(), Tile);
 		if (IsEnemyTeam(GetHighlightedActor(), a) && !bCanMoveToEnemy) continue;
 		if (IsSameTeam(GetHighlightedActor(), a) && !bCanMoveToAlly) continue;
 
-		loc = IndexToWorld(i);
-		HISM->AddInstance(FTransform(rot, loc, sca));
+		HISM->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), sca));
 	}
 }
 

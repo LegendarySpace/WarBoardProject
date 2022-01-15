@@ -28,13 +28,13 @@ public:
 	FGridCell(FTile InTile) { this->Tile = InTile; }
 
 	UPROPERTY(BlueprintReadWrite)
-		FTile Tile;
+	FTile Tile = FTile(0);
 
 	UPROPERTY(BlueprintReadWrite)
-		float CellSize;
+	float CellSize = 200;
 
 	UPROPERTY(BlueprintReadWrite)
-		float LineThickness;
+	float LineThickness = 10;
 
 
 	TArray<FVector> LineVertices;
@@ -105,17 +105,17 @@ public:
 		return *this;
 	}
 
-	bool operator==(const FGridCell& Cell) const
+	bool operator==(const FGridCell& Cell)
 	{
 		return this->Tile == Cell.Tile;
 	}
 
-	bool operator==(const int32& Index) const
+	bool operator==(const int32& Index)
 	{
 		return this->Tile == Index;
 	}
 
-	bool operator==(const FTile& InTile) const
+	bool operator==(const FTile& InTile)
 	{
 		return this->Tile == InTile;
 	}
@@ -135,6 +135,7 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UProceduralMeshComponent* ProceduralMesh;
 
+	// TODO: Change to FGCoord
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<int32> InitialCells;
 

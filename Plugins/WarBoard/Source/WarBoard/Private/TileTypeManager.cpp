@@ -5,6 +5,7 @@
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 #include "WarBoardLibrary.h"
 
@@ -20,14 +21,41 @@ ATileTypeManager::ATileTypeManager()
 
 	InstancedMeshComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("InstancedMeshComp"));
 	InstancedMeshComp->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+
+	// Determine Base Tile (Used when no mesh is provided)
+	UStaticMesh* mesh;
+	switch (GetTileShape())
+	{
+	case ETileShape::Square:
+		// Use Square tile
+		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/SquareTile.SquareTile'")).Object;
+		break;
+	case ETileShape::Hex_Hor:
+		// Use Horizontal Hex tile
+		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Hori.HexTile_Hori'")).Object;
+		break;
+	case ETileShape::Hex_Vert:
+		// Use Vertical Hex tile
+		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexTile_Vert.HexTile_Vert'")).Object;
+		break;
+	case ETileShape::Triangle:
+	default:
+		mesh = nullptr;
+		break;
+	}
+	UMaterial* mat = ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("StaticMesh'/WarBoard/Material/TileMat.TileMat'")).Object;
+
+	InstancedMeshComp->SetStaticMesh(mesh);
+	InstancedMeshComp->SetMaterial(0, mat);
 }
 
-void ATileTypeManager::SetupInstance(ETileType TileType, UStaticMesh * Mesh)
+void ATileTypeManager::SetupInstance(ETileType TileType, UStaticMesh * Mesh, UMaterial* Mat)
 {
 	if (InstancedMeshComp == nullptr) return;
 
 	Type = TileType;
-	InstancedMeshComp->SetStaticMesh(Mesh);
+	if (Mesh != nullptr) InstancedMeshComp->SetStaticMesh(Mesh);
+	if (Mat != nullptr) InstancedMeshComp->SetMaterial(0, Mat);
 }
 
 void ATileTypeManager::SetMesh(UStaticMesh * Mesh)
@@ -55,11 +83,12 @@ void ATileTypeManager::AddTile(FTile Tile)
 
 void ATileTypeManager::BuildTile(FTile Tile)
 {
-	if (InstancedMeshComp == nullptr) return;
+	if (!InstancedMeshComp) return;
 	FVector loc = Tile.ToWorld();
 	// Tiles are assumed to have a thickness 1/10th its TileSize
-	loc += FVector(0.f, 0.f, -0.05 * WarBoardLib::GetTileSize());
-	InstancedMeshComp->AddInstance(FTransform(FRotator(0.f), loc, FVector(WarBoardLib::GetTileSize() / MeshSize)));
+	loc += FVector(0, 0, -0.05 * WarBoardLib::GetTileSize());
+	FVector scale = FVector(WarBoardLib::GetTileSize() / MeshSize);
+	InstancedMeshComp->AddInstance(FTransform(FRotator(0), loc, scale));
 }
 
 void ATileTypeManager::RemoveTile(FTile TileToRemove)

@@ -3,7 +3,8 @@
 
 #include "MovementManager.h"
 
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 #include "WarBoardLibrary.h"
 
@@ -15,19 +16,18 @@ AMovementManager::AMovementManager()
  	// Should never tick
 	PrimaryActorTick.bCanEverTick = false;
 
+	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'")).Object;
 }
 
 void AMovementManager::Populate_Implementation(TArray<FTile> Choices)
 {
-	Clear();
-	FVector sca = FVector(WarBoardLib::GetTileSize() / 100.f);
 	for (auto Tile : Choices)
 	{
 		auto a = GetActorAtTile(GetWorld(), Tile);
 		if (IsEnemyTeam(GetHighlightedActor(), a) && !bCanMoveToEnemy) continue;
 		if (IsSameTeam(GetHighlightedActor(), a) && !bCanMoveToAlly) continue;
 
-		HISM->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), sca));
+		Planes->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), Scale));
 	}
 }
 

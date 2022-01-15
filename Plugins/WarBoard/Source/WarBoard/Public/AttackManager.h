@@ -27,8 +27,8 @@ protected:
 
 public:	
 	// Allows targeting of allies
-	bool bCanTargetAllies;
+	bool bCanTargetAllies = false;
 
 	// Allows targeting of unoccupied tiles
-	bool bCanTargetEmptyTile;
+	bool bCanTargetEmptyTile = true;
 };

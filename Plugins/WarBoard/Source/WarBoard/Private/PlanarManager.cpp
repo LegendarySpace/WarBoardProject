@@ -2,7 +2,10 @@
 
 
 #include "PlanarManager.h"
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+
+#include "Components/InstancedStaticMeshComponent.h"
+
+#include "HelperStructs.h"
 #include "WarBoardLibrary.h"
 
 // Sets default values
@@ -12,7 +15,13 @@ APlanarManager::APlanarManager()
 	PrimaryActorTick.bCanEverTick = false;
 
 	// Setup defaults
-	HISM = CreateDefaultSubobject<UHierarchicalInstancedStaticMeshComponent>(TEXT("Planes"));
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
+
+	Planes = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Planes"));
+	Planes->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	if (GetWorld()) Planes->RegisterComponent();
+
+	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/WarBoard/Material/TileMat.TileMat'")).Object;
 
 }
 
@@ -23,41 +32,46 @@ void APlanarManager::SetPlaneType(ETileShape Shape)
 	switch (Shape)
 	{
 	case ETileShape::Square:
-		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/SquarePlane.SquarePlane'")).Object;
+		mesh = LoadObject<UStaticMesh>(NULL, TEXT("/WarBoard/StaticMesh/SquarePlane.SquarePlane"), NULL, LOAD_None, NULL);
 		break;
 	case ETileShape::Hex_Hor:
-		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexPlane_Hori.HexPlane_Hori'")).Object;
-		break;
+		mesh = LoadObject<UStaticMesh>(NULL, TEXT("/WarBoard/StaticMesh/HexPlane_Hori.HexPlane_Hori"), NULL, LOAD_None, NULL);
+		break; 
 	case ETileShape::Hex_Vert:
-		mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/HexPlane_Vert.HexPlane_Vert'")).Object;
-		break;
+		mesh = LoadObject<UStaticMesh>(NULL, TEXT("/WarBoard/StaticMesh/HexPlane_Vert.HexPlane_Vert"), NULL, LOAD_None, NULL);
+		break; 
+	case ETileShape::Triangle:
 	default:
 		mesh = nullptr;
 		break;
 	}
-	HISM->SetStaticMesh(mesh);
-
+	Planes->SetStaticMesh(mesh);
+	if (PlaneMaterial) Planes->SetMaterial(0, PlaneMaterial);
 }
 
 void APlanarManager::Populate(TArray<FTile> Choices)
 {
+	Clear();
+	// TODO: Add optional padding
+	float size = WarBoardLib::GetTileSize();
+	if (Padding >= 1) size -= Padding;
+	else if (Padding > 0 && Padding < 1) size -= size * Padding;
+	Scale = FVector(size / 100.f);
+
 	Populate_Implementation(Choices);
 }
 
 void APlanarManager::Populate_Implementation(TArray<FTile> Choices)
 {
-	Clear();
-	FVector sca = FVector(WarBoardLib::GetTileSize() / 100.f);
-	// Override in children
 	for (auto Tile : Choices)
 	{
-		HISM->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), sca));
+		Planes->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), Scale));
 	}
 }
 
 void APlanarManager::Clear()
 {
-	HISM->ClearInstances();
+	Planes->ClearInstances();
 }
 
 // Called when the game starts or when spawned
@@ -65,5 +79,6 @@ void APlanarManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	SetPlaneType(WarBoardLib::GetTileShape());
 }
 

@@ -57,18 +57,8 @@ public:
 		return Tile == Index;
 	}
 
-	FORCEINLINE bool operator== (const int32 Index) const
-	{
-		return Tile == Index;
-	}
-
 	// Need to make it for pointer
 	FORCEINLINE bool operator== (const FTile InTile)
-	{
-		return Tile == InTile;
-	}
-
-	FORCEINLINE bool operator== (const FTile InTile) const
 	{
 		return Tile == InTile;
 	}

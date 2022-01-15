@@ -18,16 +18,16 @@ void FTile::IndexToInternal(int32 InIndex)
 	Col = ((InIndex + (MAX_WIDTH / 2)) % MAX_WIDTH) - (MAX_WIDTH / 2);
 }
 
-void FTile::RCToInternal(int32 InRow, int32 InColumn)
+void FTile::RCToInternal(FGCoord InCoord)
 {
-	Row = InRow;
-	Col = InColumn;
+	Row = InCoord.Row;
+	Col = InCoord.Column;
 }
 
-void FTile::CubicToInternal(int32 InA, int32 InB, int32 InC)
+void FTile::CubicToInternal(FCubic Cubic)
 {
-	Row = InA;
-	Col = InB - InC;
+	Row = Cubic.A;
+	Col = Cubic.B - Cubic.C;
 }
 
 FVector2D FTile::GetPattern()
@@ -133,23 +133,23 @@ int32 FTile::ToIndex() const
 	return Row * MAX_WIDTH + Col;
 }
 
-FVector2D FTile::ToRC() const
+FGCoord FTile::ToRC() const
 {
-	return FVector2D(Row, Col);
+	return FGCoord(Row, Col);
 }
 
-FVector FTile::ToCubic() const
+FCubic FTile::ToCubic() const
 {
-	FVector Cubic;
-	Cubic.X = Row;
-	Cubic.Y = static_cast<int32>((Row + Col) / 2) - Row;
-	Cubic.Z = static_cast<int32>((Row - Col) / 2) - Row;
+	FCubic Cubic;
+	Cubic.A = Row;
+	Cubic.B = static_cast<int32>((Row + Col) / 2) - Row;
+	Cubic.C = static_cast<int32>((Row - Col) / 2) - Row;
 	return Cubic;
 }
 
 FVector FTile::ToWorld(bool TileCenter) const
 {
-	FVector WorldLocation = FVector();
+	FVector WorldLocation = FVector(0);
 	float RadialPointOffset;
 	bool IsUpsideDown;
 	switch (Shape)

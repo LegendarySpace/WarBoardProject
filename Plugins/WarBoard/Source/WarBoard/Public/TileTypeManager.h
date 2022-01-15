@@ -28,12 +28,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	UInstancedStaticMeshComponent* InstancedMeshComp;
 
+	// TODO: Change to FTile or FGCoord
 	UPROPERTY(EditAnywhere, BlueprintGetter = GetInstanceIndexes)
 	TArray<int32> InstanceIndexes;
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Type Manager")		// TODO: Should use TileSetup instead
-	void SetupInstance(ETileType TileType, UStaticMesh* Mesh);
+	void SetupInstance(ETileType TileType, UStaticMesh* Mesh = nullptr, UMaterial* Mat = nullptr);
 
 	void SetMesh(UStaticMesh* Mesh);
 

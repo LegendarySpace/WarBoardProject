@@ -17,9 +17,9 @@ AActor * UWarBoardLibrary::GetActorAtTile(UObject* WorldContextObject, const FTi
 	FVector start, end;
 	start = Tile.ToWorld() + FVector(0, 0, 100);
 	end = Tile.ToWorld() - FVector(0, 0, 50);
-
-	if (World->LineTraceSingleByChannel(result, start, end, ECollisionChannel::ECC_PhysicsBody)) return result.GetActor();
-	else return nullptr;
+	// TODO: Need this to ignore Tiles or it will break Pathfinding
+	// if (World->LineTraceSingleByChannel(result, start, end, ECollisionChannel::ECC_PhysicsBody)) return result.GetActor();
+	return nullptr;
 }
 
 // This will be changed to use a template

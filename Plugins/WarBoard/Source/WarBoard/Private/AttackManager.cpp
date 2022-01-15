@@ -3,7 +3,8 @@
 
 #include "AttackManager.h"
 
-#include "Components/HierarchicalInstancedStaticMeshComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 #include "WarBoardLibrary.h"
 
@@ -15,20 +16,18 @@ AAttackManager::AAttackManager()
  	// Should never tick
 	PrimaryActorTick.bCanEverTick = false;
 
-	FTile::FTile();
+	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_End_MI.Node_End_MI'")).Object;
 }
 
 void AAttackManager::Populate_Implementation(TArray<FTile> Choices)
 {
-	Clear();
-	FVector sca = FVector(WarBoardLib::GetTileSize() / 100.f);
 	for (auto Tile : Choices)
 	{
 		auto a = GetActorAtTile(GetWorld(), Tile);
 		if (a == nullptr && !bCanTargetEmptyTile) continue;
 		if (IsSameTeam(GetHighlightedActor(), a) && !bCanTargetAllies) continue;
 
-		HISM->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), sca));
+		Planes->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), Scale));
 	}
 }
 

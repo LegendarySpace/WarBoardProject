@@ -11,7 +11,7 @@
 
 #include "PlanarManager.generated.h"
 
-class UHierarchicalInstancedStaticMeshComponent;
+class UInstancedStaticMeshComponent;
 
 /**
 *		Highlights selection options
@@ -27,7 +27,7 @@ public:
 
 	// Determines the basic plane used
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Settings")
-		void SetPlaneType(ETileShape Shape);
+	void SetPlaneType(ETileShape Shape);
 
 	// Populate the Meshes
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
@@ -35,13 +35,22 @@ public:
 	virtual void Populate_Implementation(TArray<FTile> Choices); // Virtual override
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
-		void Clear();
+	void Clear();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:
-	UHierarchicalInstancedStaticMeshComponent* HISM;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UInstancedStaticMeshComponent* Planes;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
+	UMaterialInterface* PlaneMaterial;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
+	float Padding = .1;
+
+protected:
+	FVector Scale;
 };

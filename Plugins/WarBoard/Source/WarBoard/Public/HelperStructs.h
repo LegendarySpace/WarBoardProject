@@ -11,6 +11,97 @@
 
 #include "HelperStructs.generated.h"
 
+
+USTRUCT(BlueprintType)
+struct FGCoord
+{
+	GENERATED_BODY()
+
+	FGCoord(int32 InRow = 0, int32 InCol = 0)
+	{
+		Row = InRow;
+		Column = InCol;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Row;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 Column;
+
+	FGCoord operator+(const FGCoord& Coord)
+	{
+		return FGCoord(this->Row + Coord.Row, this->Column + Coord.Column);
+	}
+
+	FGCoord operator-(const FGCoord& Coord)
+	{
+		return FGCoord(this->Row - Coord.Row, this->Column - Coord.Column);
+	}
+
+	bool operator==(const FGCoord& Coord)
+	{
+		return this->Row == Coord.Row && this->Column == Coord.Column;
+	}
+
+	bool operator==(const FGCoord& Coord) const
+	{
+		return this->Row == Coord.Row && this->Column == Coord.Column;
+	}
+
+	bool operator!=(const FGCoord& Coord)
+	{
+		return this->Row != Coord.Row || this->Column != Coord.Column;
+	}
+
+};
+
+USTRUCT(BlueprintType)
+struct FCubic
+{
+	GENERATED_BODY()
+
+		FCubic(int32 InA = 0, int32 InB = 0, int32 InC = 0)
+	{
+		A = InA;
+		B = InB;
+		C = InC;
+	}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 A;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 B;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		int32 C;
+
+	FCubic operator+(const FCubic& Cubic)
+	{
+		return FCubic(this->A + Cubic.A, this->B + Cubic.B, this->C + Cubic.C);
+	}
+
+	FCubic operator-(const FCubic& Cubic)
+	{
+		return FCubic(this->A - Cubic.A, this->B - Cubic.B, this->C - Cubic.C);
+	}
+
+	bool operator==(const FCubic& Cubic)
+	{
+		return this->A == Cubic.A && this->B == Cubic.B && this->C == Cubic.C;
+	}
+
+	bool operator==(const FCubic& Cubic) const
+	{
+		return this->A == Cubic.A && this->B == Cubic.B && this->C == Cubic.C;
+	}
+
+	bool operator!=(const FCubic& Cubic)
+	{
+		return this->A != Cubic.A || this->B != Cubic.B || this->C != Cubic.C;
+	}
+
+};
+
+
 /**
 *
 *
@@ -22,14 +113,16 @@ struct FTile
 
 public:
 	FTile(int32 InIndex = 0) { IndexToInternal(InIndex); }
-	FTile(int32 InRow, int32 InColumn) { RCToInternal(InRow, InColumn); }
-	FTile(int32 InA, int32 InB, int32 InC) { CubicToInternal(InA, InB, InC); }
+	FTile(FGCoord Coord) { RCToInternal(Coord); }
+	FTile(int32 InRow, int32 InColumn) { RCToInternal(FGCoord(InRow, InColumn)); }
+	FTile(FCubic Cubic) { CubicToInternal(Cubic); }
+	FTile(int32 InA, int32 InB, int32 InC) { CubicToInternal(FCubic(InA, InB, InC)); }
 	FTile(FVector InLocation) { WorldToInternal(InLocation); }
 
 private:
 	void IndexToInternal(int32 InIndex);
-	void RCToInternal(int32 InRow, int32 InColumn);
-	void CubicToInternal(int32 InA, int32 InB, int32 InC);
+	void RCToInternal(FGCoord Coord);
+	void CubicToInternal(FCubic Cubic);
 	void WorldToInternal(FVector InLocation);
 	void PIPtoInternal(FVector2D PIP);
 	FVector2D GetPattern();
@@ -37,8 +130,8 @@ private:
 
 public:
 	int32 ToIndex() const;
-	FVector2D ToRC() const;
-	FVector ToCubic() const;
+	FGCoord ToRC() const;
+	FCubic ToCubic() const;
 	FVector ToWorld(bool TileCenter = true) const;
 	static void SetTileSize(float Size);
 	static float GetTileSize() { return TileSize; }
@@ -60,12 +153,10 @@ private:
 public:
 	static const int32 MAX_WIDTH = 6500;
 
-	// TODO: Add Overloaded operators
 public:
-	void operator=(const FTile Tile)
+	void operator=(const FTile& Tile)
 	{
-		auto rc = Tile.ToRC();
-		RCToInternal(rc.X, rc.Y);
+		RCToInternal(Tile.ToRC());
 	}
 
 	void operator=(const int32 Index)
@@ -73,80 +164,126 @@ public:
 		IndexToInternal(Index);
 	}
 
-	void operator=(const FVector Location)
+	void operator=(const FGCoord& Coord)
+	{
+		RCToInternal(Coord);
+	}
+
+	void operator=(const FCubic& Cubic)
+	{
+		CubicToInternal(Cubic);
+	}
+
+	void operator=(const FVector& Location)
 	{
 		WorldToInternal(Location);
 	}
 
-	FTile operator+(const FTile InTile)
-	{
-		FVector2D RC = this->ToRC() + InTile.ToRC();
-		return FTile(RC.X, RC.Y);
+	FTile operator+(const FTile& InTile)
+	{ 
+		return FTile(this->ToRC() + InTile.ToRC());
 	}
 
 	FTile operator+(const int32 Index)
 	{
-		FVector2D RC = this->ToRC() + FTile(Index).ToRC();
-		return FTile(RC.X, RC.Y);
+		return FTile(this->ToRC() + FTile(Index).ToRC());
 	}
 
-	FTile operator+(const FVector Location)
+	FTile operator+(const FGCoord& Coord)
+	{
+		return FTile(this->ToRC() + Coord);
+	}
+
+	FTile operator+(const FCubic& Cubic)
+	{
+		return FTile(this->ToCubic() + Cubic);
+	}
+
+	FTile operator+(const FVector& Location)
 	{
 		return FTile(this->ToWorld() + Location);
 	}
 
-	FTile operator-(const FTile InTile)
+	FTile operator-(const FTile& InTile)
 	{
-		FVector2D RC = this->ToRC() - InTile.ToRC();
-		return FTile(RC.X, RC.Y);
+		return FTile(this->ToRC() - InTile.ToRC());
 	}
 
 	FTile operator-(const int32 Index)
 	{
-		FVector2D RC = this->ToRC() - FTile(Index).ToRC();
-		return FTile(RC.X, RC.Y);
+		return FTile(this->ToRC() - FTile(Index).ToRC());
 	}
 
-	FTile operator-(const FVector Location)
+	FTile operator-(const FGCoord& Coord)
+	{
+		return FTile(this->ToRC() - Coord);
+	}
+
+	FTile operator-(const FCubic& Cubic)
+	{
+		return FTile(this->ToCubic() - Cubic);
+	}
+
+	FTile operator-(const FVector& Location)
 	{
 		return FTile(this->ToWorld() - Location);
 	}
 
 	FTile& operator+=(const FTile InTile)
 	{
-		FVector2D RC = this->ToRC() + InTile.ToRC();
-		this->RCToInternal(RC.X, RC.Y);
+		this->RCToInternal(this->ToRC() + InTile.ToRC());
 		return *this;
 	}
 
 	FTile& operator+=(const int32 Index)
 	{
-		FVector2D RC = this->ToRC() + FTile(Index).ToRC();
-		this->RCToInternal(RC.X, RC.Y);
+		this->RCToInternal(this->ToRC() + FTile(Index).ToRC());
 		return *this;
 	}
 
-	FTile& operator+=(const FVector Location)
+	FTile& operator+=(const FGCoord& Coord)
+	{
+		this->RCToInternal(this->ToRC() + Coord);
+		return *this;
+	}
+
+	FTile& operator+=(const FCubic& Cubic)
+	{
+		this->CubicToInternal(this->ToCubic() + Cubic);
+		return *this;
+	}
+
+	FTile& operator+=(const FVector& Location)
 	{
 		this->WorldToInternal(this->ToWorld() + Location);
 		return *this;
 	}
 
-	FTile& operator-=(const FTile InTile)
+	FTile& operator-=(const FTile& InTile)
 	{
-		FVector2D RC = this->ToRC() - InTile.ToRC();
-		this->RCToInternal(RC.X, RC.Y);
+		this->RCToInternal(this->ToRC() - InTile.ToRC());
 		return *this;
 	}
 
 	FTile& operator-=(const int32 Index)
 	{
-		FVector2D RC = this->ToRC() - FTile(Index).ToRC();
-		this->RCToInternal(RC.X, RC.Y);
+		this->RCToInternal(this->ToRC() - FTile(Index).ToRC());
 		return *this;
 	}
 
-	FTile& operator-=(const FVector Location)
+	FTile& operator-=(const FGCoord& Coord)
+	{
+		this->RCToInternal(this->ToRC() - Coord);
+		return *this;
+	}
+
+	FTile& operator-=(const FCubic& Cubic)
+	{
+		this->CubicToInternal(this->ToCubic() - Cubic);
+		return *this;
+	}
+
+	FTile& operator-=(const FVector& Location)
 	{
 		this->WorldToInternal(this->ToWorld() - Location);
 		return *this;
@@ -154,22 +291,17 @@ public:
 
 	bool operator==(const FTile& Tile)
 	{
-		return this->ToIndex() == Tile.ToIndex();
+		return this->ToRC() == Tile.ToRC();
 	}
 
 	bool operator==(const FTile& Tile) const
 	{
-		return this->ToIndex() == Tile.ToIndex();
+		return this->ToRC() == Tile.ToRC();
 	}
 
 	bool operator!=(const FTile& Tile)
 	{
-		return this->ToIndex() != Tile.ToIndex();
-	}
-
-	bool operator!=(const FTile& Tile) const
-	{
-		return this->ToIndex() != Tile.ToIndex();
+		return this->ToRC() != Tile.ToRC();
 	}
 
 	bool operator==(const int32 Index)
@@ -182,18 +314,37 @@ public:
 		return this->ToIndex() == Index;
 	}
 
+	bool operator==(const FGCoord& Coord)
+	{
+		return this->ToRC() == Coord;
+	}
+
+	bool operator==(const FGCoord& Coord) const
+	{
+		return this->ToRC() == Coord;
+	}
+
+	bool operator==(const FCubic& Cubic)
+	{
+		return this->ToCubic() == Cubic;
+	}
+
+	bool operator==(const FCubic& Cubic) const
+	{
+		return this->ToCubic() == Cubic;
+	}
+
 	bool operator==(const FVector& Location)
 	{
-		FTile Tile = FTile(Location);
-		return this->ToIndex() == Tile.ToIndex();
+		return this->ToRC() == FTile(Location).ToRC();
 	}
 
 	bool operator==(const FVector& Location) const
 	{
-		FTile Tile = FTile(Location);
-		return this->ToIndex() == Tile.ToIndex();
+		return this->ToRC() == FTile(Location).ToRC();
 	}
 
+	// TODO: May add support for <>
 };
 
 
@@ -203,14 +354,19 @@ struct FTileInstance
 	GENERATED_BODY()
 
 public:
-	FTileInstance(FTile InIndex = 0, ETileType InType = ETileType::TT_Normal)
+	FTileInstance(FGCoord InCoord = FGCoord(), ETileType InType = ETileType::TT_Normal)
 	{
-		Tile = InIndex;
+		Coord = InCoord;
 		Type = InType;
 	}
 
-	FTile Tile;
-	ETileType Type;
+	// Should also accept FTile in constructor
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FGCoord Coord;
+	// TODO: This is causing errors
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TEnumAsByte<ETileType> Type;
 
 	void operator=(ETileType InType)
 	{
@@ -219,22 +375,32 @@ public:
 
 	bool operator==(const FTileInstance& Instance)
 	{
-		return Tile == Instance.Tile && Type == Instance.Type;
+		return Coord == Instance.Coord && Type == Instance.Type;
 	}
 
 	bool operator==(const FTileInstance& Instance) const
 	{
-		return Tile == Instance.Tile && Type == Instance.Type;
+		return Coord == Instance.Coord && Type == Instance.Type;
 	}
 
 	bool operator==(const int32 InIndex)
 	{
-		return Tile == InIndex;
+		return Coord == FTile(InIndex).ToRC();
 	}
 
 	bool operator==(const int32 InIndex) const
 	{
-		return Tile == InIndex;
+		return Coord == FTile(InIndex).ToRC();
+	}
+
+	bool operator==(const FGCoord InCoord)
+	{
+		return Coord == InCoord;
+	}
+
+	bool operator==(const FGCoord InCoord) const
+	{
+		return Coord == InCoord;
 	}
 
 	bool operator==(const ETileType& InType)
@@ -256,18 +422,28 @@ struct FTileSetup
 	GENERATED_BODY()
 
 public:
-	FTileSetup(ETileType InType = ETileType::TT_Normal, UStaticMesh* InMesh = nullptr)
+	FTileSetup(ETileType InType = ETileType::TT_Normal, UStaticMesh* InMesh = nullptr, UMaterial* InMat = nullptr)
 	{ 
 		Type = InType;
 		Mesh = InMesh;
+		Mat = InMat;
 	}
-	ETileType Type;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TEnumAsByte<ETileType> Type;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMesh* Mesh;
-	// TODO: Add Material
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UMaterial* Mat;
 
 	void operator=(UStaticMesh* StaticMesh)
 	{
 		Mesh = StaticMesh;
+	}
+
+	void operator=(UMaterial* Material)
+	{
+		Mat = Material;
 	}
 
 	bool operator==(ETileType InType)

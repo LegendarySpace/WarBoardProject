@@ -11,9 +11,9 @@
 
 #include "LayoutManager.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileAddDelegate, int32, Index);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileRemoveDelegate, int32, Index);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTileChangeDelegate, int32, Index, ETileType, Type);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileAddDelegate, FGCoord, Coord);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileRemoveDelegate, FGCoord, Coord);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTileChangeDelegate, FGCoord, Coord, ETileType, Type);
 
 class ATileTypeManager;
 class UStaticMesh;
@@ -32,11 +32,11 @@ public:
 	// Change Tile Type
 	// If no Tile is present at index, it will make a new Tile of given Type
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|State")
-	bool ChangeTile(int32 Index, ETileType Type);
+	bool ChangeTile(FTileInstance Instance);
 
 	// Remove Tile
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|State")
-	bool RemoveTile(int32 Index);
+	bool RemoveTile(FGCoord Coord);
 
 	// Assemble the Tile grid
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Initialize")
@@ -44,7 +44,10 @@ public:
 
 	// Get Tiles
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Utility")
-	TArray<int32> GetTiles();
+	TArray<FGCoord> GetTiles();
+
+private:
+	void BuildTileManagerArray();
 
 protected:
 	// Called when the game starts or when spawned
@@ -53,10 +56,6 @@ protected:
 public:	
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	bool CenterBoard = true;
-
-	// TODO: Get Shape from FTile
-	UPROPERTY(EditAnywhere, Category = "Settings")
-	ETileShape TileShape = ETileShape::Square;
 
 	// Thickness of line inside tile
 	UPROPERTY(EditAnywhere, Category = "Settings")
@@ -82,12 +81,15 @@ public:
 	/**
 	*		Maps used for tracking board info
 	*/
-	TMap<int32, ETileType> TileMap;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Layout")
+	TArray<FTileInstance> TileMap;
 
-	UPROPERTY(EditAnywhere, Category = "Layout")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Layout")
 	TArray<FTileInstance> BoardDefault;
-	TArray<FTileSetup> TileMeshes;
-	TArray<ATileTypeManager*> Managers;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Layout")
+	TArray<FTileSetup> TileMeshes;	// TODO: Add Mat to setup
+
+	TArray<ATileTypeManager*> Managers;
 	TMap<int32, UTextRenderComponent*> TextMap;
 };

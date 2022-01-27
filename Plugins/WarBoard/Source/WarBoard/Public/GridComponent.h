@@ -3,16 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "ProceduralMeshComponent.h"
 #include <vector>
 
-#include "EGridShape.h"
-#include "TileShape.h"
-#include "HelperStructs.h"
+#include "Tiles.h"
+#include "WarBoardLibrary.h"
 
-#include "GridManager.generated.h"
-
-class UProceduralMeshComponent;
+#include "GridComponent.generated.h"
 
 /**
 *	Cells Contain all information necessary for display
@@ -28,20 +25,22 @@ public:
 	FGridCell(FTile InTile) { this->Tile = InTile; }
 
 	UPROPERTY(BlueprintReadWrite)
-	FTile Tile = FTile(0);
+	FTile Tile = FTile();
 
 	UPROPERTY(BlueprintReadWrite)
-	float CellSize = 200;
+	float CellSize = WarBoardLib::GetTileSize();
 
 	UPROPERTY(BlueprintReadWrite)
 	float LineThickness = 10;
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	bool bProjectGrid = false;
 
 	TArray<FVector> LineVertices;
 	TArray<int32> LineTriangles;
 	TArray<FVector> Polygon;
 
-	void BuildCell(ETileShape Shape, float Size = 200, float Thickness = 10, float Padding = 0);
+	void BuildCell(ETileShape Shape, float Size = -1, float Thickness = -1, float Padding = 0);
 
 private:
 	TArray<FVector>& GetCellVertices(const int32 Sides, const float RelativeRotationToFirstVertex = 0.0, const float PolygonRotation = 0.0);
@@ -61,6 +60,18 @@ public:
 		this->BuildPolygonLines();
 	}
 
+	void operator=(const FGCoord Coord)
+	{
+		this->Tile = Coord;
+		this->BuildPolygonLines();
+	}
+
+	void operator=(const FCubic Cubic)
+	{
+		this->Tile = Cubic;
+		this->BuildPolygonLines();
+	}
+
 	void operator=(const FTile InTile)
 	{
 		this->Tile = InTile;
@@ -73,6 +84,7 @@ public:
 		this->BuildPolygonLines();
 	}
 
+	// UPDATE: Add operators for cubic, coord, and index
 	FGridCell operator+(const FTile InTile)
 	{
 		FGridCell Cell = FGridCell(InTile);
@@ -115,6 +127,16 @@ public:
 		return this->Tile == Index;
 	}
 
+	bool operator==(const FGCoord& Coord)
+	{
+		return this->Tile == Coord;
+	}
+
+	bool operator==(const FCubic& Cubic)
+	{
+		return this->Tile == Cubic;
+	}
+
 	bool operator==(const FTile& InTile)
 	{
 		return this->Tile == InTile;
@@ -123,58 +145,47 @@ public:
 };
 
 
-UCLASS()
-class WARBOARD_API AGridManager : public AActor
+/**
+*
+*/
+UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class WARBOARD_API UGridComponent : public UProceduralMeshComponent
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AGridManager();
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	UProceduralMeshComponent* ProceduralMesh;
-
-	// TODO: Change to FGCoord
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<int32> InitialCells;
+	UGridComponent(const FObjectInitializer& ObjectInitializer);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
+	void AddCell(FGCoord Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void AddCell(FTile Tile);
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void RemoveCell(FTile Tile);
+	void RemoveCell(FGCoord Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void RebuildCells();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void DisplayInitialCells();
+	void Populate(TArray<FGCoord> Tiles);
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
+	void SetPadding(float InPadding);
 
 protected:
 	int32 GetNumUnset();
-
 	int32 GetFirstUnsetID();
-
 	void DisplayCell(FGridCell Cell);
-
 	void CleanUpArray();
 
-	// TODO: Add Initializer for these so they match from FTile
 public:
 	UPROPERTY(EditAnywhere)
-	ETileShape TileShape = ETileShape::Square;
-
-	UPROPERTY(EditAnywhere)
-	float LineThickness = 20.0;
+	float LineThickness = 10.0;
 
 	UPROPERTY(EditAnywhere)
 	float CellPadding = 0.0;
@@ -182,5 +193,5 @@ public:
 private:
 	TArray<TOptional<FGridCell>> CellArray;
 
-	// TODO: Add Cell SelectedCell, has Setter that builds cell to update details at location
+	// UPGRADE: Add Cell SelectedCell, has Setter that builds cell to update details at location
 };

@@ -4,22 +4,22 @@
 
 #include "CoreMinimal.h"
 #include "PlanarManager.h"
-#include "MovementManager.generated.h"
+#include "MovementSystemComponent.generated.h"
 
 /**
 *		Highlights potential movement options
 */
-UCLASS()
-class WARBOARD_API AMovementManager : public APlanarManager
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class WARBOARD_API UMovementSystemComponent : public UPlanarManager
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AMovementManager();
+	UMovementSystemComponent();
 
 	// Populate the Meshes
-	virtual void Populate_Implementation(TArray<FTile> Choices) override;
+	virtual void Populate_Implementation(TArray<FGCoord> Choices) override;
 
 protected:
 	// Called when the game starts or when spawned

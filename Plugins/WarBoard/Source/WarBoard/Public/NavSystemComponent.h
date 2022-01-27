@@ -3,24 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "Components/SceneComponent.h"
 
 #include "HeuristicFormula.h"
-#include "TileStatus.h"
-#include "HelperStructs.h"
+#include "Tiles.h"
+#include "PathNode.h"
 
-#include "PathFinder.generated.h"
+#include "NavSystemComponent.generated.h"
 
-class APathNode;
-
-UCLASS()
-class WARBOARD_API APathFinder : public AActor
+/**
+*
+*/
+UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class WARBOARD_API UNavSystem : public USceneComponent		// UPGRADE: Make Actor Component after Node is modified to struct since it will have no world location
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	APathFinder();
+	UNavSystem();
 
 
 	/**									**\
@@ -31,18 +32,13 @@ public:
 
 	void DetermineDirections();
 
-	// Make a node for each tile
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void Initialization(TArray<FTile> Locations);
+	void Populate(TArray<FGCoord> Locations);
+	void Populate(TArray<FTile> Locations);
 
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void InitializeFromCoords(TArray<FGCoord> Locations);
+	bool AddNode(FGCoord InTile);
 
-	// Add Node
-	bool Add(FTile InTile);
-
-	// Remove Node
-	bool Remove(FTile InTile);
+	bool RemoveNode(FGCoord InTile);
 
 
 	/**										**\
@@ -50,28 +46,26 @@ public:
 	*		Handles actual pathfinding		  *
 	\**										**/
 
-	// TODO: Alter Discovery, PathableTiles should not be passed by ref
-
 	// Resets all nodes and determine paths
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "PathableTiles"))
-	void Discovery(FTile Origin, int32 Range, TArray<FTile> &PathableTiles);
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
+	void Discovery(FGCoord Origin, int32 Range, TArray<FGCoord> &PathableTiles);
 
-	// TODO: May change from UFUNCTION
+	// UPDATE: change from UFUNCTION
 	// Looks at node in given direction and attempts to set data and add to open
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	void CheckNeighbor(APathNode *Current, FTile Direction, FTile Goal, int32 BreakTie);
+	void CheckNeighbor(APathNode *Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
 
 	// List of indexes reached by Discovery
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	TArray<FTile> GetReachableTiles(bool IncludeObstructed);
+	TArray<FGCoord> GetReachableTiles(bool IncludeObstructed);
 
 	// Returns the shourtest path to destination
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta =(AutoCreateRefTerm = "RouteArray"))
-	bool Route(FTile End, TArray<FTile> &RouteArray);
+	bool Route(FGCoord End, TArray<FGCoord> &RouteArray);
 
 	// Returns the shourtest path to destination without utilizing Discovery
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "RouteArray, PathableTiles"))
-	bool DirectRoute(FTile Start, FTile End, TArray<FTile> &RouteArray, TArray<FTile> &PathableTiles);
+	bool DirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> &RouteArray, TArray<FGCoord> &PathableTiles);
 
 
 	/**							**\
@@ -80,7 +74,7 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-	APathNode* GetNode(FTile Tile);
+	APathNode* GetNode(FGCoord Tile);
 
 	// Reset all nodes
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
@@ -92,11 +86,11 @@ public:
 
 	// Tile Status of a given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	ETileStatus GetStatusByTile(FTile InTile);
+	ENodeStatus GetStatusByTile(FGCoord InTile);
 
 	// Update Status of given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void UpdateStatus(FTile InTile, ETileStatus Status);
+	void UpdateStatus(FGCoord InTile, ENodeStatus Status);
 
 protected:
 	// Called when the game starts or when spawned

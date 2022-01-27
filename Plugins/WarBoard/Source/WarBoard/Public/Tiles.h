@@ -6,11 +6,23 @@
 #include "GameFramework/Actor.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 
-#include "TileShape.h"
-#include "ETileType.h"
+#include "Tiles.generated.h"
 
-#include "HelperStructs.generated.h"
 
+/**
+ *	Possible shapes for tiles
+ */
+UENUM(BlueprintType, Category = "WarBoard|Enums")
+enum class ETileShape : uint8
+{
+	Triangle		UMETA(DisplayName = "Triangle"),
+	Square			UMETA(DisplayName = "Square"),
+	Hex_Hor			UMETA(DisplayName = "Hexagon_Horizontal"),
+	Hex_Vert		UMETA(DisplayName = "Hexagon_Vertical"),
+	Octogon			UMETA(DisplayName = "Octogon"),
+	Dodecagon		UMETA(DisplayName = "Dodecagon"),
+	Shape_MAX		UMETA(Hidden)
+};
 
 USTRUCT(BlueprintType)
 struct FGCoord
@@ -344,118 +356,7 @@ public:
 		return this->ToRC() == FTile(Location).ToRC();
 	}
 
-	// TODO: May add support for <>
-};
-
-
-USTRUCT(BlueprintType)
-struct FTileInstance
-{
-	GENERATED_BODY()
-
-public:
-	FTileInstance(FGCoord InCoord = FGCoord(), ETileType InType = ETileType::TT_Normal)
-	{
-		Coord = InCoord;
-		Type = InType;
-	}
-
-	// Should also accept FTile in constructor
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FGCoord Coord;
-	// TODO: This is causing errors
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<ETileType> Type;
-
-	void operator=(ETileType InType)
-	{
-		Type = InType;
-	}
-
-	bool operator==(const FTileInstance& Instance)
-	{
-		return Coord == Instance.Coord && Type == Instance.Type;
-	}
-
-	bool operator==(const FTileInstance& Instance) const
-	{
-		return Coord == Instance.Coord && Type == Instance.Type;
-	}
-
-	bool operator==(const int32 InIndex)
-	{
-		return Coord == FTile(InIndex).ToRC();
-	}
-
-	bool operator==(const int32 InIndex) const
-	{
-		return Coord == FTile(InIndex).ToRC();
-	}
-
-	bool operator==(const FGCoord InCoord)
-	{
-		return Coord == InCoord;
-	}
-
-	bool operator==(const FGCoord InCoord) const
-	{
-		return Coord == InCoord;
-	}
-
-	bool operator==(const ETileType& InType)
-	{
-		return Type == InType;
-	}
-
-	bool operator==(const ETileType& InType) const
-	{
-		return Type == InType;
-	}
-
-};
-
-
-USTRUCT(BlueprintType)
-struct FTileSetup
-{
-	GENERATED_BODY()
-
-public:
-	FTileSetup(ETileType InType = ETileType::TT_Normal, UStaticMesh* InMesh = nullptr, UMaterial* InMat = nullptr)
-	{ 
-		Type = InType;
-		Mesh = InMesh;
-		Mat = InMat;
-	}
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TEnumAsByte<ETileType> Type;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMesh* Mesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UMaterial* Mat;
-
-	void operator=(UStaticMesh* StaticMesh)
-	{
-		Mesh = StaticMesh;
-	}
-
-	void operator=(UMaterial* Material)
-	{
-		Mat = Material;
-	}
-
-	bool operator==(ETileType InType)
-	{
-		return Type == InType;
-	}
-
-	bool operator==(ETileType InType) const
-	{
-		return Type == InType;
-	}
-
+	// UPGRADE: May add support for <>
 };
 
 

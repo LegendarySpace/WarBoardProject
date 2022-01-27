@@ -7,8 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "EGridShape.h"
-#include "TileShape.h"
-#include "HelperStructs.h"
+#include "Tiles.h"
 
 #include "WarBoardLibrary.generated.h"
 
@@ -21,18 +20,6 @@ class WARBOARD_API UWarBoardLibrary : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "WarBoard|Utility"))
-	static void MakeTile(int32 Row, int32 Column, FTile& Tile) { Tile = FTile(Row, Column); }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "WarBoard|Utility"))
-	static void MakeTileFromCubic(int32 A, int32 B, int32 C, FTile& Tile) { Tile = FTile(A, B, C); }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "WarBoard|Utility"))
-	static void BreakTile(FTile Tile, FGCoord& Coord) { Coord = Tile.ToRC(); }
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (Category = "WarBoard|Utility"))
-	static void BreakTileToCubic(FTile Tile, FCubic& Cubic) { Cubic = Tile.ToCubic(); }
-
 	//
 	// Tile functions
 	//
@@ -123,6 +110,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (WorldContext = "WorldContextObject", UnsafeDuringActorConstruction = "true", CompactNodeTitle = "ActorAt", Category = "WarBoard|Utility"))
 	static AActor* GetActorAtTile(UObject* WorldContextObject, const FTile Tile);
+
+	// TODO: Editor access to set size/shape
 
 	/**
 	*		Utility functions		DEPRECATED		TODO: REMOVE

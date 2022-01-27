@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 
-#include "HelperStructs.h"
+#include "Tiles.h"
 
 #include "PathNode.generated.h"
 
@@ -13,13 +13,30 @@ class USphereComponent;
 class UStaticMeshComponent;
 class UTextRenderComponent;
 
+/**
+ *  Usage status of node
+ */
+UENUM(BlueprintType, Category = "WarBoard|Enums")
+enum ENodeStatus
+{
+	NS_Invalid = -1		UMETA(DisplayName = "Invalid"),
+	NS_Blocked = 0			UMETA(DisplayName = "Blocked"),
+	NS_Obstructed = 1			UMETA(DisplayName = "Obstructed"),
+	NS_Open						UMETA(DisplayName = "Open"),
+	NS_Status_MAX				UMETA(Hidden)
+};
+
+// TODO: Convert to struct
+/**
+*
+*/
 UCLASS()
 class WARBOARD_API APathNode : public AActor
 {
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this actor's properties		TODO: Get Tile from world location on creation
+	// Sets default values for this actor's properties
 	APathNode();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")

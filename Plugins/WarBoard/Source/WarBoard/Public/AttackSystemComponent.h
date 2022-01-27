@@ -4,22 +4,23 @@
 
 #include "CoreMinimal.h"
 #include "PlanarManager.h"
-#include "AttackManager.generated.h"
+#include "AttackSystemComponent.generated.h"
+
 
 /**
 *		Highlights potential targeting options
 */
-UCLASS()
-class WARBOARD_API AAttackManager : public APlanarManager
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class WARBOARD_API UAttackSystemComponent : public UPlanarManager
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	AAttackManager();
+	UAttackSystemComponent();
 
 	// Populate the Meshes
-	virtual void Populate_Implementation(TArray<FTile> Choices) override;
+	virtual void Populate_Implementation(TArray<FGCoord> Choices) override;
 
 protected:
 	// Called when the game starts or when spawned

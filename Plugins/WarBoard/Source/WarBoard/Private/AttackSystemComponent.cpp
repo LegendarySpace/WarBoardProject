@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "AttackManager.h"
+#include "AttackSystemComponent.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
@@ -11,28 +11,28 @@
 using namespace WarBoardLib;
 
 // Sets default values
-AAttackManager::AAttackManager()
+UAttackSystemComponent::UAttackSystemComponent()
 {
  	// Should never tick
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_End_MI.Node_End_MI'")).Object;
 }
 
-void AAttackManager::Populate_Implementation(TArray<FTile> Choices)
+void UAttackSystemComponent::Populate_Implementation(TArray<FGCoord> Choices)
 {
 	for (auto Tile : Choices)
 	{
-		auto a = GetActorAtTile(GetWorld(), Tile);
+		auto a = GetActorAtTile(GetWorld(), FTile(Tile));
 		if (a == nullptr && !bCanTargetEmptyTile) continue;
 		if (IsSameTeam(GetHighlightedActor(), a) && !bCanTargetAllies) continue;
 
-		Planes->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), Scale));
+		this->AddInstance(CalculateTransform(Tile));
 	}
 }
 
 // Called when the game starts or when spawned
-void AAttackManager::BeginPlay()
+void UAttackSystemComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	

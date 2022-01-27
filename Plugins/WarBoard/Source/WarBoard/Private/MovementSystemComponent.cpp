@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "MovementManager.h"
+#include "MovementSystemComponent.h"
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
@@ -11,28 +11,28 @@
 using namespace WarBoardLib;
 
 // Sets default values
-AMovementManager::AMovementManager()
+UMovementSystemComponent::UMovementSystemComponent()
 {
  	// Should never tick
-	PrimaryActorTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = false;
 
 	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'")).Object;
 }
 
-void AMovementManager::Populate_Implementation(TArray<FTile> Choices)
+void UMovementSystemComponent::Populate_Implementation(TArray<FGCoord> Choices)
 {
 	for (auto Tile : Choices)
 	{
-		auto a = GetActorAtTile(GetWorld(), Tile);
+		auto a = GetActorAtTile(GetWorld(), FTile(Tile));
 		if (IsEnemyTeam(GetHighlightedActor(), a) && !bCanMoveToEnemy) continue;
 		if (IsSameTeam(GetHighlightedActor(), a) && !bCanMoveToAlly) continue;
 
-		Planes->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), Scale));
+		this->AddInstance(CalculateTransform(Tile));
 	}
 }
 
 // Called when the game starts or when spawned
-void AMovementManager::BeginPlay()
+void UMovementSystemComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	

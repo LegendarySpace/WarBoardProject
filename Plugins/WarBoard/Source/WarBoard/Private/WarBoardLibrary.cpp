@@ -5,7 +5,7 @@
 
 #include <math.h>
 
-#include "HelperStructs.h"
+#include "Tiles.h"
 
 AActor* UWarBoardLibrary::Highlighted = nullptr;
 

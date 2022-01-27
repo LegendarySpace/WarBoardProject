@@ -3,54 +3,53 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Components/InstancedStaticMeshComponent.h"
 
-#include "GameFramework/Actor.h"
-
-#include "TileShape.h"
-#include "HelperStructs.h"
+#include "Tiles.h"
 
 #include "PlanarManager.generated.h"
-
-class UInstancedStaticMeshComponent;
 
 /**
 *		Highlights selection options
 */
-UCLASS()
-class WARBOARD_API APlanarManager : public AActor
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class WARBOARD_API UPlanarManager : public UInstancedStaticMeshComponent
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	APlanarManager();
-
-	// Determines the basic plane used
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Settings")
-	void SetPlaneType(ETileShape Shape);
-
-	// Populate the Meshes
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
-	void Populate(TArray<FTile> Choices);
-	virtual void Populate_Implementation(TArray<FTile> Choices); // Virtual override
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
-	void Clear();
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UInstancedStaticMeshComponent* Planes;
+	UPlanarManager();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	UMaterialInterface* PlaneMaterial;
 
+public:
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Settings")
+	void SetPlaneType(ETileShape Shape);
+
+	// Populate the Meshes as a batch, because they are not persistent cannot be individually added or removed
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
+	void Populate(TArray<FGCoord> Choices);
+	virtual void Populate_Implementation(TArray<FGCoord> Choices); // Virtual override
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
+	void Clear();
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
+	void SetPadding(float InPadding) { this->Padding = InPadding; }
+	
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+	FTransform CalculateTransform(FTile Tile);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	bool bUseDefaultShape = true;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	float Padding = .1;
 
-protected:
-	FVector Scale;
 };

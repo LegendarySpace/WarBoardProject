@@ -3,29 +3,20 @@
 
 #include "PlanarManager.h"
 
-#include "Components/InstancedStaticMeshComponent.h"
-
-#include "HelperStructs.h"
+#include "Tiles.h"
 #include "WarBoardLibrary.h"
 
 // Sets default values
-APlanarManager::APlanarManager()
+UPlanarManager::UPlanarManager()
 {
  	// Never tick
-	PrimaryActorTick.bCanEverTick = false;
-
-	// Setup defaults
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-
-	Planes = CreateDefaultSubobject<UInstancedStaticMeshComponent>(TEXT("Planes"));
-	Planes->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	if (GetWorld()) Planes->RegisterComponent();
+	PrimaryComponentTick.bCanEverTick = false;
 
 	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/WarBoard/Material/TileMat.TileMat'")).Object;
 
 }
 
-void APlanarManager::SetPlaneType(ETileShape Shape)
+void UPlanarManager::SetPlaneType(ETileShape Shape)
 {
 	// Determine Base Tile
 	UStaticMesh* mesh;
@@ -45,40 +36,45 @@ void APlanarManager::SetPlaneType(ETileShape Shape)
 		mesh = nullptr;
 		break;
 	}
-	Planes->SetStaticMesh(mesh);
-	if (PlaneMaterial) Planes->SetMaterial(0, PlaneMaterial);
+	this->SetStaticMesh(mesh);
+	if (PlaneMaterial) this->SetMaterial(0, PlaneMaterial);
 }
 
-void APlanarManager::Populate(TArray<FTile> Choices)
+void UPlanarManager::Populate(TArray<FGCoord> Choices)
 {
 	Clear();
-	// TODO: Add optional padding
-	float size = WarBoardLib::GetTileSize();
-	if (Padding >= 1) size -= Padding;
-	else if (Padding > 0 && Padding < 1) size -= size * Padding;
-	Scale = FVector(size / 100.f);
+	if (bUseDefaultShape) SetPlaneType(WarBoardLib::GetTileShape());
 
 	Populate_Implementation(Choices);
 }
 
-void APlanarManager::Populate_Implementation(TArray<FTile> Choices)
+void UPlanarManager::Populate_Implementation(TArray<FGCoord> Choices)
 {
 	for (auto Tile : Choices)
 	{
-		Planes->AddInstance(FTransform(FRotator(0.0), Tile.ToWorld(), Scale));
+		this->AddInstance(CalculateTransform(Tile));
 	}
 }
 
-void APlanarManager::Clear()
+void UPlanarManager::Clear()
 {
-	Planes->ClearInstances();
+	this->ClearInstances();
 }
 
 // Called when the game starts or when spawned
-void APlanarManager::BeginPlay()
+void UPlanarManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	SetPlaneType(WarBoardLib::GetTileShape());
+}
+
+FTransform UPlanarManager::CalculateTransform(FTile Tile)
+{
+	float size = WarBoardLib::GetTileSize();
+	if (Padding >= 1) size -= Padding;
+	else if (Padding > 0 && Padding < 1) size -= size * Padding;
+	FVector scale = FVector(size / 100.f);
+	return FTransform(FRotator(0), Tile.ToWorld(), scale);
 }
 

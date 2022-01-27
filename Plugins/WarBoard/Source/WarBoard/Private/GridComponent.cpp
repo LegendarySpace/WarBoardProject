@@ -1,9 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GridManager.h"
-
-#include "ProceduralMeshComponent.h"
+#include "GridComponent.h"
 
 #include "WarBoardLibrary.h"
 
@@ -13,20 +11,23 @@ using namespace WarBoardLib;
 
 void FGridCell::BuildCell(ETileShape Shape, float Size, float Thickness, float Padding)
 {
-	LineThickness = Thickness;
-	CellSize = Size - Padding*2;
-	// TODO: May get rid of size and just use tilesize
-	Polygon = Tile.GetPolygon(Padding);
+	if (Size <= 0) Size = GetTileSize();
+	if (Thickness >= 0) LineThickness = Thickness;
+	float pad = 0;
+	if (Padding >= 1 && Padding < (Size / 2)) pad = Padding;
+	if (Padding > 0 && Padding < 1) pad = Size / 2 * Padding;
+	CellSize = Size - pad;
+	Polygon = Tile.GetPolygon(pad);
 	BuildPolygonLines();
 }
 
 void FGridCell::ProjectVerticesOntoSurface(float Height)
 {
-	// TODO: if (!bProjectGrid) return;
+	if (!bProjectGrid) return;
 	for (auto &Vertex : Polygon)
 	{
-		// TODO: LineTrace from height to find surface to project onto
-		// for each vert in poly vert = hit location
+		// UPGRADE: LineTrace from height to find surface to project onto
+		// for each vert in poly vert.z = hit location.z + 1
 	}
 
 }
@@ -46,7 +47,6 @@ void FGridCell::BuildPolygonLines()
 
 void FGridCell::AddLineDetails(FVector Start, FVector End)
 {
-	// Calculate Triangle Positions
 	LineTriangles.Add(LineVertices.Num() + 0);
 	LineTriangles.Add(LineVertices.Num() + 1);
 	LineTriangles.Add(LineVertices.Num() + 3);
@@ -54,18 +54,15 @@ void FGridCell::AddLineDetails(FVector Start, FVector End)
 	LineTriangles.Add(LineVertices.Num() + 3);
 	LineTriangles.Add(LineVertices.Num() + 2);
 
-
-	// Points are the inner edge of line corners
+	// PointOffset is the inner edge of line corners
 	auto PointOffset = LineThickness / FMath::Sin(FMath::DegreesToRadians(360 / Polygon.Num()));
-	// TODO: For some reason this is now pointng up
 	auto StartOffset = PointOffset * ((Start - Tile.ToWorld()) * FVector(1,1,0)).GetSafeNormal();
 	auto EndOffset = PointOffset * ((End - Tile.ToWorld()) * FVector(1,1,0)).GetSafeNormal();
 
 	// Raise slightly above tile to prevent clipping
-	Start += FVector(0, 0, 2);
-	End += FVector(0, 0, 2);
+	Start += FVector(0, 0, .5);
+	End += FVector(0, 0, .5);
 
-	// Calculate Vertex Positions
 	LineVertices.Add(Start);
 	LineVertices.Add(Start - StartOffset);
 	LineVertices.Add(End);
@@ -76,82 +73,71 @@ void FGridCell::AddLineDetails(FVector Start, FVector End)
 
 
 // Sets default values
-AGridManager::AGridManager()
+UGridComponent::UGridComponent(const FObjectInitializer& ObjectInitializer) : UProceduralMeshComponent(ObjectInitializer)
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-	auto Root = CreateDefaultSubobject<USceneComponent>(TEXT("Root"));
-	RootComponent = Root;
-
-	ProceduralMesh = CreateDefaultSubobject<UProceduralMeshComponent>(TEXT("Grid Mesh"));
-	ProceduralMesh->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
+	PrimaryComponentTick.bCanEverTick = true;
 
 }
 
 // Called when the game starts or when spawned
-void AGridManager::BeginPlay()
+void UGridComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 }
 
-// Called every frame
-void AGridManager::Tick(float DeltaTime)
+void UGridComponent::AddCell(FGCoord Tile)
 {
-	Super::Tick(DeltaTime);
-
-}
-
-void AGridManager::AddCell(FTile Tile)
-{
-	auto prev = CellArray.FindByPredicate([=](auto Option) { return Option.IsSet() && Option.GetValue() == Tile.ToIndex(); });
-	if (prev != nullptr) return;
+	if (CellArray.Find(FGridCell(Tile)) != INDEX_NONE) return; // Cell already exists
 
 	FGridCell Cell = FGridCell(Tile);
-	Cell.BuildCell(TileShape, WarBoardLib::GetTileSize(), LineThickness, CellPadding);
+	Cell.BuildCell(GetTileShape(), GetTileSize(), LineThickness, CellPadding);
 	CellArray[GetFirstUnsetID()] = Cell;
 	DisplayCell(Cell);
 }
 
-void AGridManager::RemoveCell(FTile Tile)
+void UGridComponent::RemoveCell(FGCoord Tile)
 {
 	FGridCell Cell = FGridCell(Tile);
-	int ID = CellArray.Find(Cell);
+	int32 ID = CellArray.Find(Cell);
 	if (ID == INDEX_NONE) return;
 
-	ProceduralMesh->ClearMeshSection(ID);
+	this->ClearMeshSection(ID);
 	CellArray[ID].Reset();
 
 	CleanUpArray();
 }
 
-void AGridManager::RebuildCells()
+void UGridComponent::RebuildCells()
 {
-	ProceduralMesh->ClearAllMeshSections();
-
 	for (auto &Option : CellArray)
 	{
 		if (Option.IsSet())
 		{
 			auto Cell = Option.GetValue();
-			Cell.BuildCell(TileShape, WarBoardLib::GetTileSize(), LineThickness, CellPadding);
+			Cell.BuildCell(GetTileShape(), GetTileSize(), LineThickness, CellPadding);
 			DisplayCell(Cell);
 		}
 	}
 }
 
-void AGridManager::DisplayInitialCells()
+void UGridComponent::Populate(TArray<FGCoord> Tiles)
 {
-	//	REMEMBER:	Cells are empty until BP construction
-	for (auto Index : InitialCells)
+	for (auto Tile : Tiles)
 	{
-		AddCell(Index);
+		AddCell(Tile);
 	}
 
 }
 
-int32 AGridManager::GetNumUnset()
+void UGridComponent::SetPadding(float InPadding)
+{
+	CellPadding = InPadding;
+	RebuildCells();
+}
+
+int32 UGridComponent::GetNumUnset()
 {
 	int32 count = 0;
 	for (auto Option : CellArray)
@@ -161,7 +147,7 @@ int32 AGridManager::GetNumUnset()
 	return count;
 }
 
-int32 AGridManager::GetFirstUnsetID()
+int32 UGridComponent::GetFirstUnsetID()
 {
 	// Return Id
 	for (int i = 0; i < CellArray.Num(); i++)
@@ -175,7 +161,7 @@ int32 AGridManager::GetFirstUnsetID()
 
 }
 
-void AGridManager::DisplayCell(FGridCell Cell)
+void UGridComponent::DisplayCell(FGridCell Cell)
 {
 	int32 ID = CellArray.Find(Cell);
 	if (ID == INDEX_NONE)
@@ -184,14 +170,14 @@ void AGridManager::DisplayCell(FGridCell Cell)
 		return;
 	}
 
-	// TODO: if(SelectedCell == Cell) Alter cell vertices in some way
+	// UPGRADE: if(SelectedCell == Cell) Alter cell vertices in some way
 
-	ProceduralMesh->ClearMeshSection(ID);
-	ProceduralMesh->CreateMeshSection_LinearColor(ID, Cell.LineVertices, Cell.LineTriangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
+	this->ClearMeshSection(ID);
+	this->CreateMeshSection_LinearColor(ID, Cell.LineVertices, Cell.LineTriangles, TArray<FVector>(), TArray<FVector2D>(), TArray<FLinearColor>(), TArray<FProcMeshTangent>(), false);
 	
 }
 
-void AGridManager::CleanUpArray()
+void UGridComponent::CleanUpArray()
 {
 	if (GetNumUnset() < 10) return;
 
@@ -202,3 +188,5 @@ void AGridManager::CleanUpArray()
 
 	RebuildCells();
 }
+
+

@@ -3,9 +3,9 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "WarBoard",
-	"Description": "",
-	"Category": "Other",
-	"CreatedBy": "",
+	"Description": "A system made to aide placement, movement and targeting based on Tiles",
+	"Category": "Modular Gameplay",
+	"CreatedBy": "Brian Upsher",
 	"CreatedByURL": "",
 	"DocsURL": "",
 	"MarketplaceURL": "",
@@ -14,17 +14,17 @@
 	"IsBetaVersion": true,
 	"IsExperimentalVersion": true,
 	"Installed": false,
-  "Modules": [
-    {
-      "Name": "WarBoard",
-      "Type": "Runtime",
-      "LoadingPhase": "Default"
-    }
-  ],
-  "Plugins": [
-    {
-      "Name": "ProceduralMeshComponent",
-      "Enabled": true
-    }
-  ]
+	"Modules": [
+		{
+			"Name": "WarBoard",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ProceduralMeshComponent",
+			"Enabled": true
+		}
+	]
 }

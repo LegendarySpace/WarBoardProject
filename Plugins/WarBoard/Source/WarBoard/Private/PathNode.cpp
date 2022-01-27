@@ -26,17 +26,17 @@ APathNode::APathNode()
 	Display->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 	// Import Materials
-	auto m1 = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Unchecked_MI.Node_Unchecked_MI'"));
+	auto m1 = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Unchecked_MI.Node_Unchecked_MI'"));
 	if (m1.Object) M_Unchecked = m1.Object;
-	auto m2 = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Checked_MI.Node_Checked_MI'"));
+	auto m2 = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Checked_MI.Node_Checked_MI'"));
 	if (m2.Object) M_Checked = m2.Object;
-	auto m3 = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'"));
+	auto m3 = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'"));
 	if (m3.Object) M_Start = m3.Object;
-	auto m4 = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_End_MI.Node_End_MI'"));
+	auto m4 = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_End_MI.Node_End_MI'"));
 	if (m4.Object) M_End = m4.Object;
-	auto m5 = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Path_MI.Node_Path_MI'"));
+	auto m5 = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Path_MI.Node_Path_MI'"));
 	if (m5.Object) M_Path = m5.Object;
-	auto m6 = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Ignored_MI.Node_Ignored_MI'"));
+	auto m6 = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Ignored_MI.Node_Ignored_MI'"));
 	if (m6.Object) M_Ignored = m6.Object;
 }
 

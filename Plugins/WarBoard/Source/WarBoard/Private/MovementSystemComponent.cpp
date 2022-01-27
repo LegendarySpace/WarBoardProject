@@ -16,7 +16,7 @@ UMovementSystemComponent::UMovementSystemComponent()
  	// Should never tick
 	PrimaryComponentTick.bCanEverTick = false;
 
-	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'")).Object;
+	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'")).Object;
 }
 
 void UMovementSystemComponent::Populate_Implementation(TArray<FGCoord> Choices)

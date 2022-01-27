@@ -54,6 +54,36 @@ public:
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "World To Index", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
 	static int32 Conv_VectorToIndex(FVector World) { return FTile(World).ToIndex(); }
 
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Index To GCoord", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FGCoord Conv_IndexToCoord(int32 Index) { return FTile(Index).ToRC(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord To Index", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static int32 Conv_CoordToIndex(FGCoord Coord) { return FTile(Coord).ToIndex(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Index To Cubic", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FCubic Conv_IndexToCubic(int32 Index) { return FTile(Index).ToCubic(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic To Index", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static int32 Conv_CubicToIndex(FCubic Cubic) { return FTile(Cubic).ToIndex(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "World To GCoord", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FGCoord Conv_VectorToCoord(FVector World) { return FTile(World).ToRC(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord To World", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FVector Conv_CoordToVector(FGCoord Coord) { return FTile(Coord).ToWorld(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "World To Cubic", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FCubic Conv_VectorToCubic(FVector World) { return FTile(World).ToCubic(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic To World", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FVector Conv_CubicToVector(FCubic Cubic) { return FTile(Cubic).ToWorld(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord To Cubic", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FCubic Conv_CoordToCubic(FGCoord Coord) { return FTile(Coord).ToCubic(); }
+
+	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic To GCoord", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
+	static FGCoord Conv_CubicToCoord(FCubic Cubic) { return FTile(Cubic).ToRC(); }
+
 
 	// Operator BP support
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile + Integer", CompactNodeTitle = "+", ScriptMethod = "AddInteger", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
@@ -110,6 +140,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, meta = (WorldContext = "WorldContextObject", UnsafeDuringActorConstruction = "true", CompactNodeTitle = "ActorAt", Category = "WarBoard|Utility"))
 	static AActor* GetActorAtTile(UObject* WorldContextObject, const FTile Tile);
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "WarBoard|Utility"))
+	static void SetTileSize(float Size) { FTile::SetTileSize(Size); }
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "WarBoard|Utility"))
+	static float GetTileSize() { return FTile::GetTileSize(); }
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "WarBoard|Utility"))
+	static void SetTileShape(ETileShape Shape) { return FTile::SetTileShape(Shape); }
+
+	UFUNCTION(BlueprintCallable, meta = (Category = "WarBoard|Utility"))
+	static ETileShape GetTileShape() { return FTile::GetTileShape(); }
 
 	// TODO: Editor access to set size/shape
 

@@ -35,9 +35,9 @@ struct FGCoord
 		Column = InCol;
 	}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
 		int32 Row;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
 		int32 Column;
 
 	FGCoord operator+(const FGCoord& Coord)
@@ -79,11 +79,11 @@ struct FCubic
 		C = InC;
 	}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
 		int32 A;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
 		int32 B;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
 		int32 C;
 
 	FCubic operator+(const FCubic& Cubic)

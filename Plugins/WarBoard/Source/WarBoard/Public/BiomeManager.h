@@ -45,11 +45,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
 	void DisplayInstanceIndexes();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "WarBoard|Biome Manager")
 	TArray<FGCoord> GetInstanceIndexes() { return InstanceIndexes; }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
-		void SetPadding(float InPadding);
+	void SetPadding(float InPadding);
 
 protected:
 	FTransform CalculateTransform(FTile Tile);
@@ -57,15 +57,16 @@ protected:
 	void BuildTile(FTile Tile);
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
 	float Padding = 0;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	float MeshSize = 100;
 
-	EBiome Biome = EBiome::TT_Normal;
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	TEnumAsByte<EBiome> Biome = EBiome::TT_Normal;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Settings")
 	bool bDebugMode = false;
 
 private:

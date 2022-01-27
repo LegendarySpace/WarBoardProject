@@ -12,7 +12,7 @@ UPlanarManager::UPlanarManager()
  	// Never tick
 	PrimaryComponentTick.bCanEverTick = false;
 
-	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterial>(TEXT("Material'/WarBoard/Material/TileMat.TileMat'")).Object;
+	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("Material'/WarBoard/Material/TileMat.TileMat'")).Object;
 
 }
 

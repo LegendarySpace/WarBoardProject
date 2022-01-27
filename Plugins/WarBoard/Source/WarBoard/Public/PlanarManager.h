@@ -25,18 +25,18 @@ public:
 	UMaterialInterface* PlaneMaterial;
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Settings")
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Plane")
 	void SetPlaneType(ETileShape Shape);
 
 	// Populate the Meshes as a batch, because they are not persistent cannot be individually added or removed
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Plane")
 	void Populate(TArray<FGCoord> Choices);
 	virtual void Populate_Implementation(TArray<FGCoord> Choices); // Virtual override
 
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Managers")
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Plane")
 	void Clear();
 
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Plane")
 	void SetPadding(float InPadding) { this->Padding = InPadding; }
 	
 protected:

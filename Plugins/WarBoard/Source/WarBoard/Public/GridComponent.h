@@ -24,16 +24,16 @@ public:
 
 	FGridCell(FTile InTile) { this->Tile = InTile; }
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "GridCell")
 	FTile Tile = FTile();
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "GridCell")
 	float CellSize = WarBoardLib::GetTileSize();
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category = "GridCell")
 	float LineThickness = 10;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "GridCell")
 	bool bProjectGrid = false;
 
 	TArray<FVector> LineVertices;
@@ -184,10 +184,10 @@ protected:
 	void CleanUpArray();
 
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Grid")
 	float LineThickness = 10.0;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Grid")
 	float CellPadding = 0.0;
 
 private:

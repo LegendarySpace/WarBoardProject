@@ -41,9 +41,9 @@ public:
 		Biome = InType;
 	}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Biome")
 		FGCoord Coord;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Biome")
 		TEnumAsByte<EBiome> Biome;
 
 	void operator=(EBiome InType)
@@ -106,11 +106,11 @@ public:
 		Mat = InMat;
 	}
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Biome")
 		TEnumAsByte<EBiome> Biome;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Biome")
 		UStaticMesh* Mesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Biome")
 		UMaterialInterface* Mat;
 
 	void operator=(UStaticMesh* StaticMesh)

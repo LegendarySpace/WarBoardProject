@@ -16,7 +16,7 @@ UAttackSystemComponent::UAttackSystemComponent()
  	// Should never tick
 	PrimaryComponentTick.bCanEverTick = false;
 
-	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInstance>(TEXT("UMaterialInstance'/WarBoard/Material/Node_End_MI.Node_End_MI'")).Object;
+	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_End_MI.Node_End_MI'")).Object;
 }
 
 void UAttackSystemComponent::Populate_Implementation(TArray<FGCoord> Choices)

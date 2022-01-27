@@ -110,13 +110,13 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Settings")
 	USphereComponent* Collision;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Settings")
 	UStaticMeshComponent* Sphere;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Settings")
 	UTextRenderComponent* Display;
 
 	// Estimated cost to destination
@@ -143,11 +143,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Path")
 	int32 Step;
 
-	UMaterialInstance* M_Checked;
-	UMaterialInstance* M_Unchecked;
-	UMaterialInstance* M_Start;
-	UMaterialInstance* M_End;
-	UMaterialInstance* M_Path;
-	UMaterialInstance* M_Ignored;
+	UMaterialInterface* M_Checked;
+	UMaterialInterface* M_Unchecked;
+	UMaterialInterface* M_Start;
+	UMaterialInterface* M_End;
+	UMaterialInterface* M_Path;
+	UMaterialInterface* M_Ignored;
 
 };

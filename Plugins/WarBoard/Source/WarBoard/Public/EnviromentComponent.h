@@ -30,34 +30,35 @@ public:
 	// Sets default values for this actor's properties
 	UEnviromentComponent();
 
-	UPROPERTY(BlueprintReadOnly)
+protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager0;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager1;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager2;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager3;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager4;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager5;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager6;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager7;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager8;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
 	UBiomeManager* BiomeManager9;
 
 public:

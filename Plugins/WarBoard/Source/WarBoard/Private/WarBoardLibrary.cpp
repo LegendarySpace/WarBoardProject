@@ -3,6 +3,7 @@
 
 #include "WarBoardLibrary.h"
 
+#include "Engine.h"
 #include <math.h>
 
 #include "Tiles.h"

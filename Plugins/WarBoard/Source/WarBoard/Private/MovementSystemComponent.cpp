@@ -19,7 +19,7 @@ UMovementSystemComponent::UMovementSystemComponent()
 	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'")).Object;
 }
 
-void UMovementSystemComponent::Populate_Implementation(TArray<FGCoord> Choices)
+void UMovementSystemComponent::Populate(TArray<FGCoord> Choices)
 {
 	for (auto Tile : Choices)
 	{
@@ -29,6 +29,20 @@ void UMovementSystemComponent::Populate_Implementation(TArray<FGCoord> Choices)
 
 		this->AddInstance(CalculateTransform(Tile));
 	}
+}
+
+void UMovementSystemComponent::Populate(TArray<FTile> Choices)
+{
+	TArray<FGCoord> Population;
+	for (auto Selection : Choices) Population.Add(Selection.ToRC());
+	Populate(Population);
+}
+
+void UMovementSystemComponent::Populate(TArray<FCubic> Choices)
+{
+	TArray<FGCoord> Population;
+	for (auto Selection : Choices) Population.Add(FTile(Selection).ToRC());
+	Populate(Population);
 }
 
 // Called when the game starts or when spawned

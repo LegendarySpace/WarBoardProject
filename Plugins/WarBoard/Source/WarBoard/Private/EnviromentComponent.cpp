@@ -45,17 +45,27 @@ bool UEnviromentComponent::ChangeTile(FTileBiome Instance)
 	return true;
 }
 
-bool UEnviromentComponent::RemoveTile(FGCoord Coord)
+bool UEnviromentComponent::RemoveTile(FGCoord Tile)
+{
+	return RemoveTile(FTile(Tile));
+}
+
+bool UEnviromentComponent::RemoveTile(FTile Tile)
 {
 	int i = 0;
-	if (BiomeTiles.Find(Coord, i))
+	if (BiomeTiles.Find(Tile.ToRC(), i))
 	{
 		FTileBiome TB = BiomeTiles[i];
-		GetBiomeManager(TB.Biome)->RemoveTile(Coord);
+		GetBiomeManager(TB.Biome)->RemoveTile(Tile);
 		BiomeTiles.RemoveAt(i);
-		OnTileRemove.Broadcast(Coord);
+		OnTileRemove.Broadcast(Tile.ToRC());
 	}
 	return true;
+}
+
+bool UEnviromentComponent::RemoveTile(FCubic Tile)
+{
+	return RemoveTile(FTile(Tile));
 }
 
 void UEnviromentComponent::Populate(TArray<FTileBiome> Tiles)
@@ -75,9 +85,19 @@ TArray<FGCoord> UEnviromentComponent::GetTiles()
 
 EBiome UEnviromentComponent::GetBiome(FGCoord Tile)
 {
+	return GetBiome(FTile(Tile));
+}
+
+EBiome UEnviromentComponent::GetBiome(FTile Tile)
+{
 	int32 i = 0;
-	if (!BiomeTiles.Find(Tile, i)) return EBiome::TT_Type_MAX;
+	if (!BiomeTiles.Find(Tile.ToRC(), i)) return EBiome::TT_Type_MAX;
 	return static_cast<EBiome>(BiomeTiles[i].Biome);
+}
+
+EBiome UEnviromentComponent::GetBiome(FCubic Tile)
+{
+	return GetBiome(FTile(Tile));
 }
 
 void UEnviromentComponent::SetPadding(float InPadding)

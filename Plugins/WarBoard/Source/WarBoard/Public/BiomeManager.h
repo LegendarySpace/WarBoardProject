@@ -12,7 +12,6 @@
 #include "BiomeManager.generated.h"
 
 class UInstancedStaticMeshComponent;
-class UStaticMesh;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class WARBOARD_API UBiomeManager : public UInstancedStaticMeshComponent
@@ -29,14 +28,20 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
 	void Populate(TArray<FGCoord> Tiles);
+	void Populate(TArray<FTile> Tiles);
+	void Populate(TArray<FCubic> Tiles);
 
 	// Index of tile to add
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
 	void AddTile(FGCoord Tile);
+	void AddTile(FTile Tile);
+	void AddTile(FCubic Tile);
 
 	// Index of tile to remove
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
 	void RemoveTile(FGCoord TileToRemove);
+	void RemoveTile(FTile TileToRemove);
+	void RemoveTile(FCubic TileToRemove);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
 	void RebuildBiome();

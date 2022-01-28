@@ -48,10 +48,24 @@ void UBiomeManager::SetupInstance(FBiomeSetup Setup) // UPDATE: On tileshape cha
 
 void UBiomeManager::Populate(TArray<FGCoord> Tiles)
 {
+	TArray<FTile> Population;
+	for (auto Tile : Tiles) Population.Add(Tile);
+	Populate(Population);
+}
+
+void UBiomeManager::Populate(TArray<FTile> Tiles)
+{
 	for (auto Tile : Tiles)
 	{
 		AddTile(Tile);
 	}
+}
+
+void UBiomeManager::Populate(TArray<FCubic> Tiles)
+{
+	TArray<FTile> Population;
+	for (auto Tile : Tiles) Population.Add(Tile);
+	Populate(Population);
 }
 
 void UBiomeManager::AddTile(FGCoord Tile)
@@ -60,9 +74,18 @@ void UBiomeManager::AddTile(FGCoord Tile)
 	{
 		InstanceIndexes.AddUnique(Tile);
 
-		BuildTile(Tile);
+		BuildTile(FTile(Tile));
 	}
+}
 
+void UBiomeManager::AddTile(FTile Tile)
+{
+	AddTile(Tile.ToRC());
+}
+
+void UBiomeManager::AddTile(FCubic Tile)
+{
+	AddTile(FTile(Tile).ToRC());
 }
 
 FTransform UBiomeManager::CalculateTransform(FTile Tile)
@@ -94,6 +117,16 @@ void UBiomeManager::RemoveTile(FGCoord TileToRemove)
 		}
 	}
 	else UE_LOG(LogTemp, Warning, TEXT("Remove tile failed: Tile not in InstanceIndexes"));
+}
+
+void UBiomeManager::RemoveTile(FTile TileToRemove)
+{
+	RemoveTile(TileToRemove.ToRC());
+}
+
+void UBiomeManager::RemoveTile(FCubic TileToRemove)
+{
+	RemoveTile(FTile(TileToRemove).ToRC());
 }
 
 void UBiomeManager::RebuildBiome()

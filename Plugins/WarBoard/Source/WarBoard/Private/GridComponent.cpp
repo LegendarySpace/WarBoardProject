@@ -89,6 +89,11 @@ void UGridComponent::BeginPlay()
 
 void UGridComponent::AddCell(FGCoord Tile)
 {
+	AddCell(FTile(Tile));
+}
+
+void UGridComponent::AddCell(FTile Tile)
+{
 	if (CellArray.Find(FGridCell(Tile)) != INDEX_NONE) return; // Cell already exists
 
 	FGridCell Cell = FGridCell(Tile);
@@ -97,7 +102,17 @@ void UGridComponent::AddCell(FGCoord Tile)
 	DisplayCell(Cell);
 }
 
+void UGridComponent::AddCell(FCubic Tile)
+{
+	AddCell(FTile(Tile));
+}
+
 void UGridComponent::RemoveCell(FGCoord Tile)
+{
+	RemoveCell(FTile(Tile));
+}
+
+void UGridComponent::RemoveCell(FTile Tile)
 {
 	FGridCell Cell = FGridCell(Tile);
 	int32 ID = CellArray.Find(Cell);
@@ -107,6 +122,11 @@ void UGridComponent::RemoveCell(FGCoord Tile)
 	CellArray[ID].Reset();
 
 	CleanUpArray();
+}
+
+void UGridComponent::RemoveCell(FCubic Tile)
+{
+	RemoveCell(FTile(Tile));
 }
 
 void UGridComponent::RebuildCells()
@@ -124,11 +144,25 @@ void UGridComponent::RebuildCells()
 
 void UGridComponent::Populate(TArray<FGCoord> Tiles)
 {
+	TArray<FTile> Population;
+	for (auto Tile : Tiles) Population.Add(FTile(Tile));
+	Populate(Population);
+}
+
+void UGridComponent::Populate(TArray<FTile> Tiles)
+{
 	for (auto Tile : Tiles)
 	{
 		AddCell(Tile);
 	}
 
+}
+
+void UGridComponent::Populate(TArray<FCubic> Tiles)
+{
+	TArray<FTile> Population;
+	for (auto Tile : Tiles) Population.Add(FTile(Tile));
+	Populate(Population);
 }
 
 void UGridComponent::SetPadding(float InPadding)

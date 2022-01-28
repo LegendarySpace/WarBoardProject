@@ -3,8 +3,8 @@
 
 #include "WarBoardLibrary.h"
 
-#include "Engine.h"
 #include <math.h>
+#include <stdlib.h>
 
 #include "Tiles.h"
 
@@ -12,12 +12,12 @@ AActor* UWarBoardLibrary::Highlighted = nullptr;
 
 AActor * UWarBoardLibrary::GetActorAtTile(UObject* WorldContextObject, const FTile Tile)
 {
-	// Check 100 units above and 50 below. This may change in future
-	UWorld* World = GEngine->GetWorldFromContextObjectChecked(WorldContextObject);
+	// Check 95 units above and 5 below. This may change in future
+	UWorld* World = WorldContextObject->GetWorld();
 	FHitResult result;
 	FVector start, end;
-	start = Tile.ToWorld() + FVector(0, 0, 100);
-	end = Tile.ToWorld() - FVector(0, 0, 50);
+	start = Tile.ToWorld() + FVector(0, 0, 95);
+	end = Tile.ToWorld() - FVector(0, 0, 5);
 	// TODO: Need this to ignore Tiles or it will break Pathfinding
 	// if (World->LineTraceSingleByChannel(result, start, end, ECollisionChannel::ECC_PhysicsBody)) return result.GetActor();
 	return nullptr;

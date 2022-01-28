@@ -31,7 +31,8 @@ public:
 	// Populate the Meshes as a batch, because they are not persistent cannot be individually added or removed
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Plane")
 	void Populate(TArray<FGCoord> Choices);
-	virtual void Populate_Implementation(TArray<FGCoord> Choices); // Virtual override
+	void Populate(TArray<FTile> Choices);
+	void Populate(TArray<FCubic> Choices);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Plane")
 	void Clear();

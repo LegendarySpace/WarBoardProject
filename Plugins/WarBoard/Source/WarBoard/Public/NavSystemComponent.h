@@ -15,7 +15,7 @@
 *
 */
 UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WARBOARD_API UNavSystem : public USceneComponent		// UPGRADE: Make Actor Component after Node is modified to struct since it will have no world location
+class WARBOARD_API UNavSystem : public USceneComponent		// UPGRADE: Make Actor Component instead of scene after Node is modified to struct since it will have no world location
 {
 	GENERATED_BODY()
 	
@@ -35,10 +35,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
 	void Populate(TArray<FGCoord> Locations);
 	void Populate(TArray<FTile> Locations);
+	void Populate(TArray<FCubic> Locations);
 
-	bool AddNode(FGCoord InTile);
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
+	bool AddNode(FGCoord InTile) { return AddNode(FTile(InTile)); }
+	bool AddNode(FTile InTile);
+	bool AddNode(FCubic InTile) { return AddNode(FTile(InTile)); }
 
-	bool RemoveNode(FGCoord InTile);
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
+	bool RemoveNode(FGCoord InTile) { return RemoveNode(FTile(InTile)); }
+	bool RemoveNode(FTile InTile);
+	bool RemoveNode(FCubic InTile) { return RemoveNode(FTile(InTile)); }
 
 
 	/**										**\
@@ -48,12 +55,18 @@ public:
 
 	// Resets all nodes and determine paths
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	void Discovery(FGCoord Origin, int32 Range, TArray<FGCoord> &PathableTiles);
+	void Discovery(FGCoord Origin, int32 Range, TArray<FGCoord>& PathableTiles);
+	virtual void BeginDiscovery(FGCoord Origin, int32 Range, TArray<FGCoord> PathableTiles);
+	virtual void BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> PathableTiles);
+	virtual void BeginDiscovery(FCubic Origin, int32 Range, TArray<FCubic> PathableTiles);
 
 	// UPDATE: change from UFUNCTION
 	// Looks at node in given direction and attempts to set data and add to open
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
 	void CheckNeighbor(APathNode *Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
+	virtual void CheckNeighborStatus(APathNode* Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
+	virtual void CheckNeighborStatus(APathNode* Current, FTile Direction, FTile Goal, int32 BreakTie);
+	virtual void CheckNeighborStatus(APathNode* Current, FCubic Direction, FCubic Goal, int32 BreakTie);
 
 	// List of indexes reached by Discovery
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
@@ -62,10 +75,16 @@ public:
 	// Returns the shourtest path to destination
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta =(AutoCreateRefTerm = "RouteArray"))
 	bool Route(FGCoord End, TArray<FGCoord> &RouteArray);
+	virtual bool GetRoute(FGCoord End, TArray<FGCoord>& RouteArray);
+	virtual bool GetRoute(FTile End, TArray<FTile>& RouteArray);
+	virtual bool GetRoute(FCubic End, TArray<FCubic>& RouteArray);
 
 	// Returns the shourtest path to destination without utilizing Discovery
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "RouteArray, PathableTiles"))
-	bool DirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> &RouteArray, TArray<FGCoord> &PathableTiles);
+	bool DirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> &PathableTiles, TArray<FGCoord> &RouteArray);
+	virtual bool GetDirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> PathableTiles, TArray<FGCoord>& RouteArray);
+	virtual bool GetDirectRoute(FTile Start, FTile End, TArray<FTile> PathableTiles, TArray<FTile>& RouteArray);
+	virtual bool GetDirectRoute(FCubic Start, FCubic End, TArray<FCubic> PathableTiles, TArray<FCubic>& RouteArray);
 
 
 	/**							**\
@@ -74,7 +93,10 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-	APathNode* GetNode(FGCoord Tile);
+	APathNode* GetNodeFromCoord(FGCoord Tile);
+	virtual APathNode* GetNode(FGCoord Tile);
+	virtual APathNode* GetNode(FTile Tile);
+	virtual APathNode* GetNode(FCubic Tile);
 
 	// Reset all nodes
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
@@ -86,11 +108,17 @@ public:
 
 	// Tile Status of a given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	ENodeStatus GetStatusByTile(FGCoord InTile);
+	ENodeStatus GetStatusByCoord(FGCoord InTile);
+	virtual ENodeStatus GetStatusByTile(FGCoord InTile);
+	virtual ENodeStatus GetStatusByTile(FTile InTile);
+	virtual ENodeStatus GetStatusByTile(FCubic InTile);
 
 	// Update Status of given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void UpdateStatus(FGCoord InTile, ENodeStatus Status);
+	void UpdateStatusByCoord(FGCoord InTile, ENodeStatus Status);
+	virtual void UpdateStatus(FGCoord InTile, ENodeStatus Status);
+	virtual void UpdateStatus(FTile InTile, ENodeStatus Status);
+	virtual void UpdateStatus(FCubic InTile, ENodeStatus Status);
 
 protected:
 	// Called when the game starts or when spawned

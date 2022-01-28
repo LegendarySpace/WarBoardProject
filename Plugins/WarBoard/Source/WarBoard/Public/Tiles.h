@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdlib.h>
+
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
@@ -36,18 +38,59 @@ struct FGCoord
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
-		int32 Row;
+	int32 Row;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
-		int32 Column;
+	int32 Column;
+
+
+	void operator=(const FGCoord Coord)
+	{
+		Row = Coord.Row;
+		Column = Coord.Column;
+	}
 
 	FGCoord operator+(const FGCoord& Coord)
 	{
 		return FGCoord(this->Row + Coord.Row, this->Column + Coord.Column);
 	}
 
+	FGCoord& operator+=(const FGCoord& Coord)
+	{
+		this->Row += Coord.Row;
+		this->Column += Coord.Column;
+		return (*this);
+	}
+
 	FGCoord operator-(const FGCoord& Coord)
 	{
 		return FGCoord(this->Row - Coord.Row, this->Column - Coord.Column);
+	}
+
+	FGCoord& operator-=(const FGCoord& Coord)
+	{
+		this->Row -= Coord.Row;
+		this->Column -= Coord.Column;
+		return (*this);
+	}
+
+	bool operator<(const FGCoord& Coord)
+	{
+		return this->Row < Coord.Row && this->Column < Coord.Column;
+	}
+
+	bool operator<<(const FGCoord& Coord)
+	{
+		return abs(this->Row) < abs(Coord.Row) && abs(this->Column) < abs(Coord.Column);
+	}
+
+	bool operator>(const FGCoord& Coord)
+	{
+		return this->Row > Coord.Row&& this->Column > Coord.Column;
+	}
+
+	bool operator>>(const FGCoord& Coord)
+	{
+		return abs(this->Row) > abs(Coord.Row) && abs(this->Column) > abs(Coord.Column);
 	}
 
 	bool operator==(const FGCoord& Coord)
@@ -65,6 +108,320 @@ struct FGCoord
 		return this->Row != Coord.Row || this->Column != Coord.Column;
 	}
 
+	/*	Math with other operands
+	void operator=(const FTile Tile)
+	{
+		auto RC = Tile.ToRC();
+		Row = RC.Row;
+		Column = RC.Column;
+	}
+
+	void operator=(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		Row = RC.Row;
+		Column = RC.Column;
+	}
+
+	void operator=(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		Row = RC.Row;
+		Column = RC.Column;
+	}
+
+	void operator=(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		Row = RC.Row;
+		Column = RC.Column;
+	}
+
+	FGCoord operator+(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return FGCoord(this->Row + RC.Row, this->Column + RC.Column);
+	}
+
+	FGCoord operator+(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return FGCoord(this->Row + RC.Row, this->Column + RC.Column);
+	}
+
+	FGCoord operator+(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return FGCoord(this->Row + RC.Row, this->Column + RC.Column);
+	}
+
+	FGCoord operator+(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return FGCoord(this->Row + RC.Row, this->Column + RC.Column);
+	}
+
+	FGCoord& operator+=(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		this->Row += RC.Row;
+		this->Column += RC.Column;
+		return (*this);
+	}
+
+	FGCoord& operator+=(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		this->Row += RC.Row;
+		this->Column += RC.Column;
+		return (*this);
+	}
+
+	FGCoord& operator+=(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		this->Row += RC.Row;
+		this->Column += RC.Column;
+		return (*this);
+	}
+
+	FGCoord& operator+=(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		this->Row += RC.Row;
+		this->Column += RC.Column;
+		return (*this);
+	}
+
+	FGCoord operator-(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return FGCoord(this->Row - RC.Row, this->Column - RC.Column);
+	}
+
+	FGCoord operator-(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return FGCoord(this->Row - RC.Row, this->Column - RC.Column);
+	}
+
+	FGCoord operator-(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return FGCoord(this->Row - RC.Row, this->Column - RC.Column);
+	}
+
+	FGCoord operator-(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return FGCoord(this->Row - RC.Row, this->Column - RC.Column);
+	}
+
+	FGCoord& operator-=(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		this->Row -= RC.Row;
+		this->Column -= RC.Column;
+		return (*this);
+	}
+
+	FGCoord& operator-=(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		this->Row -= RC.Row;
+		this->Column -= RC.Column;
+		return (*this);
+	}
+
+	FGCoord& operator-=(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		this->Row -= RC.Row;
+		this->Column -= RC.Column;
+		return (*this);
+	}
+
+	FGCoord& operator-=(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		this->Row -= RC.Row;
+		this->Column -= RC.Column;
+		return (*this);
+	}
+	*/
+
+	/*
+	bool operator<(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return this->Row < RC.Row && this->Column < RC.Column;
+	}
+
+	bool operator<(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return this->Row < Coord.Row && this->Column < Coord.Column;
+	}
+
+	bool operator<(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return this->Row < Coord.Row && this->Column < Coord.Column;
+	}
+
+	bool operator<(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return this->Row < Coord.Row && this->Column < Coord.Column;
+	}
+
+	bool operator<<(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return FMath::Abs(this->Row) < FMath::Abs(RC.Row) && FMath::Abs(this->Column) < FMath::Abs(RC.Column);
+	}
+
+	bool operator<<(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return FMath::Abs(this->Row) < FMath::Abs(RC.Row) && FMath::Abs(this->Column) < FMath::Abs(RC.Column);
+	}
+
+	bool operator<<(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return FMath::Abs(this->Row) < FMath::Abs(RC.Row) && FMath::Abs(this->Column) < FMath::Abs(RC.Column);
+	}
+
+	bool operator<<(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return FMath::Abs(this->Row) < FMath::Abs(RC.Row) && FMath::Abs(this->Column) < FMath::Abs(RC.Column);
+	}
+
+	bool operator>(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return this->Row > RC.Row&& this->Column > RC.Column;
+	}
+
+	bool operator>(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return this->Row > RC.Row&& this->Column > RC.Column;
+	}
+
+	bool operator>(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return this->Row > RC.Row&& this->Column > RC.Column;
+	}
+
+	bool operator>(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return this->Row > RC.Row&& this->Column > RC.Column;
+	}
+
+	bool operator>>(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return FMath::Abs(this->Row) > FMath::Abs(RC.Row) && FMath::Abs(this->Column) > FMath::Abs(RC.Column);
+	}
+
+	bool operator>>(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return FMath::Abs(this->Row) > FMath::Abs(RC.Row) && FMath::Abs(this->Column) > FMath::Abs(RC.Column);
+	}
+
+	bool operator>>(const FCubic Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return FMath::Abs(this->Row) > FMath::Abs(RC.Row) && FMath::Abs(this->Column) > FMath::Abs(RC.Column);
+	}
+
+	bool operator>>(const FVector V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return FMath::Abs(this->Row) > FMath::Abs(RC.Row) && FMath::Abs(this->Column) > FMath::Abs(RC.Column);
+	}
+	*/
+
+	/*
+	bool operator==(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator==(const FTile& Tile) const
+	{
+		auto RC = Tile.ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator==(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator==(const int32 Index) const
+	{
+		auto RC = FTile(Index).ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator==(const FCubic& Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator==(const FCubic& Cubic) const
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator==(const FVector& V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator==(const FVector& V3) const
+	{
+		auto RC = FTile(V3).ToRC();
+		return this->Row == RC.Row && this->Column == RC.Column;
+	}
+
+	bool operator!=(const FTile& Tile)
+	{
+		auto RC = Tile.ToRC();
+		return this->Row != RC.Row || this->Column != RC.Column;
+	}
+
+	bool operator!=(const int32 Index)
+	{
+		auto RC = FTile(Index).ToRC();
+		return this->Row != RC.Row || this->Column != RC.Column;
+	}
+
+	bool operator!=(const FCubic& Cubic)
+	{
+		auto RC = FTile(Cubic).ToRC();
+		return this->Row != RC.Row || this->Column != RC.Column;
+	}
+
+	bool operator!=(const FVector& V3)
+	{
+		auto RC = FTile(V3).ToRC();
+		return this->Row != RC.Row || this->Column != RC.Column;
+	}
+	*/
+
 };
 
 USTRUCT(BlueprintType)
@@ -72,7 +429,7 @@ struct FCubic
 {
 	GENERATED_BODY()
 
-		FCubic(int32 InA = 0, int32 InB = 0, int32 InC = 0)
+	FCubic(int32 InA = 0, int32 InB = 0, int32 InC = 0)
 	{
 		A = InA;
 		B = InB;
@@ -86,14 +443,58 @@ struct FCubic
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Tiles")
 		int32 C;
 
+
+	void operator=(const FCubic Cubic)
+	{
+		A = Cubic.A;
+		B = Cubic.B;
+		C = Cubic.C;
+	}
+	
 	FCubic operator+(const FCubic& Cubic)
 	{
 		return FCubic(this->A + Cubic.A, this->B + Cubic.B, this->C + Cubic.C);
 	}
 
+	FCubic& operator+=(const FCubic& Cubic)
+	{
+		this->A += Cubic.A;
+		this->B += Cubic.B;
+		this->B += Cubic.B;
+		return (*this);
+	}
+
 	FCubic operator-(const FCubic& Cubic)
 	{
 		return FCubic(this->A - Cubic.A, this->B - Cubic.B, this->C - Cubic.C);
+	}
+
+	FCubic& operator-=(const FCubic& Cubic)
+	{
+		this->A -= Cubic.A;
+		this->B -= Cubic.B;
+		this->C -= Cubic.C;
+		return (*this);
+	}
+
+	bool operator<(const FCubic& Cubic)		// closer to lower left
+	{
+		return this->C > Cubic.C;
+	}
+
+	bool operator<<(const FCubic& Cubic)	// closer to center
+	{
+		return (abs(this->A) + abs(this->B) + abs(this->C)) < (abs(Cubic.A) + abs(Cubic.B) + abs(Cubic.C));
+	}
+
+	bool operator>(const FCubic& Cubic)		// closer to upper right
+	{
+		return this->C < Cubic.C;
+	}
+
+	bool operator>>(const FCubic& Cubic)	// farther from center
+	{
+		return (abs(this->A) + abs(this->B) + abs(this->C)) > (abs(Cubic.A) + abs(Cubic.B) + abs(Cubic.C));
 	}
 
 	bool operator==(const FCubic& Cubic)
@@ -216,31 +617,6 @@ public:
 		return FTile(this->ToWorld() + Location);
 	}
 
-	FTile operator-(const FTile& InTile)
-	{
-		return FTile(this->ToRC() - InTile.ToRC());
-	}
-
-	FTile operator-(const int32 Index)
-	{
-		return FTile(this->ToRC() - FTile(Index).ToRC());
-	}
-
-	FTile operator-(const FGCoord& Coord)
-	{
-		return FTile(this->ToRC() - Coord);
-	}
-
-	FTile operator-(const FCubic& Cubic)
-	{
-		return FTile(this->ToCubic() - Cubic);
-	}
-
-	FTile operator-(const FVector& Location)
-	{
-		return FTile(this->ToWorld() - Location);
-	}
-
 	FTile& operator+=(const FTile InTile)
 	{
 		this->RCToInternal(this->ToRC() + InTile.ToRC());
@@ -271,6 +647,31 @@ public:
 		return *this;
 	}
 
+	FTile operator-(const FTile& InTile)
+	{
+		return FTile(this->ToRC() - InTile.ToRC());
+	}
+
+	FTile operator-(const int32 Index)
+	{
+		return FTile(this->ToRC() - FTile(Index).ToRC());
+	}
+
+	FTile operator-(const FGCoord& Coord)
+	{
+		return FTile(this->ToRC() - Coord);
+	}
+
+	FTile operator-(const FCubic& Cubic)
+	{
+		return FTile(this->ToCubic() - Cubic);
+	}
+
+	FTile operator-(const FVector& Location)
+	{
+		return FTile(this->ToWorld() - Location);
+	}
+
 	FTile& operator-=(const FTile& InTile)
 	{
 		this->RCToInternal(this->ToRC() - InTile.ToRC());
@@ -299,6 +700,162 @@ public:
 	{
 		this->WorldToInternal(this->ToWorld() - Location);
 		return *this;
+	}
+
+	bool operator<(const FTile& Tile)
+	{
+		return this->ToRC() < Tile.ToRC();
+	}
+
+	bool operator<(const FTile& Tile) const
+	{
+		return this->ToRC() < Tile.ToRC();
+	}
+
+	bool operator<(const int32 Index)
+	{
+		return this->ToIndex() < Index;
+	}
+
+	bool operator<(const int32 Index) const
+	{
+		return this->ToIndex() < Index;
+	}
+
+	bool operator<(const FGCoord& Coord)
+	{
+		return this->ToRC() < Coord;
+	}
+
+	bool operator<(const FGCoord& Coord) const
+	{
+		return this->ToRC() < Coord;
+	}
+
+	bool operator<(const FCubic& Cubic)
+	{
+		return this->ToCubic() < Cubic;
+	}
+
+	bool operator<(const FCubic& Cubic) const
+	{
+		return this->ToCubic() < Cubic;
+	}
+
+	bool operator<(const FVector& Location)
+	{
+		FVector World = this->ToWorld();
+		return (World.X + World.Y + World.Z) < (Location.X + Location.Y + Location.Z);
+	}
+
+	bool operator<(const FVector& Location) const
+	{
+		FVector World = this->ToWorld();
+		return (World.X + World.Y + World.Z) < (Location.X + Location.Y + Location.Z);
+	}
+
+	bool operator<<(const FTile& Tile)
+	{
+		return this->ToRC() << Tile.ToRC();
+	}
+
+	bool operator<<(const int32 Index)
+	{
+		return this->ToRC() << FTile(Index).ToRC();
+	}
+
+	bool operator<<(const FGCoord& Coord)
+	{
+		return this->ToRC() << Coord;
+	}
+
+	bool operator<<(const FCubic& Cubic)
+	{
+		return this->ToCubic() << Cubic;
+	}
+
+	bool operator<<(const FVector& Location)
+	{
+		FVector World = this->ToWorld();
+		return (abs(World.X) + abs(World.Y) + abs(World.Z)) < (abs(Location.X) + abs(Location.Y) + abs(Location.Z));
+	}
+
+	bool operator>(const FTile& Tile)
+	{
+		return this->ToRC() > Tile.ToRC();
+	}
+
+	bool operator>(const FTile& Tile) const
+	{
+		return this->ToRC() > Tile.ToRC();
+	}
+
+	bool operator>(const int32 Index)
+	{
+		return this->ToIndex() > Index;
+	}
+
+	bool operator>(const int32 Index) const
+	{
+		return this->ToIndex() > Index;
+	}
+
+	bool operator>(const FGCoord& Coord)
+	{
+		return this->ToRC() > Coord;
+	}
+
+	bool operator>(const FGCoord& Coord) const
+	{
+		return this->ToRC() > Coord;
+	}
+
+	bool operator>(const FCubic& Cubic)
+	{
+		return this->ToCubic() > Cubic;
+	}
+
+	bool operator>(const FCubic& Cubic) const
+	{
+		return this->ToCubic() > Cubic;
+	}
+
+	bool operator>(const FVector& Location)
+	{
+		FVector World = this->ToWorld();
+		return (World.X + World.Y + World.Z) > (Location.X + Location.Y + Location.Z);
+	}
+
+	bool operator>(const FVector& Location) const
+	{
+		FVector World = this->ToWorld();
+		return (World.X + World.Y + World.Z) > (Location.X + Location.Y + Location.Z);
+	}
+
+	bool operator>>(const FTile& Tile)
+	{
+		return this->ToRC() >> Tile.ToRC();
+	}
+
+	bool operator>>(const int32 Index)
+	{
+		return this->ToRC() >> FTile(Index).ToRC();
+	}
+
+	bool operator>>(const FGCoord& Coord)
+	{
+		return this->ToRC() >> Coord;
+	}
+
+	bool operator>>(const FCubic& Cubic)
+	{
+		return this->ToCubic() >> Cubic;
+	}
+
+	bool operator>>(const FVector& Location)
+	{
+		FVector World = this->ToWorld();
+		return (abs(World.X) + abs(World.Y) + abs(World.Z)) > (abs(Location.X) + abs(Location.Y) + abs(Location.Z));
 	}
 
 	bool operator==(const FTile& Tile)
@@ -356,7 +913,6 @@ public:
 		return this->ToRC() == FTile(Location).ToRC();
 	}
 
-	// UPGRADE: May add support for <>
 };
 
 

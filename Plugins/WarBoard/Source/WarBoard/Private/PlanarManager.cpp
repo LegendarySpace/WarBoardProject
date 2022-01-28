@@ -42,18 +42,27 @@ void UPlanarManager::SetPlaneType(ETileShape Shape)
 
 void UPlanarManager::Populate(TArray<FGCoord> Choices)
 {
+	TArray<FTile> Tiles;
+	for (auto Selection : Choices) Tiles.Add(FTile(Selection));
+	Populate(Tiles);
+}
+
+void UPlanarManager::Populate(TArray<FTile> Choices)
+{
 	Clear();
 	if (bUseDefaultShape) SetPlaneType(WarBoardLib::GetTileShape());
 
-	Populate_Implementation(Choices);
-}
-
-void UPlanarManager::Populate_Implementation(TArray<FGCoord> Choices)
-{
 	for (auto Tile : Choices)
 	{
 		this->AddInstance(CalculateTransform(Tile));
 	}
+}
+
+void UPlanarManager::Populate(TArray<FCubic> Choices)
+{
+	TArray<FTile> Tiles;
+	for (auto Selection : Choices) Tiles.Add(FTile(Selection));
+	Populate(Tiles);
 }
 
 void UPlanarManager::Clear()

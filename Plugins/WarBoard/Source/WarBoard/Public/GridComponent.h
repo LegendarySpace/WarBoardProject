@@ -164,15 +164,21 @@ protected:
 public:	
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void AddCell(FGCoord Tile);
+	void AddCell(FTile Tile);
+	void AddCell(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void RemoveCell(FGCoord Tile);
+	void RemoveCell(FTile Tile);
+	void RemoveCell(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void RebuildCells();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void Populate(TArray<FGCoord> Tiles);
+	void Populate(TArray<FTile> Tiles);
+	void Populate(TArray<FCubic> Tiles);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
 	void SetPadding(float InPadding);

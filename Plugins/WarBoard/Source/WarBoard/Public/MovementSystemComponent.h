@@ -19,7 +19,9 @@ public:
 	UMovementSystemComponent();
 
 	// Populate the Meshes
-	virtual void Populate_Implementation(TArray<FGCoord> Choices) override;
+	void Populate(TArray<FGCoord> Choices);
+	void Populate(TArray<FTile> Choices);
+	void Populate(TArray<FCubic> Choices);
 
 protected:
 	// Called when the game starts or when spawned

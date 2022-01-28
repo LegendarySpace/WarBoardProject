@@ -71,7 +71,9 @@ public:
 	bool ChangeTile(FTileBiome Instance);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
-	bool RemoveTile(FGCoord Coord);
+	bool RemoveTile(FGCoord Tile);
+	bool RemoveTile(FTile Tile);
+	bool RemoveTile(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
 	void Populate(TArray<FTileBiome> Tiles);
@@ -82,6 +84,8 @@ public:
 	// Get Biome from Coord
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
 	EBiome GetBiome(FGCoord Tile);
+	EBiome GetBiome(FTile Tile);
+	EBiome GetBiome(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
 	void SetPadding(float Padding);

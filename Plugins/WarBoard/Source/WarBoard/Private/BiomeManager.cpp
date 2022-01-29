@@ -5,7 +5,9 @@
 
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Components/TextRenderComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Engine/StaticMesh.h"
 
 #include "WarBoardLibrary.h"
 
@@ -17,8 +19,9 @@ UBiomeManager::UBiomeManager()
 	PrimaryComponentTick.bCanEverTick = false;
 
 	FBiomeSetup Setup = FBiomeSetup();
-	Setup.Mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("StaticMesh'/WarBoard/StaticMesh/SquareTile.SquareTile'")).Object;
-	Setup.Mat = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("StaticMesh'/WarBoard/Material/TileMat.TileMat'")).Object;
+	auto Mesh = ConstructorHelpers::FObjectFinder<UStaticMesh>(TEXT("/WarBoard/StaticMesh/SquareTile.SquareTile")).Object;
+	Setup.Mesh = Mesh;
+	Setup.Mat = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("/WarBoard/Material/TileMat.TileMat")).Object;
 
 	SetupInstance(Setup);
 }

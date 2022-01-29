@@ -85,19 +85,19 @@ void UNavSystem::Populate(TArray<FCubic> Locations)
 
 bool UNavSystem::AddNode(FTile InTile)
 {
-	FActorSpawnParameters Params;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	auto Node = GetWorld()->SpawnActor<APathNode>(InTile.ToWorld(), FRotator(), Params);
-	if (!Node) return false; 
-	if (!Node->GetActorLocation().Equals(InTile.ToWorld())) Node->SetActorLocation(InTile.ToWorld());
+	FPathNode Node;
+	Node.NavStatus = ENavStatus::Ignored;
+	Node.Tile = InTile;
+	Node.ParentTile = InTile;
 	NodeMap.Add(Node);
 	return true;
+
 }
 
 bool UNavSystem::RemoveNode(FTile InTile)
 {
-	auto Node = GetNode(InTile);
-	Node->Destroy();
+	FPathNode Node;
+	if (!GetNode(InTile, Node)) return false;
 	NodeMap.Remove(Node);
 	return true;
 }
@@ -122,49 +122,49 @@ void UNavSystem::BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> Pathabl
 
 	ClearQueue();
 
-	auto Node = GetNode(Origin);
-	if (!Node) return;
-	Node->SetNodeValues(0, HeuristicEstimate, Origin, 0);
+	FPathNode Node;
+	if (!GetNode(Origin, Node)) return;
+	Node.SetNodeValues(0, HeuristicEstimate, Origin, 0);
 	OpenNodes.Push(Node);
 
 	// Start primary loop and open.pop to get index of node, sort open and ensure node valid
 	while (OpenNodes.Num() > 0 && !stopped)
 	{
-		OpenNodes.Sort([](APathNode& A, const APathNode& B) { return A > B; });
+		OpenNodes.Sort([](FPathNode A, const FPathNode B) { return A > B; });
 		Node = OpenNodes.Pop();
-		if (!Node) continue;
 
 		// If node is Destination, Add to closed, set node checked and stopped is true
-		if (Destination.IsSet() && *Node == Destination.GetValue())
+		if (Node == Destination)
 		{
 			ClosedNodes.Add(Node);
-			Node->SetAsChecked();
+			Node.SetAsChecked();
 			stopped = true;
 		}
 
 		if (SearchLimit < ClosedNodes.Num()) break;
 
 		// If node is Origin or within range and not obstructed check neighbors
-		if (*Node == Origin || (GetStatusByTile(Node->Tile) > ENodeStatus::NS_Obstructed && Node->Step < Range))
+		if (Node == Origin || (GetStatusByTile(Node.Tile) > ENodeStatus::NS_Obstructed && Node.Step < Range))
 		{
 			for (auto Direction : ValidDirections)
 			{
-				FTile Neighbor = Node->Tile + Direction;
+				FTile Neighbor = Node.Tile + Direction;
 				// Skip if pathable tiles and neighbor not amoung them, rename pathable to pathrestrictions
 				if (PathableTiles.Num() > 0 && !PathableTiles.Contains(Neighbor)) continue;
 
 				if (GetStatusByTile(Neighbor) < ENodeStatus::NS_Obstructed) continue;
 
-				auto pred = [=](APathNode* Node) { return *Node == Neighbor; };
+				auto pred = [=](FPathNode Node) { return Node == Neighbor; };
 				if (OpenNodes.FindByPredicate(pred) || ClosedNodes.FindByPredicate(pred)) continue;
 
 				// If Destination not valid calculate end point
 				FTile end;
-				if (Destination.IsSet() && GetNode(Destination.GetValue())) end = Destination.GetValue();
+				FPathNode N;
+				if (GetNode(Destination, N)) end = Destination.GetValue();
 				else end = FTile(Direction).ToWorld().GetSafeNormal() * (Range + 1) * WarBoardLib::GetTileSize();
 
 				// Calculate Tie Breaker here, Origin is not available where tiebreaker is used
-				FTile TileA = Node->Tile - end;
+				FTile TileA = Node.Tile - end;
 				FTile TileB = Origin - end;
 				int32 tb = TieBreaker ? FMath::Abs((TileA.ToRC().Row * TileB.ToRC().Column) - (TileB.ToRC().Row * TileA.ToRC().Column)) * .001 : 0;
 
@@ -176,7 +176,7 @@ void UNavSystem::BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> Pathabl
 
 		// Add to closed and set node checked
 		ClosedNodes.Add(Node);
-		Node->SetAsChecked();
+		Node.SetAsChecked();
 	}
 }
 
@@ -187,27 +187,28 @@ void UNavSystem::BeginDiscovery(FCubic Origin, int32 Range, TArray<FCubic> Patha
 	Discovery(FTile(Origin).ToRC(), Range, PT);
 }
 
-void UNavSystem::CheckNeighbor_Implementation(APathNode* Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
+void UNavSystem::CheckNeighbor_Implementation(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, Direction, Goal, BreakTie);
 }
 
-void UNavSystem::CheckNeighborStatus(APathNode* Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
+void UNavSystem::CheckNeighborStatus(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, FTile(Direction), Goal, BreakTie);
 }
 
-void UNavSystem::CheckNeighborStatus(APathNode *Current, FTile Direction, FTile Goal, int32 BreakTie = 0)
+void UNavSystem::CheckNeighborStatus(FPathNode Current, FTile Direction, FTile Goal, int32 BreakTie = 0)
 {
-	FTile Neighbor = Direction + Current->Tile;
+	FTile Neighbor = Direction + Current.Tile;
 
-	if (!GetNode(Neighbor)) return;
+	FPathNode N;
+	if (!GetNode(Neighbor, N)) return;
 
 	// Calculate cost
-	int32 cost = Current->Cost + ENodeStatus::NS_Status_MAX + 1 - GetStatusByTile(Neighbor);
+	int32 cost = Current.Cost + ENodeStatus::NS_Status_MAX + 1 - GetStatusByTile(Neighbor);
 
 	// Neighbor's cost should never be less than parent's
-	if (Current->Cost >= cost) return;
+	if (Current.Cost >= cost) return;
 
 	if (HeavyDiagonals)
 	{
@@ -219,7 +220,7 @@ void UNavSystem::CheckNeighborStatus(APathNode *Current, FTile Direction, FTile 
 
 	if (PunishDirectionChanges)
 	{
-		FTile TileA = Current->Tile - Current->ParentTile;
+		FTile TileA = Current.Tile - Current.ParentTile;
 		if (TileA.ToRC().Row != Direction.ToRC().Row) cost += 20;
 		if (TileA.ToRC().Column != Direction.ToRC().Column) cost += 20;
 	}
@@ -255,12 +256,13 @@ void UNavSystem::CheckNeighborStatus(APathNode *Current, FTile Direction, FTile 
 	// Apply Tie Breaker
 	Heu += BreakTie;
 
-	auto Node = GetNode(Neighbor);
-	Node->SetNodeValues(cost, Heu, Current->Tile, Current->Step + 1);
+	FPathNode Node;
+	if (!GetNode(Neighbor, Node)) return;
+	Node.SetNodeValues(cost, Heu, Current.Tile, Current.Step + 1);
 	OpenNodes.Add(Node);
 }
 
-void UNavSystem::CheckNeighborStatus(APathNode* Current, FCubic Direction, FCubic Goal, int32 BreakTie = 0)
+void UNavSystem::CheckNeighborStatus(FPathNode Current, FCubic Direction, FCubic Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, FTile(Direction), Goal, BreakTie);
 }
@@ -281,29 +283,31 @@ bool UNavSystem::GetRoute(FGCoord End, TArray<FGCoord>& RouteArray)
 
 bool UNavSystem::GetRoute(FTile End, TArray<FTile> &RouteArray)
 {
-	auto Node = GetNode(End);
+	FPathNode Node;
+	if (!GetNode(End, Node)) return false;
 	bool stop = false, found = false;
 
-	Node->SetAsEnd();
+	Node.SetAsEnd();
 
 	while (!found)
 	{
 		// Stop if parent isn't valid
-		if (!GetNode(Node->ParentTile)) break;
+		FPathNode tempNode;
+		if (!GetNode(Node.ParentTile, tempNode)) break;
 
 		// Debug Display
 		// UPGRADE: Draw line to parent, possibly set as vertices for spline
 
 		// Parent calling loop
-		if (Node->ParentTile != Node->Tile)
+		if (Node.ParentTile != Node.Tile)
 		{
-			RouteArray.Add(Node->Tile);
-			Node = GetNode(Node->ParentTile);
-			Node->SetAsPath();
+			RouteArray.Add(Node.Tile);
+			Node = tempNode;
+			Node.SetAsPath();
 		}
 		else
 		{
-			Node->SetAsStart();
+			Node.SetAsStart();
 			found = true;
 		}
 	}
@@ -353,35 +357,41 @@ bool UNavSystem::GetDirectRoute(FCubic Start, FCubic End, TArray<FCubic> Pathabl
 	return true;
 }
 
-APathNode* UNavSystem::GetNodeFromCoord(FGCoord Tile)
+bool UNavSystem::GetNodeFromCoord(FGCoord Tile, FPathNode &Node)
 {
-	return GetNode(Tile);
+	return GetNode(Tile, Node);
 }
 
-APathNode* UNavSystem::GetNode(FGCoord Tile)
+bool UNavSystem::GetNode(FGCoord Tile, FPathNode& Node)
 {
-	return GetNode(FTile(Tile));
+	return GetNode(FTile(Tile), Node);
 }
 
-APathNode* UNavSystem::GetNode(FTile Tile)
+bool UNavSystem::GetNode(TOptional<FTile> Tile, FPathNode& Node)
 {
-	auto pp = NodeMap.FindByPredicate([=](APathNode* Node) { return *Node == Tile; });
-	if (!pp || !(*pp)) return nullptr;
-	return *pp;
+	if (!Tile.IsSet()) return nullptr;
+	return GetNode(Tile.GetValue(), Node);
 }
 
-APathNode* UNavSystem::GetNode(FCubic Tile)
+bool UNavSystem::GetNode(FTile Tile, FPathNode& Node)
 {
-	return GetNode(FTile(Tile));
+	auto pNode = NodeMap.FindByPredicate([=](FPathNode Node) { return Node == Tile; });
+	if (pNode == nullptr) return false;
+	Node = *pNode;
+	return true;
+}
+
+bool UNavSystem::GetNode(FCubic Tile, FPathNode& Node)
+{
+	return GetNode(FTile(Tile), Node);
 }
 
 void UNavSystem::ResetNodes()
 {
 	for (auto Node : NodeMap)
 	{
-		Node->Reset();
+		Node.Reset();
 
-		if (DebugMode) Node->EnableDebugMode();
 	}
 }
 
@@ -403,9 +413,15 @@ ENodeStatus UNavSystem::GetStatusByTile(FGCoord InTile)
 	return GetStatusByTile(FTile(InTile));
 }
 
+ENodeStatus UNavSystem::GetStatusByTile(TOptional<FTile> InTile)
+{
+	return GetStatusByTile(InTile.GetValue());
+}
+
 ENodeStatus UNavSystem::GetStatusByTile(FTile InTile)
 {
-	if (!GetNode(InTile)) return ENodeStatus::NS_Invalid;
+	FPathNode N;
+	if (!GetNode(InTile, N)) return ENodeStatus::NS_Invalid;
 	if (BlockedNodes.Contains(InTile.ToRC())) return ENodeStatus::NS_Blocked;
 	if (GetActorAtTile(GetWorld(), InTile) != nullptr) return ENodeStatus::NS_Obstructed;
 	return ENodeStatus::NS_Open;
@@ -423,8 +439,9 @@ void UNavSystem::UpdateStatusByCoord(FGCoord InTile, ENodeStatus Status)
 
 void UNavSystem::UpdateStatus(FGCoord InTile, ENodeStatus Status)
 {
+	FPathNode N;
 	if (Status > ENodeStatus::NS_Blocked) BlockedNodes.Remove(InTile);
-	if (GetNode(InTile)) BlockedNodes.AddUnique(InTile);
+	if (GetNode(InTile, N)) BlockedNodes.AddUnique(InTile);
 }
 
 void UNavSystem::UpdateStatus(FTile InTile, ENodeStatus Status)
@@ -442,8 +459,8 @@ TArray<FGCoord> UNavSystem::GetReachableTiles(bool IncludeObstructed)
 	TArray<FGCoord> Tiles;
 	for (auto Node : ClosedNodes)
 	{
-		if (IncludeObstructed) Tiles.Add(Node->Tile.ToRC());
-		else if (GetStatusByTile(Node->Tile.ToRC()) > ENodeStatus::NS_Obstructed) Tiles.Add(Node->Tile.ToRC());
+		if (IncludeObstructed) Tiles.Add(Node.Tile.ToRC());
+		else if (GetStatusByTile(Node.Tile) > ENodeStatus::NS_Obstructed) Tiles.Add(Node.Tile.ToRC());
 	}
 
 	return Tiles;

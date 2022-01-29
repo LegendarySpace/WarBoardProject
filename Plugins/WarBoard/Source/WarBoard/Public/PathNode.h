@@ -26,110 +26,47 @@ enum ENodeStatus
 	NS_Status_MAX				UMETA(Hidden)
 };
 
-// TODO: Convert to struct
 /**
-*
-*/
-UCLASS()
-class WARBOARD_API APathNode : public AActor
+ *	Path status of node
+ */
+UENUM(BlueprintType, Category = "WarBoard|Enums")
+enum class ENavStatus : uint8
+{
+	Ignored			UMETA(DisplayName = "Ignored"),
+	Unchecked		UMETA(DisplayName = "Unchecked"),
+	Checked			UMETA(DisplayName = "Checked"),
+	Start			UMETA(DisplayName = "Start"),
+	End				UMETA(DisplayName = "End"),
+	Path			UMETA(DisplayName = "Path"),
+	Status_MAX		UMETA(Hidden)
+};
+
+USTRUCT(BlueprintType)
+struct FPathNode
 {
 	GENERATED_BODY()
 
-public:
-	// Sets default values for this actor's properties
-	APathNode();
+	void Reset();
+	void SetNodeValues(int32 TravelCost, int32 Heuristic, FTile Parent, int32 Steps);
+	void SetAsPath() { NavStatus = ENavStatus::Path; }
+	void SetAsStart() { NavStatus = ENavStatus::Start; }
+	void SetAsEnd() { NavStatus = ENavStatus::End; }
+	void SetAsChecked() { NavStatus = ENavStatus::Checked; }
 
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void Reset();
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void SetNodeValues(int32 TravelCost, int32 Heuristic, FTile Parent, int32 Steps);
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void SetAsPath();
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void SetAsStart();
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void SetAsEnd();
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void SetAsChecked();
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void EnableDebugMode();
-
-	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-		void DisplayStat(int32 Stat);
-
-	// Overload Operators
-	FORCEINLINE bool operator== (const APathNode &Node)
-	{
-		return F == Node.F || Tile == Node.Tile;
-	}
-
-	FORCEINLINE bool operator== (const int32 Index)
-	{
-		return Tile == Index;
-	}
-
-	// Need to make it for pointer
-	FORCEINLINE bool operator== (const FTile InTile)
-	{
-		return Tile == InTile;
-	}
-
-	FORCEINLINE bool operator!= (const APathNode &Node)
-	{
-		return F != Node.F;
-	}
-
-	FORCEINLINE bool operator> (const APathNode &Node)
-	{
-		return F > Node.F;
-	}
-
-	FORCEINLINE bool operator>= (const APathNode &Node)
-	{
-		return F >= Node.F;
-	}
-
-	FORCEINLINE bool operator< (const APathNode &Node)
-	{
-		return F < Node.F;
-	}
-
-	FORCEINLINE bool operator<= (const APathNode &Node)
-	{
-		return F <= Node.F;
-	}
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	UPROPERTY(BlueprintReadOnly, Category = "Settings")
-	USphereComponent* Collision;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Settings")
-	UStaticMeshComponent* Sphere;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Settings")
-	UTextRenderComponent* Display;
+	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
+	ENavStatus NavStatus = ENavStatus::Ignored;
 
 	// Estimated cost to destination
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-	int32 F;
+	int32 F = 0;
 
 	// Total cost to reach destination
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-	int32 Cost;
+	int32 Cost = 0;
 
 	// A measure of distance from Origin
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
-	int32 Heu;
+	int32 Heu = 0;
 
 	// Index of this node
 	UPROPERTY(EditAnywhere, Category = "WarBoard|Path")
@@ -141,13 +78,54 @@ public:
 
 	// Number of steps from Origin
 	UPROPERTY(BlueprintReadWrite, Category = "WarBoard|Path")
-	int32 Step;
+	int32 Step = 0;
 
-	UMaterialInterface* M_Checked;
-	UMaterialInterface* M_Unchecked;
-	UMaterialInterface* M_Start;
-	UMaterialInterface* M_End;
-	UMaterialInterface* M_Path;
-	UMaterialInterface* M_Ignored;
+	// Overload Operators
+	FORCEINLINE bool operator== (const FPathNode Node)
+	{
+		return F == Node.F || Tile == Node.Tile;
+	}
+
+	FORCEINLINE bool operator== (const int32 Index)
+	{
+		return Tile == FTile(Index);
+	}
+
+	// Need to make it for pointer
+	FORCEINLINE bool operator== (const FTile InTile)
+	{
+		return Tile == InTile;
+	}
+
+	FORCEINLINE bool operator== (const TOptional<FTile> InTile)
+	{
+		return InTile.IsSet() && Tile == InTile.GetValue();
+	}
+
+	FORCEINLINE bool operator!= (const FPathNode Node)
+	{
+		return F != Node.F;
+	}
+
+	FORCEINLINE bool operator> (const FPathNode Node)
+	{
+		return F > Node.F;
+	}
+
+	FORCEINLINE bool operator>= (const FPathNode Node)
+	{
+		return F >= Node.F;
+	}
+
+	FORCEINLINE bool operator< (const FPathNode Node)
+	{
+		return F < Node.F;
+	}
+
+	FORCEINLINE bool operator<= (const FPathNode Node)
+	{
+		return F <= Node.F;
+	}
 
 };
+

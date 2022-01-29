@@ -63,10 +63,10 @@ public:
 	// UPDATE: change from UFUNCTION
 	// Looks at node in given direction and attempts to set data and add to open
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	void CheckNeighbor(APathNode *Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
-	virtual void CheckNeighborStatus(APathNode* Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
-	virtual void CheckNeighborStatus(APathNode* Current, FTile Direction, FTile Goal, int32 BreakTie);
-	virtual void CheckNeighborStatus(APathNode* Current, FCubic Direction, FCubic Goal, int32 BreakTie);
+	void CheckNeighbor(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
+	virtual void CheckNeighborStatus(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
+	virtual void CheckNeighborStatus(FPathNode Current, FTile Direction, FTile Goal, int32 BreakTie);
+	virtual void CheckNeighborStatus(FPathNode Current, FCubic Direction, FCubic Goal, int32 BreakTie);
 
 	// List of indexes reached by Discovery
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
@@ -93,10 +93,11 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-	APathNode* GetNodeFromCoord(FGCoord Tile);
-	virtual APathNode* GetNode(FGCoord Tile);
-	virtual APathNode* GetNode(FTile Tile);
-	virtual APathNode* GetNode(FCubic Tile);
+	bool GetNodeFromCoord(FGCoord Tile, FPathNode &Node);
+	virtual bool GetNode(FGCoord Tile, FPathNode &Node);
+	virtual bool GetNode(FTile Tile, FPathNode &Node);
+	virtual bool GetNode(TOptional<FTile> Tile, FPathNode &Node);
+	virtual bool GetNode(FCubic Tile, FPathNode &Node);
 
 	// Reset all nodes
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
@@ -111,6 +112,7 @@ public:
 	ENodeStatus GetStatusByCoord(FGCoord InTile);
 	virtual ENodeStatus GetStatusByTile(FGCoord InTile);
 	virtual ENodeStatus GetStatusByTile(FTile InTile);
+	virtual ENodeStatus GetStatusByTile(TOptional<FTile> InTile);
 	virtual ENodeStatus GetStatusByTile(FCubic InTile);
 
 	// Update Status of given Index
@@ -188,11 +190,11 @@ protected:
 
 	// All nodes that still need to be checked
 	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<APathNode*> OpenNodes;
+	TArray<FPathNode> OpenNodes;
 
 	// All nodes that have already been checked
 	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<APathNode*> ClosedNodes;
+	TArray<FPathNode> ClosedNodes;
 
 	// All nodes that are blocked by a structure or have impassable terrain
 	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
@@ -200,7 +202,7 @@ protected:
 
 	// Map of all created nodes and their indexes. Cannot edit, editing is handled by tile creation/destruction
 	UPROPERTY(BlueprintReadOnly, Category = "Pathing|Arrays")
-	TArray<APathNode*> NodeMap;
+	TArray<FPathNode> NodeMap;
 
 	// All valid single step movement as relative index. Cardinal directions are assumed valid, may change later
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pathing|Arrays")

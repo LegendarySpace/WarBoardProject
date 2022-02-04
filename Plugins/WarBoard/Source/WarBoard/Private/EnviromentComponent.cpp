@@ -100,6 +100,22 @@ EBiome UEnviromentComponent::GetBiome(FCubic Tile)
 	return GetBiome(FTile(Tile));
 }
 
+bool UEnviromentComponent::IsValid(FGCoord Tile)
+{
+	int32 i;
+	return BiomeTiles.Find(Tile, i);
+}
+
+bool UEnviromentComponent::IsValid(FTile Tile)
+{
+	return IsValid(Tile.ToRC());
+}
+
+bool UEnviromentComponent::IsValid(FCubic Tile)
+{
+	return IsValid(FTile(Tile).ToRC());
+}
+
 void UEnviromentComponent::SetPadding(float InPadding)
 {
 	this->Padding = InPadding;

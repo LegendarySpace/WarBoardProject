@@ -88,6 +88,11 @@ public:
 	EBiome GetBiome(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
+	bool IsValid(FGCoord Tile);
+	bool IsValid(FTile Tile);
+	bool IsValid(FCubic Tile);
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
 	void SetPadding(float Padding);
 
 private:
@@ -117,11 +122,11 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "Delegates")
 	FTileChangeDelegate OnTileChange;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
+	TArray<FBiomeSetup> BiomeSettings;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enviroment")
 	TArray<FTileBiome> BiomeTiles;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Settings")
-	TArray<FBiomeSetup> BiomeSettings;	
 
 };

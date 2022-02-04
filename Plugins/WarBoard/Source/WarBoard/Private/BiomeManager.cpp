@@ -163,5 +163,10 @@ void UBiomeManager::SetPadding(float InPadding)
 	RebuildBiome();
 }
 
+void UBiomeManager::ClearTiles()
+{
+	for (int32 i = 0; i < InstanceIndexes.Num(); i++) RemoveTile(InstanceIndexes[i]);
+}
+
 // UPGRADE: On Tick if debug mode call show on screen debug and display Index
 

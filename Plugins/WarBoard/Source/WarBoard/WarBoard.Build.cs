@@ -25,7 +25,7 @@ public class WarBoard : ModuleRules
 		PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core", "ProceduralMeshComponent",
+				"Core", "ProceduralMeshComponent", "InputCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

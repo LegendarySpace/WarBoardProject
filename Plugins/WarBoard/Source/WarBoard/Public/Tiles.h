@@ -80,7 +80,7 @@ struct FGCoord
 
 	bool operator<<(const FGCoord& Coord)
 	{
-		return abs(this->Row) < abs(Coord.Row) && abs(this->Column) < abs(Coord.Column);
+		return abs(this->Row) <= abs(Coord.Row) && abs(this->Column) <= abs(Coord.Column);
 	}
 
 	bool operator>(const FGCoord& Coord)
@@ -90,7 +90,7 @@ struct FGCoord
 
 	bool operator>>(const FGCoord& Coord)
 	{
-		return abs(this->Row) > abs(Coord.Row) && abs(this->Column) > abs(Coord.Column);
+		return abs(this->Row) > abs(Coord.Row) || abs(this->Column) > abs(Coord.Column);
 	}
 
 	bool operator==(const FGCoord& Coord)
@@ -777,7 +777,7 @@ public:
 	bool operator<<(const FVector& Location)
 	{
 		FVector World = this->ToWorld();
-		return (abs(World.X) + abs(World.Y) + abs(World.Z)) < (abs(Location.X) + abs(Location.Y) + abs(Location.Z));
+		return abs(World.X) <= abs(Location.X) && abs(World.Y) <= abs(Location.Y) && abs(World.Z) <= abs(Location.Z);
 	}
 
 	bool operator>(const FTile& Tile)
@@ -855,7 +855,7 @@ public:
 	bool operator>>(const FVector& Location)
 	{
 		FVector World = this->ToWorld();
-		return (abs(World.X) + abs(World.Y) + abs(World.Z)) > (abs(Location.X) + abs(Location.Y) + abs(Location.Z));
+		return abs(World.X) > abs(Location.X) || abs(World.Y) > abs(Location.Y) || abs(World.Z) > abs(Location.Z);
 	}
 
 	bool operator==(const FTile& Tile)

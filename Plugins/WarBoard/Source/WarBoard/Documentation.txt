@@ -1,0 +1,19 @@
+Level Creator
+	-Controls
+		-Movement	=	WASD
+		-Aim		=	Hold Right Mouse Button
+		-Zoom		=	Scroll Wheel
+		-Height		=	Shift + Scroll Wheel
+		-Increase Biome	=	Left Mouse Button
+		-Decrease Biome	=	Right Mouse Button
+		-Multiselect	=	Ctrl + Left Mouse Button
+		-Clear Select	=	Alt + Left Mouse Button
+		-Load		=	F9
+		-Quick Save	=	F5
+		-Save As	=	Shift + F5
+
+TODO:
+-Save
+-Load
+-Save As
+-Multiselect

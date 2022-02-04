@@ -56,6 +56,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
 	void SetPadding(float InPadding);
 
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
+	void ClearTiles();
+
 protected:
 	FTransform CalculateTransform(FTile Tile);
 
@@ -74,7 +77,7 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	bool bDebugMode = false;
 
-private:
+protected:
 	TArray<FGCoord> InstanceIndexes;
 
 };

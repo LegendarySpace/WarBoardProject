@@ -7,7 +7,7 @@
 
 #include "Tiles.h"
 #include "GridComponent.h"
-#include "EnviromentComponent.h"
+#include "EnvironmentComponent.h"
 #include "NavSystemComponent.h"
 #include "MovementSystemComponent.h"
 #include "AttackSystemComponent.h"
@@ -23,8 +23,8 @@ AGameBoard::AGameBoard()
 
 	Grid = CreateDefaultSubobject<UGridComponent>("Grid");
 	Grid->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	Enviroment = CreateDefaultSubobject<UEnviromentComponent>("Enviroment");
-	Enviroment->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	Environment = CreateDefaultSubobject<UEnvironmentComponent>("Environment");
+	Environment->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	Navigation = CreateDefaultSubobject<UNavSystem>("NavSystem");
 	Navigation->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	MovementSystem = CreateDefaultSubobject<UMovementSystemComponent>("MovementSystem");
@@ -37,7 +37,7 @@ AGameBoard::AGameBoard()
 void AGameBoard::ChangeTile(FTileBiome Tile)
 {
 	BiomeLocations.AddUnique(Tile);
-	Enviroment->ChangeTile(Tile);
+	Environment->ChangeTile(Tile);
 	Grid->AddCell(Tile.Coord);
 	Navigation->AddNode(Tile.Coord);
 }
@@ -48,7 +48,7 @@ void AGameBoard::RemoveTile(FGCoord Tile)
 	if (BiomeLocations.Find(Tile, i))
 	{
 		BiomeLocations.RemoveAt(i);
-		Enviroment->RemoveTile(Tile);
+		Environment->RemoveTile(Tile);
 		Grid->RemoveCell(Tile);
 		Navigation->RemoveNode(Tile);
 	}
@@ -89,11 +89,11 @@ void AGameBoard::SetGridComponent(TSubclassOf<UGridComponent> InGrid)
 	Grid->Populate(GetCoords());
 }
 
-void AGameBoard::SetEnviromentComponent(TSubclassOf<UEnviromentComponent> InLayout)
+void AGameBoard::SetEnvironmentComponent(TSubclassOf<UEnvironmentComponent> InLayout)
 {
-	delete Enviroment;
-	Enviroment = NewObject<UEnviromentComponent>(this, InLayout);
-	Enviroment->Populate(BiomeLocations);
+	delete Environment;
+	Environment = NewObject<UEnvironmentComponent>(this, InLayout);
+	Environment->Populate(BiomeLocations);
 }
 
 void AGameBoard::SetNavigationSystem(TSubclassOf<UNavSystem> Router)

@@ -8,7 +8,7 @@
 #include "BiomeStructs.h"
 #include "Tiles.h"
 
-#include "EnviromentComponent.generated.h"
+#include "EnvironmentComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileAddDelegate, FGCoord, Coord);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileRemoveDelegate, FGCoord, Coord);
@@ -22,13 +22,13 @@ class UStaticMesh;
 *
 */
 UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WARBOARD_API UEnviromentComponent : public USceneComponent
+class WARBOARD_API UEnvironmentComponent : public USceneComponent
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	UEnviromentComponent();
+	UEnvironmentComponent();
 
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Biomes")
@@ -80,6 +80,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
 	TArray<FGCoord> GetTiles();
+	TArray<FTileBiome> GetLayout() { return BiomeTiles; }
 
 	// Get Biome from Coord
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
@@ -94,6 +95,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
 	void SetPadding(float Padding);
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
+	void ClearEnvironment();
 
 private:
 	void BuildBiomeManagers();
@@ -126,7 +130,7 @@ public:
 	TArray<FBiomeSetup> BiomeSettings;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Enviroment")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Environment")
 	TArray<FTileBiome> BiomeTiles;
 
 };

@@ -4,7 +4,7 @@
 #include "../Public/LevelCreatorBase.h"
 
 #include "../Public/TraceFloor.h"
-#include "../Public/EnviromentComponent.h"
+#include "../Public/EnvironmentComponent.h"
 
 // Sets default values
 ALevelCreatorBase::ALevelCreatorBase()
@@ -18,8 +18,8 @@ ALevelCreatorBase::ALevelCreatorBase()
 	Floor = CreateDefaultSubobject<UTraceFloor>(TEXT("Floor"));
 	Floor->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
 
-	Enviroment = CreateDefaultSubobject<UEnviromentComponent>(TEXT("Enviroment"));
-	Enviroment->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
+	Environment = CreateDefaultSubobject<UEnvironmentComponent>(TEXT("Environment"));
+	Environment->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
 
 	// TODO: Should initialize Biomes
 }
@@ -30,8 +30,8 @@ void ALevelCreatorBase::BeginPlay()
 	Super::BeginPlay();
 
 	Floor->CreateFloor(FloorSize);
-	Enviroment->BiomeSettings = Biomes;
-	Enviroment->InitializeBiomes();
+	Environment->BiomeSettings = Biomes;
+	Environment->InitializeBiomes();
 
 }
 

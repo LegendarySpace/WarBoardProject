@@ -10,7 +10,7 @@
 #include "GameBoard.generated.h"
 
 class UGridComponent;
-class UEnviromentComponent;
+class UEnvironmentComponent;
 class UNavSystem;
 class UMovementSystemComponent;
 class UAttackSystemComponent;
@@ -61,7 +61,7 @@ protected:
 		void SetGridComponent(TSubclassOf<UGridComponent> InGrid);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		void SetEnviromentComponent(TSubclassOf<UEnviromentComponent> InLayout);
+		void SetEnvironmentComponent(TSubclassOf<UEnvironmentComponent> InLayout);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
 		void SetNavigationSystem(TSubclassOf<UNavSystem> NavigationSys);
@@ -76,7 +76,7 @@ protected:
 		UGridComponent* GetGridComponent() { return Grid; }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		UEnviromentComponent* GetEnviromentComponent() { return Enviroment; }
+		UEnvironmentComponent* GetEnvironmentComponent() { return Environment; }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
 		UNavSystem* GetNavigationSystem() { return Navigation; }
@@ -95,7 +95,7 @@ protected:
 	UGridComponent* Grid;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Instanced, Category = "Board")
-	UEnviromentComponent* Enviroment;
+	UEnvironmentComponent* Environment;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Instanced, Category = "Board")
 	UNavSystem* Navigation;

@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "EnviromentComponent.h"
+#include "EnvironmentComponent.h"
 
 #include "Components/TextRenderComponent.h"
 #include "UObject/ConstructorHelpers.h"
@@ -11,7 +11,7 @@
 #include "WarBoardLibrary.h"
 
 // Sets default values
-UEnviromentComponent::UEnviromentComponent()
+UEnvironmentComponent::UEnvironmentComponent()
 {
  	// Should never tick
 	PrimaryComponentTick.bCanEverTick = false;
@@ -20,7 +20,7 @@ UEnviromentComponent::UEnviromentComponent()
 
 }
 
-void UEnviromentComponent::InitializeBiomes()
+void UEnvironmentComponent::InitializeBiomes()
 {
 	for (auto type = EBiome::TT_Normal; type != EBiome::TT_Type_MAX; type = EBiome(type + 1))
 	{
@@ -34,7 +34,7 @@ void UEnviromentComponent::InitializeBiomes()
 
 }
 
-bool UEnviromentComponent::ChangeTile(FTileBiome Instance)
+bool UEnvironmentComponent::ChangeTile(FTileBiome Instance)
 {
 	int32 i = 0;
 	if (BiomeTiles.Find(Instance, i) && !(BiomeTiles[i] == Instance.Biome)) RemoveTile(Instance.Coord);
@@ -45,12 +45,12 @@ bool UEnviromentComponent::ChangeTile(FTileBiome Instance)
 	return true;
 }
 
-bool UEnviromentComponent::RemoveTile(FGCoord Tile)
+bool UEnvironmentComponent::RemoveTile(FGCoord Tile)
 {
 	return RemoveTile(FTile(Tile));
 }
 
-bool UEnviromentComponent::RemoveTile(FTile Tile)
+bool UEnvironmentComponent::RemoveTile(FTile Tile)
 {
 	int i = 0;
 	if (BiomeTiles.Find(Tile.ToRC(), i))
@@ -63,12 +63,12 @@ bool UEnviromentComponent::RemoveTile(FTile Tile)
 	return true;
 }
 
-bool UEnviromentComponent::RemoveTile(FCubic Tile)
+bool UEnvironmentComponent::RemoveTile(FCubic Tile)
 {
 	return RemoveTile(FTile(Tile));
 }
 
-void UEnviromentComponent::Populate(TArray<FTileBiome> Tiles)
+void UEnvironmentComponent::Populate(TArray<FTileBiome> Tiles)
 {
 	for (auto& Instance : Tiles)
 	{
@@ -76,47 +76,47 @@ void UEnviromentComponent::Populate(TArray<FTileBiome> Tiles)
 	}
 }
 
-TArray<FGCoord> UEnviromentComponent::GetTiles()
+TArray<FGCoord> UEnvironmentComponent::GetTiles()
 {
 	TArray<FGCoord> Tiles;
 	for (auto& Instance : BiomeTiles) Tiles.Add(Instance.Coord);
 	return Tiles;
 }
 
-EBiome UEnviromentComponent::GetBiome(FGCoord Tile)
+EBiome UEnvironmentComponent::GetBiome(FGCoord Tile)
 {
 	return GetBiome(FTile(Tile));
 }
 
-EBiome UEnviromentComponent::GetBiome(FTile Tile)
+EBiome UEnvironmentComponent::GetBiome(FTile Tile)
 {
 	int32 i = 0;
 	if (!BiomeTiles.Find(Tile.ToRC(), i)) return EBiome::TT_Type_MAX;
 	return static_cast<EBiome>(BiomeTiles[i].Biome);
 }
 
-EBiome UEnviromentComponent::GetBiome(FCubic Tile)
+EBiome UEnvironmentComponent::GetBiome(FCubic Tile)
 {
 	return GetBiome(FTile(Tile));
 }
 
-bool UEnviromentComponent::IsValid(FGCoord Tile)
+bool UEnvironmentComponent::IsValid(FGCoord Tile)
 {
 	int32 i;
 	return BiomeTiles.Find(Tile, i);
 }
 
-bool UEnviromentComponent::IsValid(FTile Tile)
+bool UEnvironmentComponent::IsValid(FTile Tile)
 {
 	return IsValid(Tile.ToRC());
 }
 
-bool UEnviromentComponent::IsValid(FCubic Tile)
+bool UEnvironmentComponent::IsValid(FCubic Tile)
 {
 	return IsValid(FTile(Tile).ToRC());
 }
 
-void UEnviromentComponent::SetPadding(float InPadding)
+void UEnvironmentComponent::SetPadding(float InPadding)
 {
 	this->Padding = InPadding;
 	BiomeManager0->SetPadding(InPadding);
@@ -131,7 +131,21 @@ void UEnviromentComponent::SetPadding(float InPadding)
 	BiomeManager9->SetPadding(InPadding);
 }
 
-void UEnviromentComponent::BuildBiomeManagers()
+void UEnvironmentComponent::ClearEnvironment()
+{
+	BiomeManager0->ClearTiles();
+	BiomeManager1->ClearTiles();
+	BiomeManager2->ClearTiles();
+	BiomeManager3->ClearTiles();
+	BiomeManager4->ClearTiles();
+	BiomeManager5->ClearTiles();
+	BiomeManager6->ClearTiles();
+	BiomeManager7->ClearTiles();
+	BiomeManager8->ClearTiles();
+	BiomeManager9->ClearTiles();
+}
+
+void UEnvironmentComponent::BuildBiomeManagers()
 {
 	BiomeManager0 = CreateDefaultSubobject<UBiomeManager>(TEXT("NormalBiome"));
 	BiomeManager0->AttachToComponent(this, FAttachmentTransformRules::KeepRelativeTransform);
@@ -178,13 +192,13 @@ void UEnviromentComponent::BuildBiomeManagers()
 }
 
 // Called when the game starts or when spawned
-void UEnviromentComponent::BeginPlay()
+void UEnvironmentComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
 }
 
-UBiomeManager * UEnviromentComponent::GetBiomeManager(EBiome Biome)
+UBiomeManager * UEnvironmentComponent::GetBiomeManager(EBiome Biome)
 {
 	UBiomeManager* Manager = nullptr;
 	switch (Biome)

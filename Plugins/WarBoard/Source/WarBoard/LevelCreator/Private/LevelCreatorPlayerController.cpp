@@ -2,6 +2,8 @@
 
 
 #include "../Public/LevelCreatorPlayerController.h"
+
+#include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "InputCoreTypes.h"
 #include "Camera/CameraComponent.h"
@@ -9,11 +11,25 @@
 #include "../Public/LevelCreatorPawn.h"
 #include "../Public/LevelCreatorBase.h"
 #include "../Public/TraceFloor.h"
-#include "../Public/EnviromentComponent.h"
+#include "../Public/EnvironmentComponent.h"
+#include "../Public/LevelCreatorMenuLoad.h"
+#include "../Public/LevelCreatorMenuSave.h"
+#include "../Public/EnvironmentLayout.h"
+#include "../Public/SavedEnvironments.h"
 
 
 ALevelCreatorPlayerController::ALevelCreatorPlayerController(const FObjectInitializer& ObjectInitializer)
 {
+	ConstructorHelpers::FClassFinder<UUserWidget> LoadMenuBPClass(TEXT("/WarBoard/LevelCreator/UI/WBP_LoadMenu"));
+	ConstructorHelpers::FClassFinder<UUserWidget> SaveMenuBPClass(TEXT("/WarBoard/LevelCreator/UI/WBP_SaveMenu"));
+	ConstructorHelpers::FClassFinder<UUserWidget> SEResultBPClass(TEXT("/WarBoard/LevelCreator/UI/WBP_SavedEnvironment"));
+	if (!ensure(LoadMenuBPClass.Class != nullptr) || !ensure(SaveMenuBPClass.Class != nullptr) ||
+		!ensure(SEResultBPClass.Class != nullptr)) return;
+
+	LoadMenuClass = LoadMenuBPClass.Class;
+	SaveMenuClass = SaveMenuBPClass.Class;
+	SavedResultClass = SEResultBPClass.Class;
+
 	bShowMouseCursor = true;
 	bEnableClickEvents = true;
 	bEnableMouseOverEvents = true;
@@ -30,6 +46,7 @@ void ALevelCreatorPlayerController::BeginPlay()
 	// else TODO: Spawn or find way to handle
 
 	// TODO: Setup HUD which I don't current have
+	// HUD should say location and biome
 
 }
 
@@ -238,60 +255,121 @@ void ALevelCreatorPlayerController::MoveRight(float Value)
 
 void ALevelCreatorPlayerController::IncreaseBiome()
 {
-	// If multiselect array.num > 0 do this for each value
+	// TODO: If multiselect array.num > 0 do this for each value
 	// else run only on hovertile
-	if (!Creator->Enviroment->IsValid(HoverTile))
+	if (!Creator->Environment->IsValid(HoverTile))
 	{
-		Creator->Enviroment->ChangeTile(FTileBiome(HoverTile));
+		Creator->Environment->ChangeTile(FTileBiome(HoverTile));
 	}
 	else
 	{
-		EBiome Bio = Creator->Enviroment->GetBiome(HoverTile);
-		if (Bio < (EBiome::TT_Type_MAX - 1)) Creator->Enviroment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio + 1)));
-		else Creator->Enviroment->RemoveTile(HoverTile);
+		EBiome Bio = Creator->Environment->GetBiome(HoverTile);
+		if (Bio < (EBiome::TT_Type_MAX - 1)) Creator->Environment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio + 1)));
+		else Creator->Environment->RemoveTile(HoverTile);
 	}
 }
 
 void ALevelCreatorPlayerController::DecreaseBiome()
 {
-	// If multiselect array.num > 0 do this for each value
+	// TODO: If multiselect array.num > 0 do this for each value
 	// else run only on hovertile
-	if (!Creator->Enviroment->IsValid(HoverTile))
+	if (!Creator->Environment->IsValid(HoverTile))
 	{
 		return;
 	}
 	else
 	{
-		EBiome Bio = Creator->Enviroment->GetBiome(HoverTile);
-		if (Bio == 0) Creator->Enviroment->RemoveTile(HoverTile);
-		else Creator->Enviroment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio - 1)));
+		EBiome Bio = Creator->Environment->GetBiome(HoverTile);
+		if (Bio == 0) Creator->Environment->RemoveTile(HoverTile);
+		else Creator->Environment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio - 1)));
 	}
 }
 
 void ALevelCreatorPlayerController::Multiselect()
 {
-	// If multiselect start is null, set multiselect start to hover
+	// TODO: If multiselect start is null, set multiselect start to hover
 	// else set multiselect end to hover then fill multiselect array
 }
 
 void ALevelCreatorPlayerController::ClearMultiselect()
 {
-	// Clear multiselect array
+	// TODO: Clear multiselect array
 	// multiselect start = null
 	// multiselect end = null
 }
 
 void ALevelCreatorPlayerController::Load()
 {
-	// Bring up load widget
+	if (!ensure(LoadMenuClass != nullptr)) return;
+
+	auto LoadMenu = CreateWidget<ULevelCreatorMenuLoad>(this, LoadMenuClass);
+	if (!ensure(LoadMenu != nullptr)) return;
+
+	LoadMenu->Setup();
+}
+
+void ALevelCreatorPlayerController::Load(FString Name)
+{
+	FString SlotName = FString(TEXT("SEL_"));
+	SlotName += Name;
+	if (UEnvironmentLayout* LoadFile = Cast<UEnvironmentLayout>(UGameplayStatics::LoadGameFromSlot(SlotName, 0)))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Successfully Loaded Environment"));
+		Creator->Environment->ClearEnvironment();
+		Creator->Environment->BiomeSettings = LoadFile->Biomes;
+		Creator->Environment->InitializeBiomes();
+		for (auto Tile : LoadFile->Layout) Creator->Environment->ChangeTile(Tile);
+
+		FileName = Name;
+	}
+	else UE_LOG(LogTemp, Warning, TEXT("Failed To Load Environment"));
 }
 
 void ALevelCreatorPlayerController::Save()
 {
-	// Quicksave based on last used name
+	if (FileName.IsEmpty()) SaveAs();
+
+	FString SlotName = FString(TEXT("SEL_"));
+	SlotName += FileName;
+	if (UEnvironmentLayout* SaveFile = Cast<UEnvironmentLayout>(UGameplayStatics::CreateSaveGameObject(UEnvironmentLayout::StaticClass())))
+	{
+		SaveFile->Layout = Creator->Environment->GetLayout(); 
+		SaveFile->Biomes = Creator->Environment->BiomeSettings;
+
+		if (UGameplayStatics::SaveGameToSlot(SaveFile, SlotName, 0))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Successfully Saved Environment"));
+		}
+		else UE_LOG(LogTemp, Warning, TEXT("Failed To Save Environment"));
+	}
 }
 
 void ALevelCreatorPlayerController::SaveAs()
 {
-	// Bring up Save As widget
+	if (!ensure(SaveMenuClass != nullptr)) return;
+
+	auto SaveMenu = CreateWidget<ULevelCreatorMenuSave>(this, SaveMenuClass);
+	if (!ensure(SaveMenu != nullptr)) return;
+
+	SaveMenu->Setup();
 }
+
+void ALevelCreatorPlayerController::SaveAs(FString Name)
+{
+	bool Success = false;
+	if (USavedEnvironments* EnvNames = Cast<USavedEnvironments>(UGameplayStatics::LoadGameFromSlot(TEXT("SE_SavedEnvironmentNames"), 0)))
+	{
+		EnvNames->EnvironmentNames.AddUnique(Name);
+		if (UGameplayStatics::SaveGameToSlot(EnvNames, TEXT("SE_SavedEnvironmentNames"), 0))
+		{
+			Success = true;
+			UE_LOG(LogTemp, Warning, TEXT("Successfully Updated Environment Names"));
+		}
+	}
+	if (!Success) UE_LOG(LogTemp, Warning, TEXT("Failed To Update Environment Names"));
+
+	FileName = Name;
+	Save();
+}
+
+

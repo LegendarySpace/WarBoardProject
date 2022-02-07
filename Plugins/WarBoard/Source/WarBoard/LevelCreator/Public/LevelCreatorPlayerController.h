@@ -38,14 +38,21 @@ public:
 	void Multiselect();
 	void ClearMultiselect();
 	void Load();
+	void Load(FString Name);
 	void Save();
 	void SaveAs();
+	void SaveAs(FString Name);
 
 
 protected:
 	ALevelCreatorPawn* PlayerPawn = nullptr;
 	ALevelCreatorBase* Creator = nullptr;
 	FTile HoverTile = FTile();
+	FString FileName;
+
+	TSubclassOf<UUserWidget> LoadMenuClass;
+	TSubclassOf<UUserWidget> SaveMenuClass;
+	TSubclassOf<UUserWidget> SavedResultClass;
 
 private:
 	bool bRotationEnabled = false;

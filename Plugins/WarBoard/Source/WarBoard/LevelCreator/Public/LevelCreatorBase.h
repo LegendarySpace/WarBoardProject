@@ -11,7 +11,7 @@
 #include "LevelCreatorBase.generated.h"
 
 class UTraceFloor;
-class UEnviromentComponent;
+class UEnvironmentComponent;
 
 UCLASS()
 class WARBOARD_API ALevelCreatorBase : public AActor
@@ -26,7 +26,7 @@ public:
 	UTraceFloor* Floor;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-	UEnviromentComponent* Enviroment;
+	UEnvironmentComponent* Environment;
 
 protected:
 	// Called when the game starts or when spawned

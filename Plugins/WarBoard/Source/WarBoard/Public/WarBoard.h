@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
+#include "../LevelCreator/Public/SavedEnvironments.h"
+#include "../LevelCreator/Public/EnvironmentLayout.h"
+#include "Kismet/GameplayStatics.h"
 
 class FWarBoardModule : public IModuleInterface
 {

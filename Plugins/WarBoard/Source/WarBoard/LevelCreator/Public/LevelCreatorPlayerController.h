@@ -35,7 +35,9 @@ public:
 	void MoveRight(float Value);
 	void IncreaseBiome();
 	void DecreaseBiome();
-	void Multiselect();
+	void ToggleSingleSelection();
+	void GroupSelection();
+	void ToggleGroupSelection();
 	void ClearMultiselect();
 	void Load();
 	void Load(FString Name);
@@ -61,7 +63,6 @@ private:
 	FVector Right;
 	bool bMoveForward = false;
 	bool bMoveRight = false;
-	FTile* StartMultiselect = nullptr;
-	FTile* EndMultiselect = nullptr;
-	TArray<FTile> MultiselectArray = TArray<FTile>();
+	TOptional<FTile> StartMultiselect;
+	TOptional<FTile> EndMultiselect;
 };

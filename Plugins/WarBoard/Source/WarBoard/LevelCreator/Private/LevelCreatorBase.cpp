@@ -21,7 +21,63 @@ ALevelCreatorBase::ALevelCreatorBase()
 	Environment = CreateDefaultSubobject<UEnvironmentComponent>(TEXT("Environment"));
 	Environment->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
 
-	// TODO: Should initialize Biomes
+	SelectionHighlighter = CreateDefaultSubobject<UBiomeManager>(TEXT("Selection Highlighter"));
+	SelectionHighlighter->AttachToComponent(Root, FAttachmentTransformRules::KeepRelativeTransform);
+	HighlighterMaterial = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("/WarBoard/Material/M_Highlighter_Base.M_Highlighter_Base")).Object;
+}
+
+void ALevelCreatorBase::AddTileHighlight(FGCoord Tile)
+{
+	AddHighlight(FTile(Tile));
+}
+
+void ALevelCreatorBase::AddHighlight(FTile Tile)
+{
+	if (!MultiselectArray.Contains(Tile))
+	{
+		MultiselectArray.AddUnique(Tile);
+		SelectionHighlighter->AddTile(Tile);
+	}
+}
+
+void ALevelCreatorBase::AddHighlight(FGCoord Tile)
+{
+	AddHighlight(FTile(Tile));
+}
+
+void ALevelCreatorBase::AddHighlight(FCubic Tile)
+{
+	AddHighlight(FTile(Tile));
+}
+
+void ALevelCreatorBase::RemoveTileHighlight(FGCoord Tile)
+{
+	RemoveHighlight(FTile(Tile));
+}
+
+void ALevelCreatorBase::RemoveHighlight(FTile Tile)
+{
+	if (MultiselectArray.Contains(Tile))
+	{
+		MultiselectArray.Remove(Tile);
+		SelectionHighlighter->RemoveTile(Tile);
+	}
+}
+
+void ALevelCreatorBase::RemoveHighlight(FGCoord Tile)
+{
+	RemoveHighlight(FTile(Tile));
+}
+
+void ALevelCreatorBase::RemoveHighlight(FCubic Tile)
+{
+	RemoveHighlight(FTile(Tile));
+}
+
+void ALevelCreatorBase::ClearHighlights()
+{
+	SelectionHighlighter->ClearTiles();
+	MultiselectArray.Empty();
 }
 
 // Called when the game starts or when spawned
@@ -33,6 +89,10 @@ void ALevelCreatorBase::BeginPlay()
 	Environment->BiomeSettings = Biomes;
 	Environment->InitializeBiomes();
 
+	FBiomeSetup HighlighterSetup = FBiomeSetup();
+	HighlighterSetup.Mat = HighlighterMaterial;
+	SelectionHighlighter->SetupInstance(HighlighterSetup);
+	SelectionHighlighter->MeshSize = 99;
 }
 
 // Called every frame

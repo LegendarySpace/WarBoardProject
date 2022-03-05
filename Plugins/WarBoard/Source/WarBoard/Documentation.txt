@@ -6,14 +6,23 @@ Level Creator
 		-Height		=	Shift + Scroll Wheel
 		-Increase Biome	=	Left Mouse Button
 		-Decrease Biome	=	Right Mouse Button
-		-Multiselect	=	Ctrl + Left Mouse Button
+		-Toggle Select	=	Ctrl + Left Mouse Button
+		-Group Select	=	Shift + Left Mouse Button
+		-Toggle Group	=	Ctrl + Shift + Left Mouse Button
 		-Clear Select	=	Alt + Left Mouse Button
 		-Load		=	F9
 		-Quick Save	=	F5
 		-Save As	=	Shift + F5
 
-TODO:
--Save
--Load
--Save As
--Multiselect
+TODO:		// Immediate Attention
+- Add Turn Manager
+- Add FTurnState
+- Add FAction
+- Add bool bDisplayPath to GridNavigationSystemComponent (Display spline from start to end with path as points)
+- Add GridTraversalComponent (Should interface with GridNavSystem)
+- Change Environment to use TMap<FName, Biome> for BuildBiome and GetBiome
+
+UPDATE:		// Wait Until Next Update
+
+UPGRADE:	// Potential Future Changes
+-Add Debug display to path finding

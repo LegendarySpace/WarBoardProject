@@ -3,21 +3,21 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlanarManager.h"
-#include "AttackSystemComponent.generated.h"
+#include "TargetingDisplayComponent.h"
+#include "AttackTargetingComponent.generated.h"
 
 
 /**
 *		Highlights potential targeting options
 */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WARBOARD_API UAttackSystemComponent : public UPlanarManager
+class WARBOARD_API UAttackTargetingComponent : public UTargetingDisplayComponent
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	UAttackSystemComponent();
+	UAttackTargetingComponent();
 
 	// Populate the Meshes
 	void Populate(TArray<FGCoord> Choices);

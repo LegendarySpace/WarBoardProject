@@ -43,10 +43,18 @@ void ALevelCreatorPlayerController::BeginPlay()
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ALevelCreatorBase::StaticClass(), FoundCreators);
 
 	if (FoundCreators.Num() > 0) Creator = static_cast<ALevelCreatorBase*>(FoundCreators[0]);
-	// else TODO: Spawn or find way to handle
+	else
+	{
+		UWorld* world = GetWorld();
+		if (!ensure(world != nullptr)) exit(EXIT_FAILURE);
+
+		Creator = world->SpawnActor<ALevelCreatorBase>(ALevelCreatorBase::StaticClass(), FVector(0), FRotator());
+
+		if (Creator == nullptr) exit(EXIT_FAILURE);		// Ensure existance of Creator
+	}
 
 	// TODO: Setup HUD which I don't current have
-	// HUD should say location and biome
+	// HUD should detail location and biome
 
 }
 
@@ -209,8 +217,20 @@ void ALevelCreatorPlayerController::SetupInputComponent()
 	FInputKeyBinding CLCBinding(FInputChord(LCKey, false, true, false, false), EInputEvent::IE_Pressed);
 	CLCBinding.bConsumeInput = true;
 	CLCBinding.bExecuteWhenPaused = false;
-	CLCBinding.KeyDelegate.GetDelegateWithKeyForManualSet().BindLambda([=](const FKey& Key) { Multiselect(); });
+	CLCBinding.KeyDelegate.GetDelegateWithKeyForManualSet().BindLambda([=](const FKey& Key) { ToggleSingleSelection(); });
 	this->InputComponent->KeyBindings.Add(CLCBinding);
+
+	FInputKeyBinding SLCBinding(FInputChord(LCKey, true, false, false, false), EInputEvent::IE_Pressed);
+	SLCBinding.bConsumeInput = true;
+	SLCBinding.bExecuteWhenPaused = false;
+	SLCBinding.KeyDelegate.GetDelegateWithKeyForManualSet().BindLambda([=](const FKey& Key) { GroupSelection(); });
+	this->InputComponent->KeyBindings.Add(SLCBinding);
+
+	FInputKeyBinding CSLCBinding(FInputChord(LCKey, true, true, false, false), EInputEvent::IE_Pressed);
+	CSLCBinding.bConsumeInput = true;
+	CSLCBinding.bExecuteWhenPaused = false;
+	CSLCBinding.KeyDelegate.GetDelegateWithKeyForManualSet().BindLambda([=](const FKey& Key) { ToggleGroupSelection(); });
+	this->InputComponent->KeyBindings.Add(CSLCBinding);
 
 	// Clear MultiSelect Binding
 	FInputKeyBinding ALCBinding(FInputChord(LCKey, false, false, true, false), EInputEvent::IE_Released);
@@ -255,47 +275,137 @@ void ALevelCreatorPlayerController::MoveRight(float Value)
 
 void ALevelCreatorPlayerController::IncreaseBiome()
 {
-	// TODO: If multiselect array.num > 0 do this for each value
-	// else run only on hovertile
 	if (!Creator->Environment->IsValid(HoverTile))
 	{
 		Creator->Environment->ChangeTile(FTileBiome(HoverTile));
 	}
 	else
 	{
-		EBiome Bio = Creator->Environment->GetBiome(HoverTile);
-		if (Bio < (EBiome::TT_Type_MAX - 1)) Creator->Environment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio + 1)));
-		else Creator->Environment->RemoveTile(HoverTile);
+		EBiome Bio = Creator->Environment->GetBiome(HoverTile);		// Set any changed tiles to same biome
+		if (Creator->MultiselectArray.Num() > 0)
+		{
+			for (FTile tile : Creator->MultiselectArray)
+			{
+				if (Bio < (EBiome::TT_Type_MAX - 1)) Creator->Environment->ChangeTile(FTileBiome(tile, static_cast<EBiome>(Bio + 1)));
+				else Creator->Environment->RemoveTile(tile);
+			}
+		}
+		else
+		{
+			if (Bio < (EBiome::TT_Type_MAX - 1)) Creator->Environment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio + 1)));
+			else Creator->Environment->RemoveTile(HoverTile);
+		}
 	}
 }
 
 void ALevelCreatorPlayerController::DecreaseBiome()
 {
-	// TODO: If multiselect array.num > 0 do this for each value
-	// else run only on hovertile
 	if (!Creator->Environment->IsValid(HoverTile))
 	{
 		return;
 	}
 	else
 	{
-		EBiome Bio = Creator->Environment->GetBiome(HoverTile);
-		if (Bio == 0) Creator->Environment->RemoveTile(HoverTile);
-		else Creator->Environment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio - 1)));
+		EBiome Bio = Creator->Environment->GetBiome(HoverTile);		// Set any changed tiles to same biome
+		if (Creator->MultiselectArray.Num() > 0)
+		{
+			for (FTile tile : Creator->MultiselectArray)
+			{
+				if (Bio == 0) Creator->Environment->RemoveTile(tile);
+				else Creator->Environment->ChangeTile(FTileBiome(tile, static_cast<EBiome>(Bio - 1)));
+			}
+		}
+		else
+		{
+			if (Bio == 0) Creator->Environment->RemoveTile(HoverTile);
+			else Creator->Environment->ChangeTile(FTileBiome(HoverTile, static_cast<EBiome>(Bio - 1)));
+		}
 	}
 }
 
-void ALevelCreatorPlayerController::Multiselect()
+void ALevelCreatorPlayerController::ToggleSingleSelection()
 {
-	// TODO: If multiselect start is null, set multiselect start to hover
-	// else set multiselect end to hover then fill multiselect array
+	if (Creator->MultiselectArray.Contains(HoverTile))
+	{
+		Creator->RemoveHighlight(HoverTile);
+	}
+	else
+	{
+		Creator->AddHighlight(HoverTile);
+	}
+}
+
+void ALevelCreatorPlayerController::GroupSelection()
+{
+	Creator->ClearHighlights();
+	if (!StartMultiselect.IsSet())
+	{
+		StartMultiselect = HoverTile;
+	}
+	else if (StartMultiselect.GetValue() != HoverTile)		// Ensure start and end are never same tile
+	{
+		EndMultiselect = HoverTile;
+		int rowStart = FMath::Min(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
+		int colStart = FMath::Min(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
+		int rowEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
+		int colEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
+
+		for (int i = rowStart; i <= rowEnd; i++)
+		{
+			for (int j = colStart; j <= colEnd; j++)
+			{
+				FTile tile = FTile(i, j);
+				Creator->AddHighlight(tile);
+			}
+		}
+
+		StartMultiselect.Reset();
+		EndMultiselect.Reset();
+	}
+}
+
+void ALevelCreatorPlayerController::ToggleGroupSelection()
+{
+	if (!StartMultiselect.IsSet())
+	{
+		StartMultiselect = HoverTile;
+	}
+	else if (StartMultiselect.GetValue() != HoverTile)		// Ensure start and end are never same tile
+	{
+		EndMultiselect = HoverTile;
+		int rowStart = FMath::Min(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
+		int colStart = FMath::Min(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
+		int rowEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
+		int colEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
+
+		for (int i = rowStart; i <= rowEnd; i++)
+		{
+			for (int j = colStart; j <= colEnd; j++)
+			{
+				FTile tile = FTile(i, j);
+
+				// If both start and end are highlighted remove group, else add group
+				if (Creator->MultiselectArray.Contains(StartMultiselect.GetValue()) && Creator->MultiselectArray.Contains(EndMultiselect.GetValue()))
+				{
+					Creator->RemoveHighlight(tile);
+				}
+				else
+				{
+					Creator->AddHighlight(tile);
+				}
+			}
+		}
+
+		StartMultiselect.Reset();
+		EndMultiselect.Reset();
+	}
 }
 
 void ALevelCreatorPlayerController::ClearMultiselect()
 {
-	// TODO: Clear multiselect array
-	// multiselect start = null
-	// multiselect end = null
+	Creator->ClearHighlights();
+	StartMultiselect.Reset();
+	EndMultiselect.Reset();
 }
 
 void ALevelCreatorPlayerController::Load()
@@ -368,7 +478,7 @@ void ALevelCreatorPlayerController::SaveAs(FString Name)
 	}
 	if (!Success) UE_LOG(LogTemp, Warning, TEXT("Failed To Update Environment Names"));
 
-	FileName = Name;
+	FileName = Name; // This file may be saved even if the Environment Names list is not updated
 	Save();
 }
 

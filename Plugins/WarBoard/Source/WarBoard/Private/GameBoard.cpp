@@ -8,9 +8,9 @@
 #include "Tiles.h"
 #include "GridComponent.h"
 #include "EnvironmentComponent.h"
-#include "NavSystemComponent.h"
-#include "MovementSystemComponent.h"
-#include "AttackSystemComponent.h"
+#include "GridNavigationSystemComponent.h"
+#include "MovementTargetingComponent.h"
+#include "AttackTargetingComponent.h"
 #include "WarBoardLibrary.h"
 
 AGameBoard::AGameBoard()
@@ -25,11 +25,11 @@ AGameBoard::AGameBoard()
 	Grid->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	Environment = CreateDefaultSubobject<UEnvironmentComponent>("Environment");
 	Environment->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	Navigation = CreateDefaultSubobject<UNavSystem>("NavSystem");
+	Navigation = CreateDefaultSubobject<UGridNavigationSystemComponent>("NavSystem");
 	Navigation->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	MovementSystem = CreateDefaultSubobject<UMovementSystemComponent>("MovementSystem");
+	MovementSystem = CreateDefaultSubobject<UMovementTargetingComponent>("MovementSystem");
 	MovementSystem->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	AttackSystem = CreateDefaultSubobject<UAttackSystemComponent>("AttackSystem");
+	AttackSystem = CreateDefaultSubobject<UAttackTargetingComponent>("AttackSystem");
 	AttackSystem->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 
 }
@@ -96,24 +96,24 @@ void AGameBoard::SetEnvironmentComponent(TSubclassOf<UEnvironmentComponent> InLa
 	Environment->Populate(BiomeLocations);
 }
 
-void AGameBoard::SetNavigationSystem(TSubclassOf<UNavSystem> Router)
+void AGameBoard::SetNavigationSystem(TSubclassOf<UGridNavigationSystemComponent> Router)
 {
 	// Clear any current route manager first
 	delete Navigation;
-	Navigation = NewObject<UNavSystem>(this, Router);
+	Navigation = NewObject<UGridNavigationSystemComponent>(this, Router);
 	Navigation->Populate(GetTiles());
 }
 
-void AGameBoard::SetMovementSystem(TSubclassOf<UMovementSystemComponent> MoveSys)
+void AGameBoard::SetMovementSystem(TSubclassOf<UMovementTargetingComponent> MoveSys)
 {
 	delete MovementSystem;
-	MovementSystem = NewObject<UMovementSystemComponent>(this, MoveSys);
+	MovementSystem = NewObject<UMovementTargetingComponent>(this, MoveSys);
 }
 
-void AGameBoard::SetAttackSystem(TSubclassOf<UAttackSystemComponent> AttackSys)
+void AGameBoard::SetAttackSystem(TSubclassOf<UAttackTargetingComponent> AttackSys)
 {
 	delete AttackSystem;
-	AttackSystem = NewObject<UAttackSystemComponent>(this, AttackSys);
+	AttackSystem = NewObject<UAttackTargetingComponent>(this, AttackSys);
 }
 
 void AGameBoard::BeginPlay()

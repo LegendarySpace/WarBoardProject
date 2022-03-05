@@ -11,9 +11,9 @@
 
 class UGridComponent;
 class UEnvironmentComponent;
-class UNavSystem;
-class UMovementSystemComponent;
-class UAttackSystemComponent;
+class UGridNavigationSystemComponent;
+class UMovementTargetingComponent;
+class UAttackTargetingComponent;
 
 /**
  * 
@@ -64,13 +64,13 @@ protected:
 		void SetEnvironmentComponent(TSubclassOf<UEnvironmentComponent> InLayout);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		void SetNavigationSystem(TSubclassOf<UNavSystem> NavigationSys);
+		void SetNavigationSystem(TSubclassOf<UGridNavigationSystemComponent> NavigationSys);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		void SetMovementSystem(TSubclassOf<UMovementSystemComponent> MoveSys);
+		void SetMovementSystem(TSubclassOf<UMovementTargetingComponent> MoveSys);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		void SetAttackSystem(TSubclassOf<UAttackSystemComponent> AttackSys);
+		void SetAttackSystem(TSubclassOf<UAttackTargetingComponent> AttackSys);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
 		UGridComponent* GetGridComponent() { return Grid; }
@@ -79,13 +79,13 @@ protected:
 		UEnvironmentComponent* GetEnvironmentComponent() { return Environment; }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		UNavSystem* GetNavigationSystem() { return Navigation; }
+		UGridNavigationSystemComponent* GetNavigationSystem() { return Navigation; }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		UMovementSystemComponent* GetMovementSystem() { return MovementSystem; }
+		UMovementTargetingComponent* GetMovementSystem() { return MovementSystem; }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-		UAttackSystemComponent* GetAttackSystem() { return AttackSystem; }
+		UAttackTargetingComponent* GetAttackSystem() { return AttackSystem; }
 
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Board")
@@ -98,13 +98,13 @@ protected:
 	UEnvironmentComponent* Environment;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Instanced, Category = "Board")
-	UNavSystem* Navigation;
+	UGridNavigationSystemComponent* Navigation;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Instanced, Category = "Board")
-	UMovementSystemComponent* MovementSystem;
+	UMovementTargetingComponent* MovementSystem;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Instanced, Category = "Board")
-	UAttackSystemComponent* AttackSystem;
+	UAttackTargetingComponent* AttackSystem;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Board")
 	TArray<FTileBiome> BiomeLocations;

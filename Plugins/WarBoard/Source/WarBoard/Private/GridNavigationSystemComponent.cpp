@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "NavSystemComponent.h"
+#include "GridNavigationSystemComponent.h"
 
 #include "Math/NumericLimits.h"
 
@@ -10,7 +10,7 @@
 using namespace WarBoardLib;
 
 // Sets default values
-UNavSystem::UNavSystem()
+UGridNavigationSystemComponent::UGridNavigationSystemComponent()
 {
  	// Never Tick
 	PrimaryComponentTick.bCanEverTick = false;
@@ -46,7 +46,7 @@ UNavSystem::UNavSystem()
 
 }
 
-void UNavSystem::DetermineDirections()
+void UGridNavigationSystemComponent::DetermineDirections()
 {
 	// UPDATE: GetNeighbors(FTile Origin) Calculate neighbors at runtime based on origin and shape, return list of neighbors, validdirections can be removed
 	ValidDirections.Append(CardinalDirections2D);
@@ -59,14 +59,14 @@ void UNavSystem::DetermineDirections()
 
 }
 
-void UNavSystem::Populate(TArray<FGCoord> Locations)
+void UGridNavigationSystemComponent::Populate(TArray<FGCoord> Locations)
 {
 	TArray<FTile> L;
 	for (auto Coord : Locations) { L.Add(FTile(Coord)); }
 	Populate(L);
 }
 
-void UNavSystem::Populate(TArray<FTile> Locations)
+void UGridNavigationSystemComponent::Populate(TArray<FTile> Locations)
 {
 	DetermineDirections();
 
@@ -76,14 +76,14 @@ void UNavSystem::Populate(TArray<FTile> Locations)
 	}
 }
 
-void UNavSystem::Populate(TArray<FCubic> Locations)
+void UGridNavigationSystemComponent::Populate(TArray<FCubic> Locations)
 {
 	TArray<FTile> L;
 	for (auto Coord : Locations) { L.Add(FTile(Coord)); }
 	Populate(L);
 }
 
-bool UNavSystem::AddNode(FTile InTile)
+bool UGridNavigationSystemComponent::AddNode(FTile InTile)
 {
 	FPathNode Node;
 	Node.NavStatus = ENavStatus::Ignored;
@@ -94,7 +94,7 @@ bool UNavSystem::AddNode(FTile InTile)
 
 }
 
-bool UNavSystem::RemoveNode(FTile InTile)
+bool UGridNavigationSystemComponent::RemoveNode(FTile InTile)
 {
 	FPathNode Node;
 	if (!GetNode(InTile, Node)) return false;
@@ -102,19 +102,19 @@ bool UNavSystem::RemoveNode(FTile InTile)
 	return true;
 }
 
-void UNavSystem::Discovery_Implementation(FGCoord Origin, int32 Range, TArray<FGCoord> &PathableTiles)
+void UGridNavigationSystemComponent::Discovery_Implementation(FGCoord Origin, int32 Range, TArray<FGCoord> &PathableTiles)
 {
 	BeginDiscovery(Origin, Range, PathableTiles);
 }
 
-void UNavSystem::BeginDiscovery(FGCoord Origin, int32 Range, TArray<FGCoord> PathableTiles)
+void UGridNavigationSystemComponent::BeginDiscovery(FGCoord Origin, int32 Range, TArray<FGCoord> PathableTiles)
 {
 	TArray<FGCoord> PT;
 	if (PathableTiles.Num() > 0) { for (auto Tile : PathableTiles) PT.Add(Tile); }
 	Discovery(Origin, Range, PT);
 }
 
-void UNavSystem::BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> PathableTiles)
+void UGridNavigationSystemComponent::BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> PathableTiles)
 {
 	if (Range < 1) Range = NodeMap.Num();
 
@@ -157,6 +157,9 @@ void UNavSystem::BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> Pathabl
 				auto pred = [=](FPathNode Node) { return Node == Neighbor; };
 				if (OpenNodes.FindByPredicate(pred) || ClosedNodes.FindByPredicate(pred)) continue;
 
+				// Debug Display
+				// UPGRADE: Draw temp line to parent
+
 				// If Destination not valid calculate end point
 				FTile end;
 				FPathNode N;
@@ -180,24 +183,24 @@ void UNavSystem::BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> Pathabl
 	}
 }
 
-void UNavSystem::BeginDiscovery(FCubic Origin, int32 Range, TArray<FCubic> PathableTiles)
+void UGridNavigationSystemComponent::BeginDiscovery(FCubic Origin, int32 Range, TArray<FCubic> PathableTiles)
 {
 	TArray<FGCoord> PT;
 	if (PathableTiles.Num() > 0) { for (auto Tile : PathableTiles) PT.Add(FTile(Tile).ToRC()); }
 	Discovery(FTile(Origin).ToRC(), Range, PT);
 }
 
-void UNavSystem::CheckNeighbor_Implementation(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
+void UGridNavigationSystemComponent::CheckNeighbor_Implementation(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, Direction, Goal, BreakTie);
 }
 
-void UNavSystem::CheckNeighborStatus(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
+void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, FTile(Direction), Goal, BreakTie);
 }
 
-void UNavSystem::CheckNeighborStatus(FPathNode Current, FTile Direction, FTile Goal, int32 BreakTie = 0)
+void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FTile Direction, FTile Goal, int32 BreakTie = 0)
 {
 	FTile Neighbor = Direction + Current.Tile;
 
@@ -262,17 +265,17 @@ void UNavSystem::CheckNeighborStatus(FPathNode Current, FTile Direction, FTile G
 	OpenNodes.Add(Node);
 }
 
-void UNavSystem::CheckNeighborStatus(FPathNode Current, FCubic Direction, FCubic Goal, int32 BreakTie = 0)
+void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FCubic Direction, FCubic Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, FTile(Direction), Goal, BreakTie);
 }
 
-bool UNavSystem::Route_Implementation(FGCoord End, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::Route_Implementation(FGCoord End, TArray<FGCoord>& RouteArray)
 {
 	return GetRoute(End, RouteArray);
 }
 
-bool UNavSystem::GetRoute(FGCoord End, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::GetRoute(FGCoord End, TArray<FGCoord>& RouteArray)
 {
 	TArray<FTile> RA;
 	if (!GetRoute(FTile(End), RA)) return false;
@@ -281,8 +284,9 @@ bool UNavSystem::GetRoute(FGCoord End, TArray<FGCoord>& RouteArray)
 	return true;
 }
 
-bool UNavSystem::GetRoute(FTile End, TArray<FTile> &RouteArray)
+bool UGridNavigationSystemComponent::GetRoute(FTile End, TArray<FTile> &RouteArray)
 {
+	RouteArray.Empty();
 	FPathNode Node;
 	if (!GetNode(End, Node)) return false;
 	bool stop = false, found = false;
@@ -294,9 +298,6 @@ bool UNavSystem::GetRoute(FTile End, TArray<FTile> &RouteArray)
 		// Stop if parent isn't valid
 		FPathNode tempNode;
 		if (!GetNode(Node.ParentTile, tempNode)) break;
-
-		// Debug Display
-		// UPGRADE: Draw line to parent, possibly set as vertices for spline
 
 		// Parent calling loop
 		if (Node.ParentTile != Node.Tile)
@@ -312,10 +313,12 @@ bool UNavSystem::GetRoute(FTile End, TArray<FTile> &RouteArray)
 		}
 	}
 
+	// TODO: if (bDisplayPath) Set Spline from start to finish with vertices for each tile
+
 	return found;
 }
 
-bool UNavSystem::GetRoute(FCubic End, TArray<FCubic>& RouteArray)
+bool UGridNavigationSystemComponent::GetRoute(FCubic End, TArray<FCubic>& RouteArray)
 {
 	TArray<FTile> RA;
 	if (!GetRoute(FTile(End), RA)) return false;
@@ -324,19 +327,19 @@ bool UNavSystem::GetRoute(FCubic End, TArray<FCubic>& RouteArray)
 	return true;
 }
 
-bool UNavSystem::DirectRoute_Implementation(FGCoord Start, FGCoord End, TArray<FGCoord> &PathableTiles, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::DirectRoute_Implementation(FGCoord Start, FGCoord End, TArray<FGCoord> &PathableTiles, TArray<FGCoord>& RouteArray)
 {
 	return GetDirectRoute(Start, End, PathableTiles, RouteArray);
 }
 
-bool UNavSystem::GetDirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> PathableTiles, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::GetDirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> PathableTiles, TArray<FGCoord>& RouteArray)
 {
 	Destination = FTile(End);
 	Discovery(Start, 0, PathableTiles);
 	return Route(End, RouteArray);
 }
 
-bool UNavSystem::GetDirectRoute(FTile Start, FTile End, TArray<FTile> PathableTiles, TArray<FTile>& RouteArray)
+bool UGridNavigationSystemComponent::GetDirectRoute(FTile Start, FTile End, TArray<FTile> PathableTiles, TArray<FTile>& RouteArray)
 {
 	TArray<FGCoord> PT, RA;
 	if (PathableTiles.Num() > 0) { for (auto& Tile : PathableTiles) PT.Add(Tile.ToRC()); }
@@ -347,7 +350,7 @@ bool UNavSystem::GetDirectRoute(FTile Start, FTile End, TArray<FTile> PathableTi
 
 }
 
-bool UNavSystem::GetDirectRoute(FCubic Start, FCubic End, TArray<FCubic> PathableTiles, TArray<FCubic>& RouteArray)
+bool UGridNavigationSystemComponent::GetDirectRoute(FCubic Start, FCubic End, TArray<FCubic> PathableTiles, TArray<FCubic>& RouteArray)
 {
 	TArray<FGCoord> PT, RA;
 	if (PathableTiles.Num() > 0) { for (auto &Tile : PathableTiles) PT.Add(FTile(Tile).ToRC()); }
@@ -357,23 +360,23 @@ bool UNavSystem::GetDirectRoute(FCubic Start, FCubic End, TArray<FCubic> Pathabl
 	return true;
 }
 
-bool UNavSystem::GetNodeFromCoord(FGCoord Tile, FPathNode &Node)
+bool UGridNavigationSystemComponent::GetNodeFromCoord(FGCoord Tile, FPathNode &Node)
 {
 	return GetNode(Tile, Node);
 }
 
-bool UNavSystem::GetNode(FGCoord Tile, FPathNode& Node)
+bool UGridNavigationSystemComponent::GetNode(FGCoord Tile, FPathNode& Node)
 {
 	return GetNode(FTile(Tile), Node);
 }
 
-bool UNavSystem::GetNode(TOptional<FTile> Tile, FPathNode& Node)
+bool UGridNavigationSystemComponent::GetNode(TOptional<FTile> Tile, FPathNode& Node)
 {
 	if (!Tile.IsSet()) return nullptr;
 	return GetNode(Tile.GetValue(), Node);
 }
 
-bool UNavSystem::GetNode(FTile Tile, FPathNode& Node)
+bool UGridNavigationSystemComponent::GetNode(FTile Tile, FPathNode& Node)
 {
 	auto pNode = NodeMap.FindByPredicate([=](FPathNode Node) { return Node == Tile; });
 	if (pNode == nullptr) return false;
@@ -381,12 +384,12 @@ bool UNavSystem::GetNode(FTile Tile, FPathNode& Node)
 	return true;
 }
 
-bool UNavSystem::GetNode(FCubic Tile, FPathNode& Node)
+bool UGridNavigationSystemComponent::GetNode(FCubic Tile, FPathNode& Node)
 {
 	return GetNode(FTile(Tile), Node);
 }
 
-void UNavSystem::ResetNodes()
+void UGridNavigationSystemComponent::ResetNodes()
 {
 	for (auto Node : NodeMap)
 	{
@@ -395,7 +398,7 @@ void UNavSystem::ResetNodes()
 	}
 }
 
-void UNavSystem::ClearQueue()
+void UGridNavigationSystemComponent::ClearQueue()
 {
 	ClosedNodes.Empty();
 	OpenNodes.Empty();
@@ -403,22 +406,22 @@ void UNavSystem::ClearQueue()
 	NodeStat = 0;
 }
 
-ENodeStatus UNavSystem::GetStatusByCoord(FGCoord InTile)
+ENodeStatus UGridNavigationSystemComponent::GetStatusByCoord(FGCoord InTile)
 {
 	return GetStatusByTile(InTile);
 }
 
-ENodeStatus UNavSystem::GetStatusByTile(FGCoord InTile)
+ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(FGCoord InTile)
 {
 	return GetStatusByTile(FTile(InTile));
 }
 
-ENodeStatus UNavSystem::GetStatusByTile(TOptional<FTile> InTile)
+ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(TOptional<FTile> InTile)
 {
 	return GetStatusByTile(InTile.GetValue());
 }
 
-ENodeStatus UNavSystem::GetStatusByTile(FTile InTile)
+ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(FTile InTile)
 {
 	FPathNode N;
 	if (!GetNode(InTile, N)) return ENodeStatus::NS_Invalid;
@@ -427,34 +430,34 @@ ENodeStatus UNavSystem::GetStatusByTile(FTile InTile)
 	return ENodeStatus::NS_Open;
 }
 
-ENodeStatus UNavSystem::GetStatusByTile(FCubic InTile)
+ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(FCubic InTile)
 {
 	return GetStatusByTile(FTile(InTile));
 }
 
-void UNavSystem::UpdateStatusByCoord(FGCoord InTile, ENodeStatus Status)
+void UGridNavigationSystemComponent::UpdateStatusByCoord(FGCoord InTile, ENodeStatus Status)
 {
 	UpdateStatus(InTile, Status);
 }
 
-void UNavSystem::UpdateStatus(FGCoord InTile, ENodeStatus Status)
+void UGridNavigationSystemComponent::UpdateStatus(FGCoord InTile, ENodeStatus Status)
 {
 	FPathNode N;
 	if (Status > ENodeStatus::NS_Blocked) BlockedNodes.Remove(InTile);
 	if (GetNode(InTile, N)) BlockedNodes.AddUnique(InTile);
 }
 
-void UNavSystem::UpdateStatus(FTile InTile, ENodeStatus Status)
+void UGridNavigationSystemComponent::UpdateStatus(FTile InTile, ENodeStatus Status)
 {
 	UpdateStatus(InTile.ToRC(), Status);
 }
 
-void UNavSystem::UpdateStatus(FCubic InTile, ENodeStatus Status)
+void UGridNavigationSystemComponent::UpdateStatus(FCubic InTile, ENodeStatus Status)
 {
 	UpdateStatus(FTile(InTile).ToRC(), Status);
 }
 
-TArray<FGCoord> UNavSystem::GetReachableTiles(bool IncludeObstructed)
+TArray<FGCoord> UGridNavigationSystemComponent::GetReachableTiles(bool IncludeObstructed)
 {
 	TArray<FGCoord> Tiles;
 	for (auto Node : ClosedNodes)
@@ -467,7 +470,7 @@ TArray<FGCoord> UNavSystem::GetReachableTiles(bool IncludeObstructed)
 }
 
 // Called when the game starts or when spawned
-void UNavSystem::BeginPlay()
+void UGridNavigationSystemComponent::BeginPlay()
 {
 	Super::BeginPlay();
 

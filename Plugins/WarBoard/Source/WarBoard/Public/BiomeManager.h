@@ -75,6 +75,12 @@ public:
 	TEnumAsByte<EBiome> Biome = EBiome::TT_Normal;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
+	bool bCenterVerticalOffset = true;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float VerticalOffset = 0.f;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
 	bool bDebugMode = false;
 
 protected:

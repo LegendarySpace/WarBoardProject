@@ -3,20 +3,20 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PlanarManager.h"
-#include "MovementSystemComponent.generated.h"
+#include "TargetingDisplayComponent.h"
+#include "MovementTargetingComponent.generated.h"
 
 /**
 *		Highlights potential movement options
 */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WARBOARD_API UMovementSystemComponent : public UPlanarManager
+class WARBOARD_API UMovementTargetingComponent : public UTargetingDisplayComponent
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	UMovementSystemComponent();
+	UMovementTargetingComponent();
 
 	// Populate the Meshes
 	void Populate(TArray<FGCoord> Choices);

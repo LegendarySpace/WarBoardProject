@@ -9,19 +9,19 @@
 #include "Tiles.h"
 #include "PathNode.h"
 
-#include "NavSystemComponent.generated.h"
+#include "GridNavigationSystemComponent.generated.h"
 
 /**
 *
 */
 UCLASS(Blueprintable, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WARBOARD_API UNavSystem : public USceneComponent		// UPGRADE: Make Actor Component instead of scene after Node is modified to struct since it will have no world location
+class WARBOARD_API UGridNavigationSystemComponent : public USceneComponent		// UPGRADE: Make Actor Component instead of scene after Node is modified to struct since it will have no world location
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	UNavSystem();
+	UGridNavigationSystemComponent();
 
 
 	/**									**\

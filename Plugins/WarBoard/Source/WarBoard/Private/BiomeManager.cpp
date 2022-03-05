@@ -99,7 +99,8 @@ FTransform UBiomeManager::CalculateTransform(FTile Tile)
 	FVector scale = FVector((GetTileSize() - (2 * Pad)) / MeshSize);
 	FVector loc = Tile.ToWorld();
 	// Tiles are assumed to have a thickness 1/10th its TileSize
-	loc += FVector(0, 0, (-0.05 * GetTileSize()) + (Pad * 0.1));
+	if (bCenterVerticalOffset) VerticalOffset = (-0.05 * GetTileSize()) + (Pad * 0.1);
+	loc += FVector(0, 0, VerticalOffset);
 	return FTransform(FRotator(0), loc, scale);
 }
 

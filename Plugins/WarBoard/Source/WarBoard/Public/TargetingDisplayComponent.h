@@ -7,19 +7,19 @@
 
 #include "Tiles.h"
 
-#include "PlanarManager.generated.h"
+#include "TargetingDisplayComponent.generated.h"
 
 /**
 *		Highlights selection options
 */
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
-class WARBOARD_API UPlanarManager : public UInstancedStaticMeshComponent
+class WARBOARD_API UTargetingDisplayComponent : public UInstancedStaticMeshComponent
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	UPlanarManager();
+	UTargetingDisplayComponent();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Settings")
 	UMaterialInterface* PlaneMaterial;

@@ -39,12 +39,11 @@ public:
 	TArray<FVector> LineVertices;
 	TArray<int32> LineTriangles;
 	TArray<FVector> Polygon;
+	FRotator CellRotation;
 
 	void BuildCell(ETileShape Shape, float Size = -1, float Thickness = -1, float Padding = 0);
 
 private:
-	TArray<FVector>& GetCellVertices(const int32 Sides, const float RelativeRotationToFirstVertex = 0.0, const float PolygonRotation = 0.0);
-
 	void ProjectVerticesOntoSurface(float Height);
 
 public:

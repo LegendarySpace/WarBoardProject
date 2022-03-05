@@ -12,6 +12,8 @@
 
 class UTraceFloor;
 class UEnvironmentComponent;
+class UBiomeManager;
+class UMaterialInterface;
 
 UCLASS()
 class WARBOARD_API ALevelCreatorBase : public AActor
@@ -28,6 +30,24 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UEnvironmentComponent* Environment;
 
+	UBiomeManager* SelectionHighlighter;
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")
+	void AddTileHighlight(FGCoord Tile);
+	void AddHighlight(FTile Tile);
+	void AddHighlight(FGCoord Tile);
+	void AddHighlight(FCubic Tile);
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")
+	void RemoveTileHighlight(FGCoord Tile);
+	void RemoveHighlight(FTile Tile);
+	void RemoveHighlight(FGCoord Tile);
+	void RemoveHighlight(FCubic Tile);
+
+	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")
+	void ClearHighlights();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,8 +57,13 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	int32 FloorSize = 25;
+	int32 FloorSize = 5;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
 	TArray<FBiomeSetup> Biomes;
+
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	UMaterialInterface* HighlighterMaterial;
+
+	TArray<FTile> MultiselectArray = TArray<FTile>();
 };

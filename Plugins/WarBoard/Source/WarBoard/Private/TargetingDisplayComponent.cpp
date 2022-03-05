@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PlanarManager.h"
+#include "TargetingDisplayComponent.h"
 
 #include "Tiles.h"
 #include "WarBoardLibrary.h"
 
 // Sets default values
-UPlanarManager::UPlanarManager()
+UTargetingDisplayComponent::UTargetingDisplayComponent()
 {
  	// Never tick
 	PrimaryComponentTick.bCanEverTick = false;
@@ -16,7 +16,7 @@ UPlanarManager::UPlanarManager()
 
 }
 
-void UPlanarManager::SetPlaneType(ETileShape Shape)
+void UTargetingDisplayComponent::SetPlaneType(ETileShape Shape)
 {
 	// Determine Base Tile
 	UStaticMesh* mesh;
@@ -40,14 +40,14 @@ void UPlanarManager::SetPlaneType(ETileShape Shape)
 	if (PlaneMaterial) this->SetMaterial(0, PlaneMaterial);
 }
 
-void UPlanarManager::Populate(TArray<FGCoord> Choices)
+void UTargetingDisplayComponent::Populate(TArray<FGCoord> Choices)
 {
 	TArray<FTile> Tiles;
 	for (auto Selection : Choices) Tiles.Add(FTile(Selection));
 	Populate(Tiles);
 }
 
-void UPlanarManager::Populate(TArray<FTile> Choices)
+void UTargetingDisplayComponent::Populate(TArray<FTile> Choices)
 {
 	Clear();
 	if (bUseDefaultShape) SetPlaneType(WarBoardLib::GetTileShape());
@@ -58,27 +58,27 @@ void UPlanarManager::Populate(TArray<FTile> Choices)
 	}
 }
 
-void UPlanarManager::Populate(TArray<FCubic> Choices)
+void UTargetingDisplayComponent::Populate(TArray<FCubic> Choices)
 {
 	TArray<FTile> Tiles;
 	for (auto Selection : Choices) Tiles.Add(FTile(Selection));
 	Populate(Tiles);
 }
 
-void UPlanarManager::Clear()
+void UTargetingDisplayComponent::Clear()
 {
 	this->ClearInstances();
 }
 
 // Called when the game starts or when spawned
-void UPlanarManager::BeginPlay()
+void UTargetingDisplayComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	
 	SetPlaneType(WarBoardLib::GetTileShape());
 }
 
-FTransform UPlanarManager::CalculateTransform(FTile Tile)
+FTransform UTargetingDisplayComponent::CalculateTransform(FTile Tile)
 {
 	float size = WarBoardLib::GetTileSize();
 	if (Padding >= 1) size -= Padding;

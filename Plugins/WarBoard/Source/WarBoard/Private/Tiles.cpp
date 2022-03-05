@@ -46,7 +46,7 @@ FVector2D FTile::GetPattern()
 
 TArray<FVector>& FTile::GetVertices(const int32 Sides, const float Size, const float RelativeRotationToFirstVertex, const float PolygonRotation)
 {
-	auto Vertices = new TArray<FVector>;
+	auto Vertices = new TArray<FVector>();
 	if (Sides < 3) return *Vertices;
 
 	auto VertexDistance = (Size / 2) / FMath::Cos(FMath::DegreesToRadians(RelativeRotationToFirstVertex));
@@ -233,11 +233,25 @@ void FTile::SetTileSize(float Size)
 
 TArray<FVector>& FTile::GetPolygon(float Padding)
 {
-	// TODO: FIX!! This does not account for triangle rotation
 	TArray<FVector>& Polygon = GetPolygonByShape(Shape, Padding, TileSize);
 	for (auto& Vertex : Polygon)
 	{
-		// if row + col is odd and shape is triangle rotate 180 degrees
+		// vertex positions are set relative to geometric center, triangles need convertion from rotational center
+		if (Shape == ETileShape::Triangle)
+		{
+			// Geometric center is height/6 from Rotational center
+			// if row + col is odd rotate 180 degrees
+			if ((Row + Col) % 2 == 0)
+			{
+				Vertex.Y -= Height / 6;
+			}
+			else
+			{
+				FRotator rot = FRotator(0, 180, 0);
+				rot.RotateVector(Vertex);
+				Vertex.Y += Height / 6;
+			}
+		}
 		Vertex += this->ToWorld();
 	}
 

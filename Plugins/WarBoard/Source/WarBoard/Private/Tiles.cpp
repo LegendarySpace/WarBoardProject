@@ -5,6 +5,545 @@
 
 #include <math.h>
 
+
+
+void FOrtho::operator=(const FTile Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	*this = Ortho;
+}
+
+void FOrtho::operator=(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	*this = Ortho;
+}
+
+void FOrtho::operator=(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	*this = Ortho;
+}
+
+void FOrtho::operator=(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	*this = Ortho;
+}
+
+FOrtho FOrtho::operator+(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this + Ortho;
+}
+
+FOrtho FOrtho::operator+(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this + Ortho;
+}
+
+FOrtho FOrtho::operator+(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this + Ortho;
+}
+
+FOrtho FOrtho::operator+(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this + Ortho;
+}
+
+FOrtho& FOrtho::operator+=(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this += Ortho;
+}
+
+FOrtho& FOrtho:: operator+=(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this += Ortho;
+}
+
+FOrtho& FOrtho::operator+=(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this += Ortho;
+}
+
+FOrtho& FOrtho::operator+=(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this += Ortho;
+}
+
+FOrtho FOrtho::operator-(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this - Ortho;
+}
+
+FOrtho FOrtho::operator-(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this - Ortho;
+}
+
+FOrtho FOrtho::operator-(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this - Ortho;
+}
+
+FOrtho FOrtho::operator-(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this - Ortho;
+}
+
+FOrtho& FOrtho::operator-=(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this -= Ortho;
+}
+
+FOrtho& FOrtho::operator-=(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this -= Ortho;
+}
+
+FOrtho& FOrtho::operator-=(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this -= Ortho;
+}
+
+FOrtho& FOrtho::operator-=(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this -= Ortho;
+}
+bool FOrtho::operator<(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this < Ortho;
+}
+
+bool FOrtho::operator<(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this < Ortho;
+}
+
+bool FOrtho::operator<(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this < Ortho;
+}
+
+bool FOrtho::operator<(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this < Ortho;
+}
+
+bool FOrtho::operator<<(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this << Ortho;
+}
+
+bool FOrtho::operator<<(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this << Ortho;
+}
+
+bool FOrtho::operator<<(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this << Ortho;
+}
+
+bool FOrtho::operator<<(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this << Ortho;
+}
+
+bool FOrtho::operator>(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this > Ortho;
+}
+
+bool FOrtho::operator>(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this > Ortho;
+}
+
+bool FOrtho::operator>(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this > Ortho;
+}
+
+bool FOrtho::operator>(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this > Ortho;
+}
+
+bool FOrtho::operator>>(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this >> Ortho;
+}
+
+bool FOrtho::operator>>(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this >> Ortho;
+}
+
+bool FOrtho::operator>>(const FCubic Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this >> Ortho;
+}
+
+bool FOrtho::operator>>(const FVector V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this >> Ortho;
+}
+
+bool FOrtho::operator==(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator==(const FTile& Tile) const
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator==(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator==(const int32 Index) const
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator==(const FCubic& Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator==(const FCubic& Cubic) const
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator==(const FVector& V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator==(const FVector& V3) const
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this == Ortho;
+}
+
+bool FOrtho::operator!=(const FTile& Tile)
+{
+	auto Ortho = Tile.ToOrtho();
+	return *this != Ortho;
+}
+
+bool FOrtho::operator!=(const int32 Index)
+{
+	auto Ortho = FTile(Index).ToOrtho();
+	return *this != Ortho;
+}
+
+bool FOrtho::operator!=(const FCubic& Cubic)
+{
+	auto Ortho = FTile(Cubic).ToOrtho();
+	return *this != Ortho;
+}
+
+bool FOrtho::operator!=(const FVector& V3)
+{
+	auto Ortho = FTile(V3).ToOrtho();
+	return *this != Ortho;
+}
+
+
+
+
+void FCubic::operator=(const FTile Tile)
+{
+	FCubic Cubic = Tile.ToCubic();
+	*this = Cubic;
+}
+
+void FCubic::operator=(const int32 Index)
+{
+	FCubic Cubic = FTile(Index).ToCubic();
+	*this = Cubic;
+}
+
+void FCubic::operator=(const FOrtho Ortho)
+{
+	FCubic Cubic = FTile(Ortho).ToCubic();
+	*this = Cubic;
+}
+
+void FCubic::operator=(const FVector V3)
+{
+	FCubic Cubic = FTile(V3).ToCubic();
+	*this = Cubic;
+}
+
+FCubic FCubic::operator+(const FTile& Tile)
+{
+	return *this + Tile.ToCubic();
+}
+
+FCubic FCubic::operator+(const int32 Index)
+{
+	return *this + FTile(Index).ToCubic();
+}
+
+FCubic FCubic::operator+(const FOrtho Ortho)
+{
+	return *this + FTile(Ortho).ToCubic();
+}
+
+FCubic FCubic::operator+(const FVector V3)
+{
+	return *this + FTile(V3).ToCubic();
+}
+
+FCubic& FCubic::operator+=(const FTile& Tile)
+{
+	return *this += Tile.ToCubic();
+}
+
+FCubic& FCubic::operator+=(const int32 Index)
+{
+	return *this += FTile(Index).ToCubic();
+}
+
+FCubic& FCubic::operator+=(const FOrtho Ortho)
+{
+	return *this += FTile(Ortho).ToCubic();
+}
+
+FCubic& FCubic::operator+=(const FVector V3)
+{
+	return *this += FTile(V3).ToCubic();
+}
+
+FCubic FCubic::operator-(const FTile& Tile)
+{
+	return *this - Tile.ToCubic();
+}
+
+FCubic FCubic::operator-(const int32 Index)
+{
+	return *this - FTile(Index).ToCubic();
+}
+
+FCubic FCubic::operator-(const FOrtho Ortho)
+{
+	return *this - FTile(Ortho).ToCubic();
+}
+
+FCubic FCubic::operator-(const FVector V3)
+{
+	return *this - FTile(V3).ToCubic();
+}
+
+FCubic& FCubic::operator-=(const FTile& Tile)
+{
+	return *this -= Tile.ToCubic();
+}
+
+FCubic& FCubic::operator-=(const int32 Index)
+{
+	return *this -= FTile(Index).ToCubic();
+}
+
+FCubic& FCubic::operator-=(const FOrtho Ortho)
+{
+	return *this -= FTile(Ortho).ToCubic();
+}
+
+FCubic& FCubic::operator-=(const FVector V3)
+{
+	return *this -= FTile(V3).ToCubic();
+}
+
+bool FCubic::operator<(const FTile& Tile)
+{
+	return *this < Tile.ToCubic();
+}
+
+bool FCubic::operator<(const int32 Index)
+{
+	return *this < FTile(Index).ToCubic();
+}
+
+bool FCubic::operator<(const FOrtho Ortho)
+{
+	return *this < FTile(Ortho).ToCubic();
+}
+
+bool FCubic::operator<(const FVector V3)
+{
+	return *this < FTile(V3).ToCubic();
+}
+
+bool FCubic::operator<<(const FTile& Tile)
+{
+	return *this << Tile.ToCubic();
+}
+
+bool FCubic::operator<<(const int32 Index)
+{
+	return *this << FTile(Index).ToCubic();
+}
+
+bool FCubic::operator<<(const FOrtho Ortho)
+{
+	return *this << FTile(Ortho).ToCubic();
+}
+
+bool FCubic::operator<<(const FVector V3)
+{
+	return *this << FTile(V3).ToCubic();
+}
+
+bool FCubic::operator>(const FTile& Tile)
+{
+	return *this > Tile.ToCubic();
+}
+
+bool FCubic::operator>(const int32 Index)
+{
+	return *this > FTile(Index).ToCubic();
+}
+
+bool FCubic::operator>(const FOrtho Ortho)
+{
+	return *this > FTile(Ortho).ToCubic();
+}
+
+bool FCubic::operator>(const FVector V3)
+{
+	return *this > FTile(V3).ToCubic();
+}
+
+bool FCubic::operator>>(const FTile& Tile)
+{
+	return *this >> Tile.ToCubic();
+}
+
+bool FCubic::operator>>(const int32 Index)
+{
+	return *this >> FTile(Index).ToCubic();
+}
+
+bool FCubic::operator>>(const FOrtho Ortho)
+{
+	return *this >> FTile(Ortho).ToCubic();
+}
+
+bool FCubic::operator>>(const FVector V3)
+{
+	return *this >> FTile(V3).ToCubic();
+}
+
+bool FCubic::operator==(const FTile& Tile)
+{
+	return *this == Tile.ToCubic();
+}
+
+bool FCubic::operator==(const FTile& Tile) const
+{
+	return *this == Tile.ToCubic();
+}
+
+bool FCubic::operator==(const int32 Index)
+{
+	return *this == FTile(Index).ToCubic();
+}
+
+bool FCubic::operator==(const int32 Index) const
+{
+	return *this == FTile(Index).ToCubic();
+}
+
+bool FCubic::operator==(const FOrtho Ortho)
+{
+	return *this == FTile(Ortho).ToCubic();
+}
+
+bool FCubic::operator==(const FOrtho Ortho) const
+{
+	return *this == FTile(Ortho).ToCubic();
+}
+
+bool FCubic::operator==(const FVector& V3)
+{
+	return *this == FTile(V3).ToCubic();
+}
+
+bool FCubic::operator==(const FVector& V3) const
+{
+	return *this == FTile(V3).ToCubic();
+}
+
+bool FCubic::operator!=(const FTile& Tile)
+{
+	return *this != Tile.ToCubic();
+}
+
+bool FCubic::operator!=(const int32 Index)
+{
+	return *this != FTile(Index).ToCubic();
+}
+
+bool FCubic::operator!=(const FOrtho Ortho)
+{
+	return *this != FTile(Ortho).ToCubic();
+}
+
+bool FCubic::operator!=(const FVector& V3)
+{
+	return *this != FTile(V3).ToCubic();
+}
+
+
+
+
 float FTile::TileSize = 200.f;
 float FTile::Radius = 100.f;
 float FTile::Height = 200.f;
@@ -18,7 +557,7 @@ void FTile::IndexToInternal(int32 InIndex)
 	Col = ((InIndex + (MAX_WIDTH / 2)) % MAX_WIDTH) - (MAX_WIDTH / 2);
 }
 
-void FTile::RCToInternal(FGCoord InCoord)
+void FTile::OrthoToInternal(FOrtho InCoord)
 {
 	Row = InCoord.Row;
 	Col = InCoord.Column;
@@ -133,9 +672,9 @@ int32 FTile::ToIndex() const
 	return Row * MAX_WIDTH + Col;
 }
 
-FGCoord FTile::ToRC() const
+FOrtho FTile::ToOrtho() const
 {
-	return FGCoord(Row, Col);
+	return FOrtho(Row, Col);
 }
 
 FCubic FTile::ToCubic() const

@@ -19,7 +19,7 @@ public:
 	UMovementTargetingComponent();
 
 	// Populate the Meshes
-	void Populate(TArray<FGCoord> Choices);
+	void Populate(TArray<FOrtho> Choices);
 	void Populate(TArray<FTile> Choices);
 	void Populate(TArray<FCubic> Choices);
 

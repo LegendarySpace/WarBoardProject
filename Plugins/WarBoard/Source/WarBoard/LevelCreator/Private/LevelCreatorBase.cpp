@@ -26,7 +26,7 @@ ALevelCreatorBase::ALevelCreatorBase()
 	HighlighterMaterial = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("/WarBoard/Material/M_Highlighter_Base.M_Highlighter_Base")).Object;
 }
 
-void ALevelCreatorBase::AddTileHighlight(FGCoord Tile)
+void ALevelCreatorBase::AddTileHighlight(FOrtho Tile)
 {
 	AddHighlight(FTile(Tile));
 }
@@ -40,7 +40,7 @@ void ALevelCreatorBase::AddHighlight(FTile Tile)
 	}
 }
 
-void ALevelCreatorBase::AddHighlight(FGCoord Tile)
+void ALevelCreatorBase::AddHighlight(FOrtho Tile)
 {
 	AddHighlight(FTile(Tile));
 }
@@ -50,7 +50,7 @@ void ALevelCreatorBase::AddHighlight(FCubic Tile)
 	AddHighlight(FTile(Tile));
 }
 
-void ALevelCreatorBase::RemoveTileHighlight(FGCoord Tile)
+void ALevelCreatorBase::RemoveTileHighlight(FOrtho Tile)
 {
 	RemoveHighlight(FTile(Tile));
 }
@@ -64,7 +64,7 @@ void ALevelCreatorBase::RemoveHighlight(FTile Tile)
 	}
 }
 
-void ALevelCreatorBase::RemoveHighlight(FGCoord Tile)
+void ALevelCreatorBase::RemoveHighlight(FOrtho Tile)
 {
 	RemoveHighlight(FTile(Tile));
 }

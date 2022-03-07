@@ -10,9 +10,9 @@
 
 #include "EnvironmentComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileAddDelegate, FGCoord, Coord);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileRemoveDelegate, FGCoord, Coord);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTileChangeDelegate, FGCoord, Coord, EBiome, Biome);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileAddDelegate, FOrtho, Coord);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FTileRemoveDelegate, FOrtho, Coord);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTileChangeDelegate, FOrtho, Coord, EBiome, Biome);
 
 class UBiomeManager;
 class UStaticMesh;
@@ -71,7 +71,7 @@ public:
 	bool ChangeTile(FTileBiome Instance);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
-	bool RemoveTile(FGCoord Tile);
+	bool RemoveTile(FOrtho Tile);
 	bool RemoveTile(FTile Tile);
 	bool RemoveTile(FCubic Tile);
 
@@ -79,17 +79,17 @@ public:
 	void Populate(TArray<FTileBiome> Tiles);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
-	TArray<FGCoord> GetTiles();
+	TArray<FOrtho> GetTiles();
 	TArray<FTileBiome> GetLayout() { return BiomeTiles; }
 
 	// Get Biome from Coord
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
-	EBiome GetBiome(FGCoord Tile);
+	EBiome GetBiome(FOrtho Tile);
 	EBiome GetBiome(FTile Tile);
 	EBiome GetBiome(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Environment")
-	bool IsValid(FGCoord Tile);
+	bool IsValid(FOrtho Tile);
 	bool IsValid(FTile Tile);
 	bool IsValid(FCubic Tile);
 

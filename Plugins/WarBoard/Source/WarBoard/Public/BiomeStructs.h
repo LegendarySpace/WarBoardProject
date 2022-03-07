@@ -29,7 +29,7 @@ struct FTileBiome
 	GENERATED_BODY()
 
 public:
-	FTileBiome(FGCoord InCoord = FGCoord(), EBiome InType = EBiome::TT_Normal)
+	FTileBiome(FOrtho InCoord = FOrtho(), EBiome InType = EBiome::TT_Normal)
 	{
 		Coord = InCoord;
 		Biome = InType;
@@ -37,12 +37,12 @@ public:
 
 	FTileBiome(FTile InTile, EBiome InType = EBiome::TT_Normal)
 	{
-		Coord = InTile.ToRC();
+		Coord = InTile.ToOrtho();
 		Biome = InType;
 	}
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Biome")
-		FGCoord Coord;
+		FOrtho Coord;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WarBoard|Biome")
 		TEnumAsByte<EBiome> Biome;
 
@@ -63,20 +63,20 @@ public:
 
 	bool operator==(const int32 InIndex)
 	{
-		return Coord == FTile(InIndex).ToRC();
+		return Coord == FTile(InIndex).ToOrtho();
 	}
 
 	bool operator==(const int32 InIndex) const
 	{
-		return Coord == FTile(InIndex).ToRC();
+		return Coord == FTile(InIndex).ToOrtho();
 	}
 
-	bool operator==(const FGCoord InCoord)
+	bool operator==(const FOrtho InCoord)
 	{
 		return Coord == InCoord;
 	}
 
-	bool operator==(const FGCoord InCoord) const
+	bool operator==(const FOrtho InCoord) const
 	{
 		return Coord == InCoord;
 	}

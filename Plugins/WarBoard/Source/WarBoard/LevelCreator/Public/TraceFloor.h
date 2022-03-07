@@ -21,7 +21,7 @@ public:
 	UTraceFloor();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")
-	void CreateFloor(int32 InSize, FGCoord InOrigin);
+	void CreateFloor(int32 InSize, FOrtho InOrigin);
 	void CreateFloor(int32 InSize, FTile InOrigin = FTile());
 	void CreateFloor(int32 InSize, FCubic InOrigin);
 
@@ -32,7 +32,7 @@ public:
 	void RebuildFloor();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")
-	void ShiftFloor(FGCoord Hover);
+	void ShiftFloor(FOrtho Hover);
 	void ShiftFloor(FTile Hover);
 	void ShiftFloor(FCubic Hover);
 

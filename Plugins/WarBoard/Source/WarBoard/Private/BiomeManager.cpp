@@ -49,7 +49,7 @@ void UBiomeManager::SetupInstance(FBiomeSetup Setup) // UPDATE: On tileshape cha
 	if (Setup.Mat != nullptr) this->SetMaterial(0, Setup.Mat);
 }
 
-void UBiomeManager::Populate(TArray<FGCoord> Tiles)
+void UBiomeManager::Populate(TArray<FOrtho> Tiles)
 {
 	TArray<FTile> Population;
 	for (auto Tile : Tiles) Population.Add(Tile);
@@ -71,7 +71,7 @@ void UBiomeManager::Populate(TArray<FCubic> Tiles)
 	Populate(Population);
 }
 
-void UBiomeManager::AddTile(FGCoord Tile)
+void UBiomeManager::AddTile(FOrtho Tile)
 {
 	if (!InstanceIndexes.Contains(Tile))
 	{
@@ -83,12 +83,12 @@ void UBiomeManager::AddTile(FGCoord Tile)
 
 void UBiomeManager::AddTile(FTile Tile)
 {
-	AddTile(Tile.ToRC());
+	AddTile(Tile.ToOrtho());
 }
 
 void UBiomeManager::AddTile(FCubic Tile)
 {
-	AddTile(FTile(Tile).ToRC());
+	AddTile(FTile(Tile).ToOrtho());
 }
 
 FTransform UBiomeManager::CalculateTransform(FTile Tile)
@@ -109,7 +109,7 @@ void UBiomeManager::BuildTile(FTile Tile)
 	this->AddInstanceWorldSpace(CalculateTransform(Tile));
 }
 
-void UBiomeManager::RemoveTile(FGCoord TileToRemove)
+void UBiomeManager::RemoveTile(FOrtho TileToRemove)
 {
 	int32 InstanceIndex = 0;
 	if (InstanceIndexes.Find(TileToRemove, InstanceIndex))
@@ -125,12 +125,12 @@ void UBiomeManager::RemoveTile(FGCoord TileToRemove)
 
 void UBiomeManager::RemoveTile(FTile TileToRemove)
 {
-	RemoveTile(TileToRemove.ToRC());
+	RemoveTile(TileToRemove.ToOrtho());
 }
 
 void UBiomeManager::RemoveTile(FCubic TileToRemove)
 {
-	RemoveTile(FTile(TileToRemove).ToRC());
+	RemoveTile(FTile(TileToRemove).ToOrtho());
 }
 
 void UBiomeManager::RebuildBiome()

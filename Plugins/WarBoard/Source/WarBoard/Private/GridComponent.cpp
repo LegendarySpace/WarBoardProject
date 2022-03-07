@@ -87,7 +87,7 @@ void UGridComponent::BeginPlay()
 
 }
 
-void UGridComponent::AddCell(FGCoord Tile)
+void UGridComponent::AddCell(FOrtho Tile)
 {
 	AddCell(FTile(Tile));
 }
@@ -107,7 +107,7 @@ void UGridComponent::AddCell(FCubic Tile)
 	AddCell(FTile(Tile));
 }
 
-void UGridComponent::RemoveCell(FGCoord Tile)
+void UGridComponent::RemoveCell(FOrtho Tile)
 {
 	RemoveCell(FTile(Tile));
 }
@@ -142,7 +142,7 @@ void UGridComponent::RebuildCells()
 	}
 }
 
-void UGridComponent::Populate(TArray<FGCoord> Tiles)
+void UGridComponent::Populate(TArray<FOrtho> Tiles)
 {
 	TArray<FTile> Population;
 	for (auto Tile : Tiles) Population.Add(FTile(Tile));

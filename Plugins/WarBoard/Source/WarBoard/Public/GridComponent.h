@@ -59,7 +59,7 @@ public:
 		this->BuildPolygonLines();
 	}
 
-	void operator=(const FGCoord Coord)
+	void operator=(const FOrtho Coord)
 	{
 		this->Tile = Coord;
 		this->BuildPolygonLines();
@@ -126,7 +126,7 @@ public:
 		return this->Tile == Index;
 	}
 
-	bool operator==(const FGCoord& Coord)
+	bool operator==(const FOrtho& Coord)
 	{
 		return this->Tile == Coord;
 	}
@@ -162,12 +162,12 @@ protected:
 
 public:	
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void AddCell(FGCoord Tile);
+	void AddCell(FOrtho Tile);
 	void AddCell(FTile Tile);
 	void AddCell(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void RemoveCell(FGCoord Tile);
+	void RemoveCell(FOrtho Tile);
 	void RemoveCell(FTile Tile);
 	void RemoveCell(FCubic Tile);
 
@@ -175,7 +175,7 @@ public:
 	void RebuildCells();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Grid")
-	void Populate(TArray<FGCoord> Tiles);
+	void Populate(TArray<FOrtho> Tiles);
 	void Populate(TArray<FTile> Tiles);
 	void Populate(TArray<FCubic> Tiles);
 

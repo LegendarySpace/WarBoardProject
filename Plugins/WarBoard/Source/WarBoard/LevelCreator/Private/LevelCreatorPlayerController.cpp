@@ -345,10 +345,10 @@ void ALevelCreatorPlayerController::GroupSelection()
 	else if (StartMultiselect.GetValue() != HoverTile)		// Ensure start and end are never same tile
 	{
 		EndMultiselect = HoverTile;
-		int rowStart = FMath::Min(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
-		int colStart = FMath::Min(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
-		int rowEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
-		int colEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
+		int rowStart = FMath::Min(StartMultiselect.GetValue().ToOrtho().Row, EndMultiselect.GetValue().ToOrtho().Row);
+		int colStart = FMath::Min(StartMultiselect.GetValue().ToOrtho().Column, EndMultiselect.GetValue().ToOrtho().Column);
+		int rowEnd = FMath::Max(StartMultiselect.GetValue().ToOrtho().Row, EndMultiselect.GetValue().ToOrtho().Row);
+		int colEnd = FMath::Max(StartMultiselect.GetValue().ToOrtho().Column, EndMultiselect.GetValue().ToOrtho().Column);
 
 		for (int i = rowStart; i <= rowEnd; i++)
 		{
@@ -373,10 +373,10 @@ void ALevelCreatorPlayerController::ToggleGroupSelection()
 	else if (StartMultiselect.GetValue() != HoverTile)		// Ensure start and end are never same tile
 	{
 		EndMultiselect = HoverTile;
-		int rowStart = FMath::Min(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
-		int colStart = FMath::Min(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
-		int rowEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Row, EndMultiselect.GetValue().ToRC().Row);
-		int colEnd = FMath::Max(StartMultiselect.GetValue().ToRC().Column, EndMultiselect.GetValue().ToRC().Column);
+		int rowStart = FMath::Min(StartMultiselect.GetValue().ToOrtho().Row, EndMultiselect.GetValue().ToOrtho().Row);
+		int colStart = FMath::Min(StartMultiselect.GetValue().ToOrtho().Column, EndMultiselect.GetValue().ToOrtho().Column);
+		int rowEnd = FMath::Max(StartMultiselect.GetValue().ToOrtho().Row, EndMultiselect.GetValue().ToOrtho().Row);
+		int colEnd = FMath::Max(StartMultiselect.GetValue().ToOrtho().Column, EndMultiselect.GetValue().ToOrtho().Column);
 
 		for (int i = rowStart; i <= rowEnd; i++)
 		{

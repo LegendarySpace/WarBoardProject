@@ -42,7 +42,7 @@ void AGameBoard::ChangeTile(FTileBiome Tile)
 	Navigation->AddNode(Tile.Coord);
 }
 
-void AGameBoard::RemoveTile(FGCoord Tile)
+void AGameBoard::RemoveTile(FOrtho Tile)
 {
 	int i = 0;
 	if (BiomeLocations.Find(Tile, i))
@@ -62,7 +62,7 @@ void AGameBoard::Populate(TArray<FTileBiome> Tiles)
 	}
 }
 
-void AGameBoard::DisplayAttacks(TArray<FGCoord> Tiles)
+void AGameBoard::DisplayAttacks(TArray<FOrtho> Tiles)
 {
 	AttackSystem->Populate(Tiles);
 }
@@ -72,7 +72,7 @@ void AGameBoard::ClearAttacks()
 	AttackSystem->Clear();
 }
 
-void AGameBoard::DisplayMovement(TArray<FGCoord> Tiles)
+void AGameBoard::DisplayMovement(TArray<FOrtho> Tiles)
 {
 	MovementSystem->Populate(Tiles);
 }
@@ -122,9 +122,9 @@ void AGameBoard::BeginPlay()
 
 }
 
-TArray<FGCoord> AGameBoard::GetCoords()
+TArray<FOrtho> AGameBoard::GetCoords()
 {
-	TArray<FGCoord> Coords = TArray<FGCoord>();
+	TArray<FOrtho> Coords = TArray<FOrtho>();
 	for (auto TB : BiomeLocations)
 	{
 		Coords.AddUnique(TB.Coord);

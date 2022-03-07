@@ -37,10 +37,10 @@ public:
 	static FVector Conv_TileToVector(FTile Tile) { return Tile.ToWorld(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord To Tile", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static FTile Conv_CoordToTile(FGCoord Coord) { return FTile(Coord); }
+	static FTile Conv_CoordToTile(FOrtho Coord) { return FTile(Coord); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile To GCoord", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static FGCoord Conv_TileToCoord(FTile Tile) { return Tile.ToRC(); }
+	static FOrtho Conv_TileToCoord(FTile Tile) { return Tile.ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic To Tile", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
 	static FTile Conv_CubicToTile(FCubic Cubic) { return FTile(Cubic); }
@@ -55,10 +55,10 @@ public:
 	static int32 Conv_VectorToIndex(FVector World) { return FTile(World).ToIndex(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Index To GCoord", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static FGCoord Conv_IndexToCoord(int32 Index) { return FTile(Index).ToRC(); }
+	static FOrtho Conv_IndexToCoord(int32 Index) { return FTile(Index).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord To Index", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static int32 Conv_CoordToIndex(FGCoord Coord) { return FTile(Coord).ToIndex(); }
+	static int32 Conv_CoordToIndex(FOrtho Coord) { return FTile(Coord).ToIndex(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Index To Cubic", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
 	static FCubic Conv_IndexToCubic(int32 Index) { return FTile(Index).ToCubic(); }
@@ -67,10 +67,10 @@ public:
 	static int32 Conv_CubicToIndex(FCubic Cubic) { return FTile(Cubic).ToIndex(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "World To GCoord", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static FGCoord Conv_VectorToCoord(FVector World) { return FTile(World).ToRC(); }
+	static FOrtho Conv_VectorToCoord(FVector World) { return FTile(World).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord To World", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static FVector Conv_CoordToVector(FGCoord Coord) { return FTile(Coord).ToWorld(); }
+	static FVector Conv_CoordToVector(FOrtho Coord) { return FTile(Coord).ToWorld(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "World To Cubic", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
 	static FCubic Conv_VectorToCubic(FVector World) { return FTile(World).ToCubic(); }
@@ -79,10 +79,10 @@ public:
 	static FVector Conv_CubicToVector(FCubic Cubic) { return FTile(Cubic).ToWorld(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord To Cubic", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static FCubic Conv_CoordToCubic(FGCoord Coord) { return FTile(Coord).ToCubic(); }
+	static FCubic Conv_CoordToCubic(FOrtho Coord) { return FTile(Coord).ToCubic(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic To GCoord", CompactNodeTitle = "->", BlueprintAutocast), Category = "WarBoard|Tile")
-	static FGCoord Conv_CubicToCoord(FCubic Cubic) { return FTile(Cubic).ToRC(); }
+	static FOrtho Conv_CubicToCoord(FCubic Cubic) { return FTile(Cubic).ToOrtho(); }
 
 	/**
 	*	Tile Math
@@ -96,7 +96,7 @@ public:
 	static FTile Add_TileIndex(FTile A, int32 B) { return A + B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile + GCoord", CompactNodeTitle = "+", ScriptMethod = "AddGCoord", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FTile Add_TileCoord(FTile A, FGCoord B) { return A + B; }
+	static FTile Add_TileCoord(FTile A, FOrtho B) { return A + B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile + Cubic", CompactNodeTitle = "+", ScriptMethod = "AddCubic", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
 	static FTile Add_TileCubic(FTile A, FCubic B) { return A + B; }
@@ -105,19 +105,19 @@ public:
 	static FTile Add_TileVector(FTile A, FVector B) { return A + B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord + Tile", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FGCoord Add_CoordTile(FGCoord A, FTile B) { return A + B.ToRC(); }
+	static FOrtho Add_CoordTile(FOrtho A, FTile B) { return A + B.ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord + Integer", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FGCoord Add_CoordIndex(FGCoord A, int32 B) { return A + FTile(B).ToRC(); }
+	static FOrtho Add_CoordIndex(FOrtho A, int32 B) { return A + FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord + GCoord", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FGCoord Add_CoordCoord(FGCoord A, FGCoord B) { return A + B; }
+	static FOrtho Add_CoordCoord(FOrtho A, FOrtho B) { return A + B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord + Cubic", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FGCoord Add_CoordCubic(FGCoord A, FCubic B) { return A + FTile(B).ToRC(); }
+	static FOrtho Add_CoordCubic(FOrtho A, FCubic B) { return A + FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord + Vector", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FGCoord Add_CoordVector(FGCoord A, FVector B) { return A + FTile(B).ToRC(); }
+	static FOrtho Add_CoordVector(FOrtho A, FVector B) { return A + FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic + Tile", CompactNodeTitle = "+",  ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
 	static FCubic Add_CubicTile(FCubic A, FTile B) { return A + B.ToCubic(); }
@@ -126,7 +126,7 @@ public:
 	static FCubic Add_CubicIndex(FCubic A, int32 B) { return A + FTile(B).ToCubic(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic + GCoord", CompactNodeTitle = "+",  ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FCubic Add_CubicCoord(FCubic A, FGCoord B) { return A + FTile(B).ToCubic(); }
+	static FCubic Add_CubicCoord(FCubic A, FOrtho B) { return A + FTile(B).ToCubic(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic + Cubic", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
 	static FCubic Add_CubicCubic(FCubic A, FCubic B) { return A + B; }
@@ -141,7 +141,7 @@ public:
 	static FVector Add_VectorIndex(FVector A, int32 B) { return A + FTile(B).ToWorld(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Vector + GCoord", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
-	static FVector Add_VectorCoord(FVector A, FGCoord B) { return A + FTile(B).ToWorld(); }
+	static FVector Add_VectorCoord(FVector A, FOrtho B) { return A + FTile(B).ToWorld(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Vector + Cubic", CompactNodeTitle = "+", ScriptOperator = "+;+=", Keywords = "+ add"), Category = "Math|Tile")
 	static FVector Add_VectorCubic(FVector A, FCubic B) { return A + FTile(B).ToWorld(); }
@@ -153,7 +153,7 @@ public:
 	static FTile Subtract_TileIndex(FTile A, int32 B) { return A - B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile - GCoord", CompactNodeTitle = "-", ScriptMethod = "SubtractGCoord", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FTile Subtract_TileCoord(FTile A, FGCoord B) { return A - B; }
+	static FTile Subtract_TileCoord(FTile A, FOrtho B) { return A - B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile - Cubic", CompactNodeTitle = "-", ScriptMethod = "SubtractCubic", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
 	static FTile Subtract_TileCubic(FTile A, FCubic B) { return A - B; }
@@ -162,19 +162,19 @@ public:
 	static FTile Subtract_TileVector(FTile A, FVector B) { return A - B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord - Tile", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FGCoord Subtract_CoordTile(FGCoord A, FTile B) { return A - B.ToRC(); }
+	static FOrtho Subtract_CoordTile(FOrtho A, FTile B) { return A - B.ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord - Integer", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FGCoord Subtract_CoordIndex(FGCoord A, int32 B) { return A - FTile(B).ToRC(); }
+	static FOrtho Subtract_CoordIndex(FOrtho A, int32 B) { return A - FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord - GCoord", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FGCoord Subtract_CoordCoord(FGCoord A, FGCoord B) { return A - B; }
+	static FOrtho Subtract_CoordCoord(FOrtho A, FOrtho B) { return A - B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord - Cubic", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FGCoord Subtract_CoordCubic(FGCoord A, FCubic B) { return A - FTile(B).ToRC(); }
+	static FOrtho Subtract_CoordCubic(FOrtho A, FCubic B) { return A - FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord - Vector", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FGCoord Subtract_CoordVector(FGCoord A, FVector B) { return A - FTile(B).ToRC(); }
+	static FOrtho Subtract_CoordVector(FOrtho A, FVector B) { return A - FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic - Tile", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
 	static FCubic Subtract_CubicTile(FCubic A, FTile B) { return A - B.ToCubic(); }
@@ -183,7 +183,7 @@ public:
 	static FCubic Subtract_CubicIndex(FCubic A, int32 B) { return A - FTile(B).ToCubic(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic - GCoord", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FCubic Subtract_CubicCoord(FCubic A, FGCoord B) { return A - FTile(B).ToCubic(); }
+	static FCubic Subtract_CubicCoord(FCubic A, FOrtho B) { return A - FTile(B).ToCubic(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic - Cubic", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
 	static FCubic Subtract_CubicCubic(FCubic A, FCubic B) { return A - B; }
@@ -198,7 +198,7 @@ public:
 	static FVector Subtract_VectorIndex(FVector A, int32 B) { return A - FTile(B).ToWorld(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Vector - Coord", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
-	static FVector Subtract_VectorCoord(FVector A, FGCoord B) { return A - FTile(B).ToWorld(); }
+	static FVector Subtract_VectorCoord(FVector A, FOrtho B) { return A - FTile(B).ToWorld(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Vector - Cubic", CompactNodeTitle = "-", ScriptOperator = "-;-=", Keywords = "- subtract"), Category = "Math|Tile")
 	static FVector Subtract_VectorCubic(FVector A, FCubic B) { return A - FTile(B).ToWorld(); }
@@ -210,7 +210,7 @@ public:
 	static bool LessThan_TileIndex(FTile A, int32 B) { return A < B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile < GCoord", CompactNodeTitle = "<", ScriptMethod = "LessThanGCoord", ScriptOperator = "<", Keywords = "< lessthan"), Category = "Math|Tile")
-	static bool LessThan_TileCoord(FTile A, FGCoord B) { return A < B; }
+	static bool LessThan_TileCoord(FTile A, FOrtho B) { return A < B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile < Cubic", CompactNodeTitle = "<", ScriptMethod = "LessThanCubic", ScriptOperator = "<", Keywords = "< lessthan"), Category = "Math|Tile")
 	static bool LessThan_TileCubic(FTile A, FCubic B) { return A < B; }
@@ -219,16 +219,16 @@ public:
 	static bool LessThan_TileVector(FTile A, FVector B) { return A < B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord < GCoord", CompactNodeTitle = "<", ScriptOperator = "<", Keywords = "< lessthan"), Category = "Math|Tile")
-	static bool LessThan_CoordCoord(FGCoord A, FGCoord B) { return A < B; }
+	static bool LessThan_CoordCoord(FOrtho A, FOrtho B) { return A < B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord < Index", CompactNodeTitle = "<", ScriptOperator = "<", Keywords = "< lessthan"), Category = "Math|Tile")
-	static bool LessThan_CoordIndex(FGCoord A, int32 B) { return A < FTile(B).ToRC(); }
+	static bool LessThan_CoordIndex(FOrtho A, int32 B) { return A < FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord < Cubic", CompactNodeTitle = "<", ScriptOperator = "<", Keywords = "< lessthan"), Category = "Math|Tile")
-	static bool LessThan_CoordCubic(FGCoord A, FCubic B) { return A < FTile(B).ToRC(); }
+	static bool LessThan_CoordCubic(FOrtho A, FCubic B) { return A < FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord < Vector", CompactNodeTitle = "<", ScriptOperator = "<", Keywords = "< lessthan"), Category = "Math|Tile")
-	static bool LessThan_CoordVector(FGCoord A, FVector B) { return FTile(A) < B; }
+	static bool LessThan_CoordVector(FOrtho A, FVector B) { return FTile(A) < B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic < Cubic", CompactNodeTitle = "<", ScriptOperator = "<", Keywords = "< lessthan"), Category = "Math|Tile")
 	static bool LessThan_CubicCubic(FCubic A, FCubic B) { return A < B; }
@@ -246,7 +246,7 @@ public:
 	static bool Inside_TileIndex(FTile A, int32 B) { return A << B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile << GCoord", CompactNodeTitle = "<<", ScriptMethod = "InsideGCoord", ScriptOperator = "<<", Keywords = "<< inside"), Category = "Math|Tile")
-	static bool Inside_TileCoord(FTile A, FGCoord B) { return A << B; }
+	static bool Inside_TileCoord(FTile A, FOrtho B) { return A << B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile << Cubic", CompactNodeTitle = "<<", ScriptMethod = "InsideCubic", ScriptOperator = "<<", Keywords = "<< inside"), Category = "Math|Tile")
 	static bool Inside_TileCubic(FTile A, FCubic B) { return A << B; }
@@ -255,16 +255,16 @@ public:
 	static bool Inside_TileVector(FTile A, FVector B) { return A << B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord << GCoord", CompactNodeTitle = "<<", ScriptOperator = "<<", Keywords = "<< inside"), Category = "Math|Tile")
-	static bool Inside_CoordCoord(FGCoord A, FGCoord B) { return A << B; }
+	static bool Inside_CoordCoord(FOrtho A, FOrtho B) { return A << B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord << Index", CompactNodeTitle = "<<", ScriptOperator = "<<", Keywords = "<< inside"), Category = "Math|Tile")
-	static bool Inside_CoordIndex(FGCoord A, int32 B) { return A << FTile(B).ToRC(); }
+	static bool Inside_CoordIndex(FOrtho A, int32 B) { return A << FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord << Cubic", CompactNodeTitle = "<<", ScriptOperator = "<<", Keywords = "<< inside"), Category = "Math|Tile")
-	static bool Inside_CoordCubic(FGCoord A, FCubic B) { return A << FTile(B).ToRC(); }
+	static bool Inside_CoordCubic(FOrtho A, FCubic B) { return A << FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord << Vector", CompactNodeTitle = "<<", ScriptOperator = "<<", Keywords = "<< inside"), Category = "Math|Tile")
-	static bool Inside_CoordVector(FGCoord A, FVector B){ return FTile(A) << B; }
+	static bool Inside_CoordVector(FOrtho A, FVector B){ return FTile(A) << B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic << Cubic", CompactNodeTitle = "<<", ScriptOperator = "<<", Keywords = "<< inside"), Category = "Math|Tile")
 	static bool Inside_CubicCubic(FCubic A, FCubic B) { return A << B; }
@@ -282,7 +282,7 @@ public:
 	static bool GreaterThan_TileIndex(FTile A, int32 B) { return A > B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile > GCoord", CompactNodeTitle = ">", ScriptMethod = "GreaterThanGCoord", ScriptOperator = ">", Keywords = "> greaterthan"), Category = "Math|Tile")
-	static bool GreaterThan_TileCoord(FTile A, FGCoord B) { return A > B; }
+	static bool GreaterThan_TileCoord(FTile A, FOrtho B) { return A > B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile > Cubic", CompactNodeTitle = ">", ScriptMethod = "GreaterThanCubic", ScriptOperator = ">", Keywords = "> greaterthan"), Category = "Math|Tile")
 	static bool GreaterThan_TileCubic(FTile A, FCubic B) { return A > B; }
@@ -291,16 +291,16 @@ public:
 	static bool GreaterThan_TileVector(FTile A, FVector B) { return A > B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord > GCoord", CompactNodeTitle = ">", ScriptOperator = ">", Keywords = "> greaterthan"), Category = "Math|Tile")
-	static bool GreaterThan_CoordCoord(FGCoord A, FGCoord B) { return A > B; }
+	static bool GreaterThan_CoordCoord(FOrtho A, FOrtho B) { return A > B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord > Index", CompactNodeTitle = ">", ScriptOperator = ">", Keywords = "> greaterthan"), Category = "Math|Tile")
-	static bool GreaterThan_CoordIndex(FGCoord A, int32 B) { return A > FTile(B).ToRC(); }
+	static bool GreaterThan_CoordIndex(FOrtho A, int32 B) { return A > FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord > Cubic", CompactNodeTitle = ">", ScriptOperator = ">", Keywords = "> greaterthan"), Category = "Math|Tile")
-	static bool GreaterThan_CoordCubic(FGCoord A, FCubic B) { return A > FTile(B).ToRC(); }
+	static bool GreaterThan_CoordCubic(FOrtho A, FCubic B) { return A > FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord > Vector", CompactNodeTitle = ">", ScriptOperator = ">", Keywords = "> greaterthan"), Category = "Math|Tile")
-	static bool GreaterThan_CoordVector(FGCoord A, FVector B) { return FTile(A) > B; }
+	static bool GreaterThan_CoordVector(FOrtho A, FVector B) { return FTile(A) > B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic > Cubic", CompactNodeTitle = ">", ScriptOperator = ">", Keywords = "> greaterthan"), Category = "Math|Tile")
 	static bool GreaterThan_CubicCubic(FCubic A, FCubic B) { return A > B; }
@@ -318,7 +318,7 @@ public:
 	static bool Outside_TileIndex(FTile A, int32 B) { return A >> B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile >> GCoord", CompactNodeTitle = ">>", ScriptMethod = "OutsideGCoord", ScriptOperator = ">>", Keywords = ">> outside"), Category = "Math|Tile")
-	static bool Outside_TileCoord(FTile A, FGCoord B) { return A >> B; }
+	static bool Outside_TileCoord(FTile A, FOrtho B) { return A >> B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Tile >> Cubic", CompactNodeTitle = ">>", ScriptMethod = "OutsideCubic", ScriptOperator = ">>", Keywords = ">> outside"), Category = "Math|Tile")
 	static bool Outside_TileCubic(FTile A, FCubic B) { return A >> B; }
@@ -327,16 +327,16 @@ public:
 	static bool Outside_TileVector(FTile A, FVector B) { return A >> B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord >> GCoord", CompactNodeTitle = ">>", ScriptOperator = ">>", Keywords = ">> outside"), Category = "Math|Tile")
-	static bool Outside_CoordCoord(FGCoord A, FGCoord B) { return A >> B; }
+	static bool Outside_CoordCoord(FOrtho A, FOrtho B) { return A >> B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord >> Index", CompactNodeTitle = ">>", ScriptOperator = ">>", Keywords = ">> outside"), Category = "Math|Tile")
-	static bool Outside_CoordIndex(FGCoord A, int32 B) { return A >> FTile(B).ToRC(); }
+	static bool Outside_CoordIndex(FOrtho A, int32 B) { return A >> FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord >> Cubic", CompactNodeTitle = ">>", ScriptOperator = ">>", Keywords = ">> outside"), Category = "Math|Tile")
-	static bool Outside_CoordCubic(FGCoord A, FCubic B) { return A >> FTile(B).ToRC(); }
+	static bool Outside_CoordCubic(FOrtho A, FCubic B) { return A >> FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord >> Vector", CompactNodeTitle = ">>", ScriptOperator = ">>", Keywords = ">> outside"), Category = "Math|Tile")
-	static bool Outside_CoordVector(FGCoord A, FVector B) { return FTile(A) >> B; }
+	static bool Outside_CoordVector(FOrtho A, FVector B) { return FTile(A) >> B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic >> Cubic", CompactNodeTitle = ">>", ScriptOperator = ">>", Keywords = ">> outside"), Category = "Math|Tile")
 	static bool Outside_CubicCubic(FCubic A, FCubic B) { return A >> B; }
@@ -354,7 +354,7 @@ public:
 	static bool EqualEqual_TileIndex(FTile A, int32 B) { return A == B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Equal (GCoord)", CompactNodeTitle = "==", ScriptMethod = "EqualGCoord", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Tile")
-	static bool EqualEqual_TileCoord(FTile A, FGCoord B) { return A == B; }
+	static bool EqualEqual_TileCoord(FTile A, FOrtho B) { return A == B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Equal (Cubic)", CompactNodeTitle = "==", ScriptMethod = "EqualCubic", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Tile")
 	static bool EqualEqual_TileCubic(FTile A, FCubic B) { return A == B; }
@@ -363,16 +363,16 @@ public:
 	static bool EqualEqual_TileVector(FTile A, FVector B) { return A == B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord == GCoord", CompactNodeTitle = "==", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Tile")
-	static bool EqualEqual_CoordCoord(FGCoord A, FGCoord B) { return A == B; }
+	static bool EqualEqual_CoordCoord(FOrtho A, FOrtho B) { return A == B; }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord == Index", CompactNodeTitle = "==", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Tile")
-	static bool EqualEqual_CoordIndex(FGCoord A, int32 B) { return A == FTile(B).ToRC(); }
+	static bool EqualEqual_CoordIndex(FOrtho A, int32 B) { return A == FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord == Cubic", CompactNodeTitle = "==", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Tile")
-	static bool EqualEqual_CoordCubic(FGCoord A, FCubic B) { return A == FTile(B).ToRC(); }
+	static bool EqualEqual_CoordCubic(FOrtho A, FCubic B) { return A == FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "GCoord == Vector", CompactNodeTitle = "==", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Tile")
-	static bool EqualEqual_CoordVector(FGCoord A, FVector B) { return A == FTile(B).ToRC(); }
+	static bool EqualEqual_CoordVector(FOrtho A, FVector B) { return A == FTile(B).ToOrtho(); }
 
 	UFUNCTION(BlueprintPure, meta = (DisplayName = "Cubic == Cubic", CompactNodeTitle = "==", ScriptOperator = "==", Keywords = "== equal"), Category = "Math|Tile")
 	static bool EqualEqual_CubicCubic(FCubic A, FCubic B) { return A == B; }

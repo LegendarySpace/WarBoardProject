@@ -33,17 +33,17 @@ public:
 	void DetermineDirections();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void Populate(TArray<FGCoord> Locations);
+	void Populate(TArray<FOrtho> Locations);
 	void Populate(TArray<FTile> Locations);
 	void Populate(TArray<FCubic> Locations);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	bool AddNode(FGCoord InTile) { return AddNode(FTile(InTile)); }
+	bool AddNode(FOrtho InTile) { return AddNode(FTile(InTile)); }
 	bool AddNode(FTile InTile);
 	bool AddNode(FCubic InTile) { return AddNode(FTile(InTile)); }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	bool RemoveNode(FGCoord InTile) { return RemoveNode(FTile(InTile)); }
+	bool RemoveNode(FOrtho InTile) { return RemoveNode(FTile(InTile)); }
 	bool RemoveNode(FTile InTile);
 	bool RemoveNode(FCubic InTile) { return RemoveNode(FTile(InTile)); }
 
@@ -55,34 +55,34 @@ public:
 
 	// Resets all nodes and determine paths
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	void Discovery(FGCoord Origin, int32 Range, TArray<FGCoord>& PathableTiles);
-	virtual void BeginDiscovery(FGCoord Origin, int32 Range, TArray<FGCoord> PathableTiles);
+	void Discovery(FOrtho Origin, int32 Range, TArray<FOrtho>& PathableTiles);
+	virtual void BeginDiscovery(FOrtho Origin, int32 Range, TArray<FOrtho> PathableTiles);
 	virtual void BeginDiscovery(FTile Origin, int32 Range, TArray<FTile> PathableTiles);
 	virtual void BeginDiscovery(FCubic Origin, int32 Range, TArray<FCubic> PathableTiles);
 
 	// UPDATE: change from UFUNCTION
 	// Looks at node in given direction and attempts to set data and add to open
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing")
-	void CheckNeighbor(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
-	virtual void CheckNeighborStatus(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie);
+	void CheckNeighbor(FPathNode Current, FOrtho Direction, FOrtho Goal, int32 BreakTie);
+	virtual void CheckNeighborStatus(FPathNode Current, FOrtho Direction, FOrtho Goal, int32 BreakTie);
 	virtual void CheckNeighborStatus(FPathNode Current, FTile Direction, FTile Goal, int32 BreakTie);
 	virtual void CheckNeighborStatus(FPathNode Current, FCubic Direction, FCubic Goal, int32 BreakTie);
 
 	// List of indexes reached by Discovery
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	TArray<FGCoord> GetReachableTiles(bool IncludeObstructed);
+	TArray<FOrtho> GetReachableTiles(bool IncludeObstructed);
 
 	// Returns the shourtest path to destination
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta =(AutoCreateRefTerm = "RouteArray"))
-	bool Route(FGCoord End, TArray<FGCoord> &RouteArray);
-	virtual bool GetRoute(FGCoord End, TArray<FGCoord>& RouteArray);
+	bool Route(FOrtho End, TArray<FOrtho> &RouteArray);
+	virtual bool GetRoute(FOrtho End, TArray<FOrtho>& RouteArray);
 	virtual bool GetRoute(FTile End, TArray<FTile>& RouteArray);
 	virtual bool GetRoute(FCubic End, TArray<FCubic>& RouteArray);
 
 	// Returns the shourtest path to destination without utilizing Discovery
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "WarBoard|Pathing", meta = (AutoCreateRefTerm = "RouteArray, PathableTiles"))
-	bool DirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> &PathableTiles, TArray<FGCoord> &RouteArray);
-	virtual bool GetDirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> PathableTiles, TArray<FGCoord>& RouteArray);
+	bool DirectRoute(FOrtho Start, FOrtho End, TArray<FOrtho> &PathableTiles, TArray<FOrtho> &RouteArray);
+	virtual bool GetDirectRoute(FOrtho Start, FOrtho End, TArray<FOrtho> PathableTiles, TArray<FOrtho>& RouteArray);
 	virtual bool GetDirectRoute(FTile Start, FTile End, TArray<FTile> PathableTiles, TArray<FTile>& RouteArray);
 	virtual bool GetDirectRoute(FCubic Start, FCubic End, TArray<FCubic> PathableTiles, TArray<FCubic>& RouteArray);
 
@@ -93,8 +93,8 @@ public:
 
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Path")
-	bool GetNodeFromCoord(FGCoord Tile, FPathNode &Node);
-	virtual bool GetNode(FGCoord Tile, FPathNode &Node);
+	bool GetNodeFromCoord(FOrtho Tile, FPathNode &Node);
+	virtual bool GetNode(FOrtho Tile, FPathNode &Node);
 	virtual bool GetNode(FTile Tile, FPathNode &Node);
 	virtual bool GetNode(TOptional<FTile> Tile, FPathNode &Node);
 	virtual bool GetNode(FCubic Tile, FPathNode &Node);
@@ -109,16 +109,16 @@ public:
 
 	// Tile Status of a given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	ENodeStatus GetStatusByCoord(FGCoord InTile);
-	virtual ENodeStatus GetStatusByTile(FGCoord InTile);
+	ENodeStatus GetStatusByCoord(FOrtho InTile);
+	virtual ENodeStatus GetStatusByTile(FOrtho InTile);
 	virtual ENodeStatus GetStatusByTile(FTile InTile);
 	virtual ENodeStatus GetStatusByTile(TOptional<FTile> InTile);
 	virtual ENodeStatus GetStatusByTile(FCubic InTile);
 
 	// Update Status of given Index
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Pathing")
-	void UpdateStatusByCoord(FGCoord InTile, ENodeStatus Status);
-	virtual void UpdateStatus(FGCoord InTile, ENodeStatus Status);
+	void UpdateStatusByCoord(FOrtho InTile, ENodeStatus Status);
+	virtual void UpdateStatus(FOrtho InTile, ENodeStatus Status);
 	virtual void UpdateStatus(FTile InTile, ENodeStatus Status);
 	virtual void UpdateStatus(FCubic InTile, ENodeStatus Status);
 
@@ -198,7 +198,7 @@ protected:
 
 	// All nodes that are blocked by a structure or have impassable terrain
 	UPROPERTY(BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<FGCoord> BlockedNodes;
+	TArray<FOrtho> BlockedNodes;
 
 	// Map of all created nodes and their indexes. Cannot edit, editing is handled by tile creation/destruction
 	UPROPERTY(BlueprintReadOnly, Category = "Pathing|Arrays")
@@ -206,23 +206,23 @@ protected:
 
 	// All valid single step movement as relative index. Cardinal directions are assumed valid, may change later
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pathing|Arrays")
-	TArray<FGCoord> ValidDirections;
+	TArray<FOrtho> ValidDirections;
 
 	// Cardinal 2D directional movement as index
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<FGCoord> CardinalDirections2D;
+	TArray<FOrtho> CardinalDirections2D;
 
 	// Diagonal 2D directional movement as index
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<FGCoord> DiagonalDirections2D;
+	TArray<FOrtho> DiagonalDirections2D;
 
 	// Cardinal 3D directional movement as index
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<FGCoord> CardinalDirections3D;
+	TArray<FOrtho> CardinalDirections3D;
 
 	// Diagonal 3D directional movement as index
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Pathing|Arrays")
-	TArray<FGCoord> DiagonalDirections3D;
+	TArray<FOrtho> DiagonalDirections3D;
 
 
 	/**							**\

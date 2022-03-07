@@ -19,7 +19,7 @@ UMovementTargetingComponent::UMovementTargetingComponent()
 	PlaneMaterial = ConstructorHelpers::FObjectFinder<UMaterialInterface>(TEXT("UMaterialInstance'/WarBoard/Material/Node_Start_MI.Node_Start_MI'")).Object;
 }
 
-void UMovementTargetingComponent::Populate(TArray<FGCoord> Choices)
+void UMovementTargetingComponent::Populate(TArray<FOrtho> Choices)
 {
 	for (auto Tile : Choices)
 	{
@@ -33,15 +33,15 @@ void UMovementTargetingComponent::Populate(TArray<FGCoord> Choices)
 
 void UMovementTargetingComponent::Populate(TArray<FTile> Choices)
 {
-	TArray<FGCoord> Population;
-	for (auto Selection : Choices) Population.Add(Selection.ToRC());
+	TArray<FOrtho> Population;
+	for (auto Selection : Choices) Population.Add(Selection.ToOrtho());
 	Populate(Population);
 }
 
 void UMovementTargetingComponent::Populate(TArray<FCubic> Choices)
 {
-	TArray<FGCoord> Population;
-	for (auto Selection : Choices) Population.Add(FTile(Selection).ToRC());
+	TArray<FOrtho> Population;
+	for (auto Selection : Choices) Population.Add(FTile(Selection).ToOrtho());
 	Populate(Population);
 }
 

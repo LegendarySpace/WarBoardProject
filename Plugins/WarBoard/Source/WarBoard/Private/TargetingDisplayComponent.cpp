@@ -40,7 +40,7 @@ void UTargetingDisplayComponent::SetPlaneType(ETileShape Shape)
 	if (PlaneMaterial) this->SetMaterial(0, PlaneMaterial);
 }
 
-void UTargetingDisplayComponent::Populate(TArray<FGCoord> Choices)
+void UTargetingDisplayComponent::Populate(TArray<FOrtho> Choices)
 {
 	TArray<FTile> Tiles;
 	for (auto Selection : Choices) Tiles.Add(FTile(Selection));

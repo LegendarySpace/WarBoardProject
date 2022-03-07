@@ -45,7 +45,7 @@ bool UEnvironmentComponent::ChangeTile(FTileBiome Instance)
 	return true;
 }
 
-bool UEnvironmentComponent::RemoveTile(FGCoord Tile)
+bool UEnvironmentComponent::RemoveTile(FOrtho Tile)
 {
 	return RemoveTile(FTile(Tile));
 }
@@ -53,12 +53,12 @@ bool UEnvironmentComponent::RemoveTile(FGCoord Tile)
 bool UEnvironmentComponent::RemoveTile(FTile Tile)
 {
 	int i = 0;
-	if (BiomeTiles.Find(Tile.ToRC(), i))
+	if (BiomeTiles.Find(Tile.ToOrtho(), i))
 	{
 		FTileBiome TB = BiomeTiles[i];
 		GetBiomeManager(TB.Biome)->RemoveTile(Tile);
 		BiomeTiles.RemoveAt(i);
-		OnTileRemove.Broadcast(Tile.ToRC());
+		OnTileRemove.Broadcast(Tile.ToOrtho());
 	}
 	return true;
 }
@@ -76,14 +76,14 @@ void UEnvironmentComponent::Populate(TArray<FTileBiome> Tiles)
 	}
 }
 
-TArray<FGCoord> UEnvironmentComponent::GetTiles()
+TArray<FOrtho> UEnvironmentComponent::GetTiles()
 {
-	TArray<FGCoord> Tiles;
+	TArray<FOrtho> Tiles;
 	for (auto& Instance : BiomeTiles) Tiles.Add(Instance.Coord);
 	return Tiles;
 }
 
-EBiome UEnvironmentComponent::GetBiome(FGCoord Tile)
+EBiome UEnvironmentComponent::GetBiome(FOrtho Tile)
 {
 	return GetBiome(FTile(Tile));
 }
@@ -91,7 +91,7 @@ EBiome UEnvironmentComponent::GetBiome(FGCoord Tile)
 EBiome UEnvironmentComponent::GetBiome(FTile Tile)
 {
 	int32 i = 0;
-	if (!BiomeTiles.Find(Tile.ToRC(), i)) return EBiome::TT_Type_MAX;
+	if (!BiomeTiles.Find(Tile.ToOrtho(), i)) return EBiome::TT_Type_MAX;
 	return static_cast<EBiome>(BiomeTiles[i].Biome);
 }
 
@@ -100,7 +100,7 @@ EBiome UEnvironmentComponent::GetBiome(FCubic Tile)
 	return GetBiome(FTile(Tile));
 }
 
-bool UEnvironmentComponent::IsValid(FGCoord Tile)
+bool UEnvironmentComponent::IsValid(FOrtho Tile)
 {
 	int32 i;
 	return BiomeTiles.Find(Tile, i);
@@ -108,12 +108,12 @@ bool UEnvironmentComponent::IsValid(FGCoord Tile)
 
 bool UEnvironmentComponent::IsValid(FTile Tile)
 {
-	return IsValid(Tile.ToRC());
+	return IsValid(Tile.ToOrtho());
 }
 
 bool UEnvironmentComponent::IsValid(FCubic Tile)
 {
-	return IsValid(FTile(Tile).ToRC());
+	return IsValid(FTile(Tile).ToOrtho());
 }
 
 void UEnvironmentComponent::SetPadding(float InPadding)

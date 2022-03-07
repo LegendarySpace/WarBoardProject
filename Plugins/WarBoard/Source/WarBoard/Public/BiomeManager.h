@@ -27,19 +27,19 @@ public:
 	void SetupInstance(FBiomeSetup Setup);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
-	void Populate(TArray<FGCoord> Tiles);
+	void Populate(TArray<FOrtho> Tiles);
 	void Populate(TArray<FTile> Tiles);
 	void Populate(TArray<FCubic> Tiles);
 
 	// Index of tile to add
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
-	void AddTile(FGCoord Tile);
+	void AddTile(FOrtho Tile);
 	void AddTile(FTile Tile);
 	void AddTile(FCubic Tile);
 
 	// Index of tile to remove
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
-	void RemoveTile(FGCoord TileToRemove);
+	void RemoveTile(FOrtho TileToRemove);
 	void RemoveTile(FTile TileToRemove);
 	void RemoveTile(FCubic TileToRemove);
 
@@ -51,7 +51,7 @@ public:
 	void DisplayInstanceIndexes();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "WarBoard|Biome Manager")
-	TArray<FGCoord> GetInstanceIndexes() { return InstanceIndexes; }
+	TArray<FOrtho> GetInstanceIndexes() { return InstanceIndexes; }
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Biome Manager")
 	void SetPadding(float InPadding);
@@ -84,6 +84,6 @@ public:
 	bool bDebugMode = false;
 
 protected:
-	TArray<FGCoord> InstanceIndexes;
+	TArray<FOrtho> InstanceIndexes;
 
 };

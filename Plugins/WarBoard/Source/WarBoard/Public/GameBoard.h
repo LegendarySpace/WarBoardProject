@@ -30,19 +30,19 @@ public:
 	void ChangeTile(FTileBiome Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-	void RemoveTile(FGCoord Tile);
+	void RemoveTile(FOrtho Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
 	void Populate(TArray<FTileBiome> Tiles);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-	void DisplayAttacks(TArray<FGCoord> Tiles);
+	void DisplayAttacks(TArray<FOrtho> Tiles);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
 	void ClearAttacks();
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
-	void DisplayMovement(TArray<FGCoord> Tiles);
+	void DisplayMovement(TArray<FOrtho> Tiles);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|GameBoard")
 	void ClearMovement();
@@ -52,7 +52,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "WarBoard|GameBoard")
-	TArray<FGCoord> GetCoords();
+	TArray<FOrtho> GetCoords();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "WarBoard|GameBoard")
 	TArray<FTile> GetTiles();

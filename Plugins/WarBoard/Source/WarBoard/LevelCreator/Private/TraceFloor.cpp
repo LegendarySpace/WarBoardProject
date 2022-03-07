@@ -17,7 +17,7 @@ UTraceFloor::UTraceFloor()
 	ClearTiles();
 }
 
-void UTraceFloor::CreateFloor(int32 InSize, FGCoord InOrigin)
+void UTraceFloor::CreateFloor(int32 InSize, FOrtho InOrigin)
 {
 	CreateFloor(InSize, FTile(InOrigin));
 }
@@ -53,9 +53,9 @@ FTransform UTraceFloor::CalculateFloorTransform(FTile Tile)
 
 void UTraceFloor::BuildFloor(FTile Tile)
 {
-	if (!InstanceIndexes.Contains(Tile.ToRC()))
+	if (!InstanceIndexes.Contains(Tile.ToOrtho()))
 	{
-		InstanceIndexes.AddUnique(Tile.ToRC());
+		InstanceIndexes.AddUnique(Tile.ToOrtho());
 
 		this->AddInstanceWorldSpace(CalculateFloorTransform(Tile));
 	}
@@ -69,24 +69,24 @@ void UTraceFloor::RebuildFloor()
 	}
 }
 
-void UTraceFloor::ShiftFloor(FGCoord Hover)
+void UTraceFloor::ShiftFloor(FOrtho Hover)
 {
 	ShiftFloor(FTile(Hover));
 }
 
 void UTraceFloor::ShiftFloor(FTile Hover)
 {
-	FGCoord ShiftBy;
+	FOrtho ShiftBy;
 
-	FGCoord HoverRelative = (Hover - Origin).ToRC();
+	FOrtho HoverRelative = (Hover - Origin).ToOrtho();
 	float r = ((float)HoverRelative.Row / Size) * 1.00000001;
 	float c = ((float)HoverRelative.Column / Size) * 1.00000001;
-	FGCoord Shift = FGCoord(lround(r), lround(c));
-	if (Shift == FGCoord(0, 0)) return;
-	ShiftBy = FGCoord(Shift.Row * Size, Shift.Column * Size);
+	FOrtho Shift = FOrtho(lround(r), lround(c));
+	if (Shift == FOrtho(0, 0)) return;
+	ShiftBy = FOrtho(Shift.Row * Size, Shift.Column * Size);
 	Origin += ShiftBy;
 
-	for (FGCoord& Coord : InstanceIndexes) Coord += ShiftBy;
+	for (FOrtho& Coord : InstanceIndexes) Coord += ShiftBy;
 	RebuildFloor();
 }
 

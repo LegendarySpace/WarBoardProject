@@ -34,15 +34,15 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")
-	void AddTileHighlight(FGCoord Tile);
+	void AddTileHighlight(FOrtho Tile);
 	void AddHighlight(FTile Tile);
-	void AddHighlight(FGCoord Tile);
+	void AddHighlight(FOrtho Tile);
 	void AddHighlight(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")
-	void RemoveTileHighlight(FGCoord Tile);
+	void RemoveTileHighlight(FOrtho Tile);
 	void RemoveHighlight(FTile Tile);
-	void RemoveHighlight(FGCoord Tile);
+	void RemoveHighlight(FOrtho Tile);
 	void RemoveHighlight(FCubic Tile);
 
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|LevelCreator")

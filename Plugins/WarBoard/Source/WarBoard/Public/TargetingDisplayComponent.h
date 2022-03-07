@@ -30,7 +30,7 @@ public:
 
 	// Populate the Meshes as a batch, because they are not persistent cannot be individually added or removed
 	UFUNCTION(BlueprintCallable, Category = "WarBoard|Plane")
-	void Populate(TArray<FGCoord> Choices);
+	void Populate(TArray<FOrtho> Choices);
 	void Populate(TArray<FTile> Choices);
 	void Populate(TArray<FCubic> Choices);
 

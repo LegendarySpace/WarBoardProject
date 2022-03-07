@@ -31,15 +31,15 @@ UGridNavigationSystemComponent::UGridNavigationSystemComponent()
 
 	// Establish Base Array values
 
-	CardinalDirections2D.Add(FGCoord(1,0)); // Front
-	CardinalDirections2D.Add(FGCoord(0,1)); // Right
-	CardinalDirections2D.Add(FGCoord(-1,0)); // Back
-	CardinalDirections2D.Add(FGCoord(0,-1)); // Left
+	CardinalDirections2D.Add(FOrtho(1,0)); // Front
+	CardinalDirections2D.Add(FOrtho(0,1)); // Right
+	CardinalDirections2D.Add(FOrtho(-1,0)); // Back
+	CardinalDirections2D.Add(FOrtho(0,-1)); // Left
 
-	DiagonalDirections2D.Add(FGCoord(1,1)); // Front-Right
-	DiagonalDirections2D.Add(FGCoord(-1,1)); // Back-Right
-	DiagonalDirections2D.Add(FGCoord(-1,-1)); // Back-Left
-	DiagonalDirections2D.Add(FGCoord(1,-1)); // Front-Left
+	DiagonalDirections2D.Add(FOrtho(1,1)); // Front-Right
+	DiagonalDirections2D.Add(FOrtho(-1,1)); // Back-Right
+	DiagonalDirections2D.Add(FOrtho(-1,-1)); // Back-Left
+	DiagonalDirections2D.Add(FOrtho(1,-1)); // Front-Left
 
 	// Haven't yet implemented 3D movement
 	// Declare here once implemented
@@ -59,7 +59,7 @@ void UGridNavigationSystemComponent::DetermineDirections()
 
 }
 
-void UGridNavigationSystemComponent::Populate(TArray<FGCoord> Locations)
+void UGridNavigationSystemComponent::Populate(TArray<FOrtho> Locations)
 {
 	TArray<FTile> L;
 	for (auto Coord : Locations) { L.Add(FTile(Coord)); }
@@ -102,14 +102,14 @@ bool UGridNavigationSystemComponent::RemoveNode(FTile InTile)
 	return true;
 }
 
-void UGridNavigationSystemComponent::Discovery_Implementation(FGCoord Origin, int32 Range, TArray<FGCoord> &PathableTiles)
+void UGridNavigationSystemComponent::Discovery_Implementation(FOrtho Origin, int32 Range, TArray<FOrtho> &PathableTiles)
 {
 	BeginDiscovery(Origin, Range, PathableTiles);
 }
 
-void UGridNavigationSystemComponent::BeginDiscovery(FGCoord Origin, int32 Range, TArray<FGCoord> PathableTiles)
+void UGridNavigationSystemComponent::BeginDiscovery(FOrtho Origin, int32 Range, TArray<FOrtho> PathableTiles)
 {
-	TArray<FGCoord> PT;
+	TArray<FOrtho> PT;
 	if (PathableTiles.Num() > 0) { for (auto Tile : PathableTiles) PT.Add(Tile); }
 	Discovery(Origin, Range, PT);
 }
@@ -169,10 +169,10 @@ void UGridNavigationSystemComponent::BeginDiscovery(FTile Origin, int32 Range, T
 				// Calculate Tie Breaker here, Origin is not available where tiebreaker is used
 				FTile TileA = Node.Tile - end;
 				FTile TileB = Origin - end;
-				int32 tb = TieBreaker ? FMath::Abs((TileA.ToRC().Row * TileB.ToRC().Column) - (TileB.ToRC().Row * TileA.ToRC().Column)) * .001 : 0;
+				int32 tb = TieBreaker ? FMath::Abs((TileA.ToOrtho().Row * TileB.ToOrtho().Column) - (TileB.ToOrtho().Row * TileA.ToOrtho().Column)) * .001 : 0;
 
 				// Call CheckNeighbor
-				CheckNeighbor(Node, Direction, end.ToRC(), tb);
+				CheckNeighbor(Node, Direction, end.ToOrtho(), tb);
 			}
 
 		}
@@ -185,17 +185,17 @@ void UGridNavigationSystemComponent::BeginDiscovery(FTile Origin, int32 Range, T
 
 void UGridNavigationSystemComponent::BeginDiscovery(FCubic Origin, int32 Range, TArray<FCubic> PathableTiles)
 {
-	TArray<FGCoord> PT;
-	if (PathableTiles.Num() > 0) { for (auto Tile : PathableTiles) PT.Add(FTile(Tile).ToRC()); }
-	Discovery(FTile(Origin).ToRC(), Range, PT);
+	TArray<FOrtho> PT;
+	if (PathableTiles.Num() > 0) { for (auto Tile : PathableTiles) PT.Add(FTile(Tile).ToOrtho()); }
+	Discovery(FTile(Origin).ToOrtho(), Range, PT);
 }
 
-void UGridNavigationSystemComponent::CheckNeighbor_Implementation(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
+void UGridNavigationSystemComponent::CheckNeighbor_Implementation(FPathNode Current, FOrtho Direction, FOrtho Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, Direction, Goal, BreakTie);
 }
 
-void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FGCoord Direction, FGCoord Goal, int32 BreakTie = 0)
+void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FOrtho Direction, FOrtho Goal, int32 BreakTie = 0)
 {
 	CheckNeighborStatus(Current, FTile(Direction), Goal, BreakTie);
 }
@@ -215,7 +215,7 @@ void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FTil
 
 	if (HeavyDiagonals)
 	{
-		if (DiagonalDirections2D.Contains(Direction.ToRC()) || DiagonalDirections3D.Contains(Direction.ToRC()))
+		if (DiagonalDirections2D.Contains(Direction.ToOrtho()) || DiagonalDirections3D.Contains(Direction.ToOrtho()))
 		{
 			cost = FMath::RoundToInt(cost * 2.41);
 		}
@@ -224,32 +224,32 @@ void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FTil
 	if (PunishDirectionChanges)
 	{
 		FTile TileA = Current.Tile - Current.ParentTile;
-		if (TileA.ToRC().Row != Direction.ToRC().Row) cost += 20;
-		if (TileA.ToRC().Column != Direction.ToRC().Column) cost += 20;
+		if (TileA.ToOrtho().Row != Direction.ToOrtho().Row) cost += 20;
+		if (TileA.ToOrtho().Column != Direction.ToOrtho().Column) cost += 20;
 	}
 
 	int32 Heu;
-	FGCoord RC = (Neighbor - Goal).ToRC();
-	RC.Row = abs(RC.Row);
-	RC.Column = abs(RC.Column);
+	FOrtho Ortho = (Neighbor - Goal).ToOrtho();
+	Ortho.Row = abs(Ortho.Row);
+	Ortho.Column = abs(Ortho.Column);
 	Heu = 0;
 	switch (HeuristicFormula)
 	{
 	case EHeuFormula::Manhatan:
-		Heu = HeuristicEstimate * (RC.Row + RC.Column);
+		Heu = HeuristicEstimate * (Ortho.Row + Ortho.Column);
 		break;
 	case EHeuFormula::MaxDXDY:
-		Heu = RC.Row > RC.Column ? RC.Row : RC.Column;
+		Heu = Ortho.Row > Ortho.Column ? Ortho.Row : Ortho.Column;
 		break;
 	case EHeuFormula::Diagonal:
-		Heu = RC.Row < RC.Column ? RC.Row : RC.Column;
-		Heu = (Heu * 2 * HeuristicEstimate) + (HeuristicEstimate * (RC.Row + RC.Column - (Heu * 2)));
+		Heu = Ortho.Row < Ortho.Column ? Ortho.Row : Ortho.Column;
+		Heu = (Heu * 2 * HeuristicEstimate) + (HeuristicEstimate * (Ortho.Row + Ortho.Column - (Heu * 2)));
 		break;
 	case EHeuFormula::Euclidean:
-		Heu = FMath::Sqrt((RC.Row ^ 2) + (RC.Column ^ 2)) * HeuristicEstimate;
+		Heu = FMath::Sqrt((Ortho.Row ^ 2) + (Ortho.Column ^ 2)) * HeuristicEstimate;
 		break;
 	case EHeuFormula::EucNoSQRT:
-		Heu = ((RC.Row ^ 2) + (RC.Column ^ 2)) * HeuristicEstimate;
+		Heu = ((Ortho.Row ^ 2) + (Ortho.Column ^ 2)) * HeuristicEstimate;
 		break;
 	case EHeuFormula::Heu_MAX:
 	default:
@@ -270,17 +270,17 @@ void UGridNavigationSystemComponent::CheckNeighborStatus(FPathNode Current, FCub
 	CheckNeighborStatus(Current, FTile(Direction), Goal, BreakTie);
 }
 
-bool UGridNavigationSystemComponent::Route_Implementation(FGCoord End, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::Route_Implementation(FOrtho End, TArray<FOrtho>& RouteArray)
 {
 	return GetRoute(End, RouteArray);
 }
 
-bool UGridNavigationSystemComponent::GetRoute(FGCoord End, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::GetRoute(FOrtho End, TArray<FOrtho>& RouteArray)
 {
 	TArray<FTile> RA;
 	if (!GetRoute(FTile(End), RA)) return false;
 	RouteArray.Empty();
-	for (auto Tile : RA) RouteArray.Add(Tile.ToRC());
+	for (auto Tile : RA) RouteArray.Add(Tile.ToOrtho());
 	return true;
 }
 
@@ -327,12 +327,12 @@ bool UGridNavigationSystemComponent::GetRoute(FCubic End, TArray<FCubic>& RouteA
 	return true;
 }
 
-bool UGridNavigationSystemComponent::DirectRoute_Implementation(FGCoord Start, FGCoord End, TArray<FGCoord> &PathableTiles, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::DirectRoute_Implementation(FOrtho Start, FOrtho End, TArray<FOrtho> &PathableTiles, TArray<FOrtho>& RouteArray)
 {
 	return GetDirectRoute(Start, End, PathableTiles, RouteArray);
 }
 
-bool UGridNavigationSystemComponent::GetDirectRoute(FGCoord Start, FGCoord End, TArray<FGCoord> PathableTiles, TArray<FGCoord>& RouteArray)
+bool UGridNavigationSystemComponent::GetDirectRoute(FOrtho Start, FOrtho End, TArray<FOrtho> PathableTiles, TArray<FOrtho>& RouteArray)
 {
 	Destination = FTile(End);
 	Discovery(Start, 0, PathableTiles);
@@ -341,9 +341,9 @@ bool UGridNavigationSystemComponent::GetDirectRoute(FGCoord Start, FGCoord End, 
 
 bool UGridNavigationSystemComponent::GetDirectRoute(FTile Start, FTile End, TArray<FTile> PathableTiles, TArray<FTile>& RouteArray)
 {
-	TArray<FGCoord> PT, RA;
-	if (PathableTiles.Num() > 0) { for (auto& Tile : PathableTiles) PT.Add(Tile.ToRC()); }
-	if (!DirectRoute(Start.ToRC(), End.ToRC(), PT, RA)) return false;
+	TArray<FOrtho> PT, RA;
+	if (PathableTiles.Num() > 0) { for (auto& Tile : PathableTiles) PT.Add(Tile.ToOrtho()); }
+	if (!DirectRoute(Start.ToOrtho(), End.ToOrtho(), PT, RA)) return false;
 	RouteArray.Empty();
 	for (auto Tile : RA) RouteArray.Add(FTile(Tile));
 	return true;
@@ -352,20 +352,20 @@ bool UGridNavigationSystemComponent::GetDirectRoute(FTile Start, FTile End, TArr
 
 bool UGridNavigationSystemComponent::GetDirectRoute(FCubic Start, FCubic End, TArray<FCubic> PathableTiles, TArray<FCubic>& RouteArray)
 {
-	TArray<FGCoord> PT, RA;
-	if (PathableTiles.Num() > 0) { for (auto &Tile : PathableTiles) PT.Add(FTile(Tile).ToRC()); }
-	if (!DirectRoute(FTile(Start).ToRC(), FTile(End).ToRC(), PT, RA)) return false;
+	TArray<FOrtho> PT, RA;
+	if (PathableTiles.Num() > 0) { for (auto &Tile : PathableTiles) PT.Add(FTile(Tile).ToOrtho()); }
+	if (!DirectRoute(FTile(Start).ToOrtho(), FTile(End).ToOrtho(), PT, RA)) return false;
 	RouteArray.Empty();
 	for (auto Tile : RA) RouteArray.Add(FTile(Tile).ToCubic());
 	return true;
 }
 
-bool UGridNavigationSystemComponent::GetNodeFromCoord(FGCoord Tile, FPathNode &Node)
+bool UGridNavigationSystemComponent::GetNodeFromCoord(FOrtho Tile, FPathNode &Node)
 {
 	return GetNode(Tile, Node);
 }
 
-bool UGridNavigationSystemComponent::GetNode(FGCoord Tile, FPathNode& Node)
+bool UGridNavigationSystemComponent::GetNode(FOrtho Tile, FPathNode& Node)
 {
 	return GetNode(FTile(Tile), Node);
 }
@@ -406,12 +406,12 @@ void UGridNavigationSystemComponent::ClearQueue()
 	NodeStat = 0;
 }
 
-ENodeStatus UGridNavigationSystemComponent::GetStatusByCoord(FGCoord InTile)
+ENodeStatus UGridNavigationSystemComponent::GetStatusByCoord(FOrtho InTile)
 {
 	return GetStatusByTile(InTile);
 }
 
-ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(FGCoord InTile)
+ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(FOrtho InTile)
 {
 	return GetStatusByTile(FTile(InTile));
 }
@@ -425,7 +425,7 @@ ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(FTile InTile)
 {
 	FPathNode N;
 	if (!GetNode(InTile, N)) return ENodeStatus::NS_Invalid;
-	if (BlockedNodes.Contains(InTile.ToRC())) return ENodeStatus::NS_Blocked;
+	if (BlockedNodes.Contains(InTile.ToOrtho())) return ENodeStatus::NS_Blocked;
 	if (GetActorAtTile(GetWorld(), InTile) != nullptr) return ENodeStatus::NS_Obstructed;
 	return ENodeStatus::NS_Open;
 }
@@ -435,12 +435,12 @@ ENodeStatus UGridNavigationSystemComponent::GetStatusByTile(FCubic InTile)
 	return GetStatusByTile(FTile(InTile));
 }
 
-void UGridNavigationSystemComponent::UpdateStatusByCoord(FGCoord InTile, ENodeStatus Status)
+void UGridNavigationSystemComponent::UpdateStatusByCoord(FOrtho InTile, ENodeStatus Status)
 {
 	UpdateStatus(InTile, Status);
 }
 
-void UGridNavigationSystemComponent::UpdateStatus(FGCoord InTile, ENodeStatus Status)
+void UGridNavigationSystemComponent::UpdateStatus(FOrtho InTile, ENodeStatus Status)
 {
 	FPathNode N;
 	if (Status > ENodeStatus::NS_Blocked) BlockedNodes.Remove(InTile);
@@ -449,21 +449,21 @@ void UGridNavigationSystemComponent::UpdateStatus(FGCoord InTile, ENodeStatus St
 
 void UGridNavigationSystemComponent::UpdateStatus(FTile InTile, ENodeStatus Status)
 {
-	UpdateStatus(InTile.ToRC(), Status);
+	UpdateStatus(InTile.ToOrtho(), Status);
 }
 
 void UGridNavigationSystemComponent::UpdateStatus(FCubic InTile, ENodeStatus Status)
 {
-	UpdateStatus(FTile(InTile).ToRC(), Status);
+	UpdateStatus(FTile(InTile).ToOrtho(), Status);
 }
 
-TArray<FGCoord> UGridNavigationSystemComponent::GetReachableTiles(bool IncludeObstructed)
+TArray<FOrtho> UGridNavigationSystemComponent::GetReachableTiles(bool IncludeObstructed)
 {
-	TArray<FGCoord> Tiles;
+	TArray<FOrtho> Tiles;
 	for (auto Node : ClosedNodes)
 	{
-		if (IncludeObstructed) Tiles.Add(Node.Tile.ToRC());
-		else if (GetStatusByTile(Node.Tile) > ENodeStatus::NS_Obstructed) Tiles.Add(Node.Tile.ToRC());
+		if (IncludeObstructed) Tiles.Add(Node.Tile.ToOrtho());
+		else if (GetStatusByTile(Node.Tile) > ENodeStatus::NS_Obstructed) Tiles.Add(Node.Tile.ToOrtho());
 	}
 
 	return Tiles;
